@@ -69,7 +69,7 @@ export function isStopRequest(input) {
 }
 
 export function looksLikeScamRecognition(input) {
-  return /(lừa đảo|giả mạo|không tin|gọi hotline|xác minh|kiểm tra lại|không cung cấp|không gửi otp|không chuyển tiền)/i.test(
+  return /(lừa đảo|giả mạo|không tin|gọi hotline|hotline|xác minh|verify|kiểm tra lại|check|không cung cấp|otp|không gửi otp|không chuyển tiền|scam)/i.test(
     String(input || ""),
   );
 }
