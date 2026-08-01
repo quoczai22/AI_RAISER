@@ -44,7 +44,7 @@ function escapeHtml(value) {
 async function loadScenarios() {
   const payload = await api("/api/scenarios");
   state.scenarios = payload.scenarios;
-  renderScenarioPicker();
+  routeFromHash();
 }
 
 function renderScenarioPicker() {
@@ -187,6 +187,7 @@ async function confirmParticipantConsent() {
       body: JSON.stringify({ participantConsent: true }),
     });
     state.session = payload.session;
+    state.selectedScenario = scenarioById(state.session.scenarioId);
     location.hash = `chat/${state.session.id}`;
     renderChatShell();
   } catch (error) {
@@ -195,7 +196,10 @@ async function confirmParticipantConsent() {
 }
 
 function renderChatShell() {
-  const scenarioTitle = state.selectedScenario?.title || "Tình huống mô phỏng";
+  const scenarioTitle =
+    state.selectedScenario?.title ||
+    scenarioById(state.session?.scenarioId)?.title ||
+    "Tình huống mô phỏng";
   render(`
     <section class="panel chat-layout">
       <div class="chat-topbar">
@@ -338,9 +342,21 @@ function renderError(message) {
 }
 
 window.addEventListener("hashchange", () => {
-  if (location.hash.startsWith("#participant-consent/")) {
-    renderParticipantConsent();
-  }
+  routeFromHash();
 });
 
 loadScenarios().catch((error) => renderError(error.message));
+
+function routeFromHash() {
+  if (location.hash.startsWith("#participant-consent/")) {
+    renderParticipantConsent();
+    return;
+  }
+
+  if (location.hash.startsWith("#chat/")) {
+    renderChatShell();
+    return;
+  }
+
+  renderScenarioPicker();
+}
