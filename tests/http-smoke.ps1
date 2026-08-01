@@ -1,25 +1,37 @@
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$process = Start-Process -FilePath node -ArgumentList "server.js" -WorkingDirectory $root -PassThru -WindowStyle Hidden
+$port = 3999
+$baseUrl = "http://localhost:$port"
+$process = Start-Process `
+  -FilePath powershell `
+  -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "`$env:PORT='$port'; node server.js" `
+  -WorkingDirectory $root `
+  -PassThru `
+  -WindowStyle Hidden
 
 try {
   Start-Sleep -Seconds 2
 
-  $scenarios = Invoke-RestMethod -Uri "http://localhost:3000/api/scenarios"
+  $health = Invoke-RestMethod -Uri "$baseUrl/healthz"
+  if ($health.ok -ne $true) {
+    throw "Expected health check to pass."
+  }
+
+  $scenarios = Invoke-RestMethod -Uri "$baseUrl/api/scenarios"
   if ($scenarios.scenarios.Count -ne 3) {
     throw "Expected 3 scenarios."
   }
 
   $session = Invoke-RestMethod `
-    -Uri "http://localhost:3000/api/sessions" `
+    -Uri "$baseUrl/api/sessions" `
     -Method Post `
     -ContentType "application/json" `
     -Body '{"scenarioId":"fake_bank","inviterConsent":true}'
 
   $sessionId = $session.session.id
   $active = Invoke-RestMethod `
-    -Uri "http://localhost:3000/api/sessions/$sessionId/participant-consent" `
+    -Uri "$baseUrl/api/sessions/$sessionId/participant-consent" `
     -Method Post `
     -ContentType "application/json" `
     -Body '{"participantConsent":true}'
@@ -29,7 +41,7 @@ try {
   }
 
   $chat = Invoke-RestMethod `
-    -Uri "http://localhost:3000/api/sessions/$sessionId/messages" `
+    -Uri "$baseUrl/api/sessions/$sessionId/messages" `
     -Method Post `
     -ContentType "application/json" `
     -Body '{"message":"I will call hotline to check."}'
@@ -39,7 +51,7 @@ try {
   }
 
   $dashboard = Invoke-RestMethod `
-    -Uri "http://localhost:3000/api/sessions/$sessionId/complete" `
+    -Uri "$baseUrl/api/sessions/$sessionId/complete" `
     -Method Post
 
   if ($dashboard.totalCount -lt 1) {
@@ -53,5 +65,7 @@ try {
   Write-Output "HTTP smoke test passed."
 }
 finally {
-  Stop-Process -Id $process.Id -Force
+  if ($process -and -not $process.HasExited) {
+    Stop-Process -Id $process.Id -Force
+  }
 }

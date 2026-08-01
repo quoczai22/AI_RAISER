@@ -125,6 +125,10 @@ async function handleApi(req, res) {
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
+    if (url.pathname === "/healthz") {
+      sendJson(res, 200, { ok: true });
+      return;
+    }
     if (url.pathname.startsWith("/api/")) {
       await handleApi(req, res);
       return;

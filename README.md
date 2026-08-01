@@ -24,6 +24,12 @@ Open:
 http://localhost:3000
 ```
 
+Health check:
+
+```text
+http://localhost:3000/healthz
+```
+
 ## Configure Gemini
 
 Create `.env` from `.env.example` or set environment variables:
