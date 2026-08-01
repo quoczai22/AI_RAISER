@@ -21,6 +21,7 @@ function expectThrows(fn, message) {
 
 const scenarios = listScenarios();
 loadEnvFile();
+process.env.GEMINI_API_KEY = "";
 assert.equal(scenarios.length, 3);
 assert.equal(scenarios[0].id, "fake_bank");
 
