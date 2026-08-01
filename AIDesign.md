@@ -39,6 +39,8 @@ Primary:
 - Structured outputs using JSON Schema.
 - Safety settings kept at default or stricter for dangerous content.
 
+For REST `generateContent`, use `generationConfig.responseFormat.text.mimeType = "application/json"` and provide the JSON schema in `generationConfig.responseFormat.text.schema`.
+
 Do not expose `GEMINI_API_KEY` on the client.
 
 ## 3. Prompt Engineering

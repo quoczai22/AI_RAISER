@@ -12,11 +12,12 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
     throw error;
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${defaultModel}:generateContent?key=${apiKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${defaultModel}:generateContent`;
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "content-type": "application/json",
+      "x-goog-api-key": apiKey,
     },
     body: JSON.stringify({
       systemInstruction: {
@@ -29,8 +30,12 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
         },
       ],
       generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: schema,
+        responseFormat: {
+          text: {
+            mimeType: "application/json",
+            schema,
+          },
+        },
       },
       safetySettings: [
         {
