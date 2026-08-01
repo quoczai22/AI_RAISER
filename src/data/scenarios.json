@@ -1,0 +1,138 @@
+[
+  {
+    "id": "fake_bank",
+    "title": "Giả ngân hàng xác minh tài khoản",
+    "description": "Luyện nhận diện yêu cầu mã xác minh, áp lực khẩn cấp và kênh không chính thức.",
+    "persona": "Một người giả danh nhân viên ngân hàng, nhắn tin lịch sự nhưng tạo áp lực rằng tài khoản cần xác minh gấp.",
+    "educationalObjective": "Giúp người tham gia nhận diện áp lực authority, urgency và yêu cầu thông tin nhạy cảm.",
+    "allowedTactics": [
+      "Giả danh bộ phận chăm sóc khách hàng ngân hàng",
+      "Tạo cảm giác tài khoản đang có vấn đề cần xác minh",
+      "Nhắc tới mã xác minh theo dạng giả lập, không xin OTP thật",
+      "Khuyến khích người dùng kiểm tra qua kênh không chính thức trong mô phỏng"
+    ],
+    "redFlags": [
+      {
+        "key": "authority_pressure",
+        "label": "Áp lực từ danh nghĩa ngân hàng",
+        "explanation": "Kẻ lừa đảo thường mượn danh tổ chức uy tín để làm người dùng tin nhanh."
+      },
+      {
+        "key": "urgency_threat",
+        "label": "Dọa khóa tài khoản hoặc ép xử lý gấp",
+        "explanation": "Áp lực thời gian khiến người dùng bỏ qua bước xác minh độc lập."
+      },
+      {
+        "key": "request_for_sensitive_info",
+        "label": "Yêu cầu mã xác minh hoặc thông tin riêng tư",
+        "explanation": "OTP, mật khẩu và thông tin tài khoản không được chia sẻ qua chat."
+      },
+      {
+        "key": "unofficial_channel",
+        "label": "Trao đổi qua kênh không chính thức",
+        "explanation": "Ngân hàng thật luôn có kênh xác minh chính thức như app, hotline hoặc chi nhánh."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real OTP requests",
+      "No real bank/account/card data",
+      "No real links or phone numbers",
+      "No instructions for fraud"
+    ]
+  },
+  {
+    "id": "fake_relative",
+    "title": "Giả người thân cần tiền gấp",
+    "description": "Luyện xác minh danh tính khi có tin nhắn nhờ chuyển tiền khẩn cấp.",
+    "persona": "Một người giả danh người thân đang gặp việc gấp, cố tạo áp lực cảm xúc để người tham gia chuyển tiền.",
+    "educationalObjective": "Giúp người tham gia biết dừng lại và xác minh qua kênh cũ trước khi gửi tiền.",
+    "allowedTactics": [
+      "Tạo cảm giác người thân đang gặp chuyện gấp",
+      "Xin giữ bí mật trong mô phỏng",
+      "Đề nghị chuyển một khoản tiền giả lập"
+    ],
+    "redFlags": [
+      {
+        "key": "identity_mismatch",
+        "label": "Danh tính chưa được xác minh",
+        "explanation": "Tin nhắn từ tài khoản lạ hoặc cách nói khác thường cần được kiểm tra lại."
+      },
+      {
+        "key": "urgency_threat",
+        "label": "Tạo áp lực khẩn cấp",
+        "explanation": "Cảm giác quá gấp là dấu hiệu thường gặp trong lừa đảo."
+      },
+      {
+        "key": "request_to_transfer_money",
+        "label": "Yêu cầu chuyển tiền",
+        "explanation": "Luôn xác minh bằng cuộc gọi hoặc kênh quen thuộc trước khi chuyển tiền."
+      },
+      {
+        "key": "request_to_keep_secret",
+        "label": "Yêu cầu giữ bí mật",
+        "explanation": "Kẻ lừa đảo hay cô lập nạn nhân để họ không hỏi người khác."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real bank account",
+      "No real payment instruction",
+      "No real phone number",
+      "No extreme emotional coercion"
+    ]
+  },
+  {
+    "id": "fake_police",
+    "title": "Giả công an/cơ quan chức năng",
+    "description": "Luyện xử lý áp lực đe dọa và yêu cầu làm việc qua chat.",
+    "persona": "Một người giả danh cán bộ cơ quan chức năng, dùng giọng nghiêm để ép người tham gia hợp tác trong mô phỏng.",
+    "educationalObjective": "Giúp người tham gia nhận diện authority pressure và biết yêu cầu kênh xác minh chính thức.",
+    "allowedTactics": [
+      "Giả danh cơ quan chức năng trong mô phỏng",
+      "Tạo áp lực rằng người tham gia cần hợp tác",
+      "Yêu cầu cung cấp thông tin giả lập"
+    ],
+    "redFlags": [
+      {
+        "key": "authority_pressure",
+        "label": "Áp lực từ danh nghĩa cơ quan chức năng",
+        "explanation": "Danh nghĩa có thẩm quyền thường được dùng để làm người dùng sợ và nghe theo."
+      },
+      {
+        "key": "urgency_threat",
+        "label": "Đe dọa hậu quả nếu không làm ngay",
+        "explanation": "Áp lực thời gian khiến người dùng không kịp xác minh."
+      },
+      {
+        "key": "request_for_sensitive_info",
+        "label": "Yêu cầu thông tin riêng tư",
+        "explanation": "Không cung cấp CCCD, tài khoản hoặc mã xác minh qua chat."
+      },
+      {
+        "key": "unofficial_channel",
+        "label": "Làm việc qua kênh không chính thức",
+        "explanation": "Cần kiểm tra qua cơ quan hoặc kênh chính thức."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No legal threats beyond mild simulation",
+      "No real police contact details",
+      "No real sensitive data",
+      "No instructions for evading law enforcement"
+    ]
+  }
+]

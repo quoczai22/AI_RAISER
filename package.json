@@ -1,0 +1,13 @@
+{
+  "name": "ai-scam-inoculation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/run-tests.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
