@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadEnvFile } from "./src/services/env.js";
 import { listScenarios } from "./src/services/scenarioService.js";
 import {
   confirmParticipantConsent,
@@ -12,6 +13,7 @@ import { sendChatMessage } from "./src/services/chatOrchestrator.js";
 import { completeSession, getDashboard } from "./src/services/dashboardService.js";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
+loadEnvFile();
 const port = Number(process.env.PORT || 3000);
 
 const jsonHeaders = {

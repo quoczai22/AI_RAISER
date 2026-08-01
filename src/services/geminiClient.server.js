@@ -1,3 +1,7 @@
+import { loadEnvFile } from "./env.js";
+
+loadEnvFile();
+
 const defaultModel = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const apiKey = process.env.GEMINI_API_KEY || "";
 

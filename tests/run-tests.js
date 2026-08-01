@@ -7,6 +7,7 @@ import {
 } from "../src/services/sessionService.js";
 import { sendChatMessage } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
+import { loadEnvFile } from "../src/services/env.js";
 import { maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
 
 function expectThrows(fn, message) {
@@ -19,6 +20,7 @@ function expectThrows(fn, message) {
 }
 
 const scenarios = listScenarios();
+loadEnvFile();
 assert.equal(scenarios.length, 3);
 assert.equal(scenarios[0].id, "fake_bank");
 

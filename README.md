@@ -32,7 +32,7 @@ http://localhost:3000/healthz
 
 ## Configure Gemini
 
-Create `.env` from `.env.example` or set environment variables:
+Create `.env` from `.env.example` or set environment variables. The app loads `.env` automatically when you run `node server.js`.
 
 ```text
 GEMINI_API_KEY=your_google_ai_studio_key
