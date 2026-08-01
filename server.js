@@ -5,12 +5,11 @@ import { fileURLToPath } from "node:url";
 import { listScenarios } from "./src/services/scenarioService.js";
 import {
   confirmParticipantConsent,
-  completeSession,
   createSession,
   getSession,
 } from "./src/services/sessionService.js";
 import { sendChatMessage } from "./src/services/chatOrchestrator.js";
-import { getDashboard } from "./src/services/dashboardService.js";
+import { completeSession, getDashboard } from "./src/services/dashboardService.js";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const port = Number(process.env.PORT || 3000);

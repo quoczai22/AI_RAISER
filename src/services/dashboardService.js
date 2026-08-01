@@ -1,6 +1,19 @@
 import { getScenario } from "./scenarioService.js";
 import { requireStoredSession } from "./sessionService.js";
 import { calculateScore } from "./scoringEngine.js";
+import { sessions } from "./store.js";
+
+export function completeSession(sessionId) {
+  const session = requireStoredSession(sessionId);
+  const scenario = getScenario(session.scenarioId);
+  if (!session.score) {
+    session.score = calculateScore({ session, scenario });
+  }
+  session.status = "completed";
+  session.completedAt = session.completedAt || new Date().toISOString();
+  sessions.set(session.id, session);
+  return buildDashboard({ session, scenario });
+}
 
 export function getDashboard(sessionId) {
   const session = requireStoredSession(sessionId);
