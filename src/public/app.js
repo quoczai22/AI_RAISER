@@ -217,7 +217,7 @@ function renderChatShell() {
     </section>
   `);
 
-  app.querySelector("#stop-chat").addEventListener("click", renderDashboardShell);
+  app.querySelector("#stop-chat").addEventListener("click", renderDashboard);
   app.querySelector("#chat-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = app.querySelector("#chat-input");
@@ -245,7 +245,7 @@ async function sendChatMessage(text) {
     }
     state.messages.push({ role: "ai", content: payload.reply });
     if (payload.sessionStatus === "completed") {
-      renderDashboardShell();
+      await renderDashboard();
       return;
     }
     renderChatShell();
@@ -255,25 +255,47 @@ async function sendChatMessage(text) {
   }
 }
 
-function renderDashboardShell() {
+async function renderDashboard() {
+  try {
+    const sessionId = getSessionIdFromHash() || state.session?.id;
+    const dashboard = await api(`/api/sessions/${sessionId}/complete`, {
+      method: "POST",
+    });
+    renderDashboardView(dashboard);
+  } catch (error) {
+    renderError(error.message);
+  }
+}
+
+function renderDashboardView(dashboard) {
   render(`
     <section class="panel stack">
       <div>
         <h2>Kết quả buổi luyện tập</h2>
-        <p class="subtitle">Sprint 2 hiển thị dashboard shell. Sprint 4 sẽ tính điểm miễn dịch thật.</p>
+        <p class="subtitle">${escapeHtml(dashboard.scenarioTitle)}</p>
       </div>
       <div class="score-card">
-        <span class="score-number">-- / 100</span>
-        <span>Điểm sẽ được tính sau khi hoàn tất Gemini chat và scoring engine.</span>
+        <span class="score-number">${dashboard.immunityScore} / 100</span>
+        <span>Nhận diện ${dashboard.recognizedCount} / ${dashboard.totalCount} dấu hiệu cảnh báo.</span>
       </div>
       <h3>Đã nhận diện tốt</h3>
       <ul class="flag-list">
-        <li class="flag-item success">Sẽ hiển thị dấu hiệu người tham gia nhận diện đúng.</li>
+        ${renderFlags(dashboard.recognizedRedFlags, "success", "Chưa có dấu hiệu nào được nhận diện rõ trong buổi luyện này.")}
       </ul>
       <h3>Cần luyện thêm</h3>
       <ul class="flag-list">
-        <li class="flag-item">Sẽ hiển thị dấu hiệu bị bỏ lỡ và gợi ý luyện tiếp.</li>
+        ${renderFlags(dashboard.missedRedFlags, "", "Không còn dấu hiệu nào bị bỏ lỡ.")}
       </ul>
+      <h3>Đoạn hội thoại cần chú ý</h3>
+      <ul class="flag-list">
+        ${dashboard.highlights.length === 0 ? '<li class="flag-item">Chưa có highlight. Hãy chạy thêm vài lượt chat để tạo dữ liệu.</li>' : dashboard.highlights.map((item) => `
+          <li class="flag-item ${item.status === "recognized" ? "success" : ""}">
+            <strong>${escapeHtml(item.label)}</strong><br>
+            ${escapeHtml(item.evidenceText || "Không có trích đoạn.")}
+          </li>
+        `).join("")}
+      </ul>
+      <div class="notice">${escapeHtml(dashboard.nextRecommendation)}</div>
       <button id="restart">Tạo buổi luyện mới</button>
     </section>
   `);
@@ -285,6 +307,18 @@ function renderDashboardShell() {
     state.safetyNotices = [];
     renderScenarioPicker();
   });
+}
+
+function renderFlags(flags, className, emptyText) {
+  if (!flags || flags.length === 0) {
+    return `<li class="flag-item ${className}">${escapeHtml(emptyText)}</li>`;
+  }
+  return flags.map((flag) => `
+    <li class="flag-item ${className}">
+      <strong>${escapeHtml(flag.label)}</strong><br>
+      ${escapeHtml(flag.recommendation || flag.explanation || "")}
+    </li>
+  `).join("");
 }
 
 function getSessionIdFromHash() {

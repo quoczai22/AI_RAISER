@@ -6,6 +6,7 @@ import {
   getSession,
 } from "../src/services/sessionService.js";
 import { sendChatMessage } from "../src/services/chatOrchestrator.js";
+import { getDashboard } from "../src/services/dashboardService.js";
 import { maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
 
 function expectThrows(fn, message) {
@@ -55,5 +56,11 @@ const chat = await sendChatMessage(created.id, { message: "Tôi sẽ gọi hotli
 assert.ok(chat.reply.length > 0);
 assert.equal(chat.safety.provider, "safe_fallback");
 assert.equal(chat.sessionStatus, "completed");
+
+const dashboard = getDashboard(created.id);
+assert.equal(dashboard.immunityScore, 25);
+assert.equal(dashboard.recognizedCount, 1);
+assert.equal(dashboard.totalCount, 4);
+assert.ok(dashboard.nextRecommendation.length > 0);
 
 console.log("Implementation tests passed.");

@@ -5,10 +5,12 @@ import { fileURLToPath } from "node:url";
 import { listScenarios } from "./src/services/scenarioService.js";
 import {
   confirmParticipantConsent,
+  completeSession,
   createSession,
   getSession,
 } from "./src/services/sessionService.js";
 import { sendChatMessage } from "./src/services/chatOrchestrator.js";
+import { getDashboard } from "./src/services/dashboardService.js";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const port = Number(process.env.PORT || 3000);
@@ -101,6 +103,20 @@ async function handleApi(req, res) {
   if (req.method === "GET" && sessionMatch) {
     const session = getSession(sessionMatch[1]);
     sendJson(res, 200, { session });
+    return;
+  }
+
+  const completeMatch = path.match(/^\/api\/sessions\/([^/]+)\/complete$/);
+  if (req.method === "POST" && completeMatch) {
+    const dashboard = completeSession(completeMatch[1]);
+    sendJson(res, 200, dashboard);
+    return;
+  }
+
+  const dashboardMatch = path.match(/^\/api\/sessions\/([^/]+)\/dashboard$/);
+  if (req.method === "GET" && dashboardMatch) {
+    const dashboard = getDashboard(dashboardMatch[1]);
+    sendJson(res, 200, dashboard);
     return;
   }
 

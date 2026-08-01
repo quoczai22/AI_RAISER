@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { getScenario } from "./scenarioService.js";
 import { sessions } from "./store.js";
+import { calculateScore } from "./scoringEngine.js";
+import { buildDashboard } from "./dashboardService.js";
 
 function now() {
   return new Date().toISOString();
@@ -56,6 +58,18 @@ export function getSession(sessionId) {
   return summarizeSession(requireSession(sessionId));
 }
 
+export function completeSession(sessionId) {
+  const session = requireSession(sessionId);
+  const scenario = getScenario(session.scenarioId);
+  if (!session.score) {
+    session.score = calculateScore({ session, scenario });
+  }
+  session.status = "completed";
+  session.completedAt = session.completedAt || now();
+  sessions.set(session.id, session);
+  return buildDashboard({ session, scenario });
+}
+
 export function requireActiveSession(sessionId) {
   const session = requireSession(sessionId);
   if (!session.participantConsentAt || session.status !== "active") {
@@ -64,6 +78,10 @@ export function requireActiveSession(sessionId) {
     throw error;
   }
   return session;
+}
+
+export function requireStoredSession(sessionId) {
+  return requireSession(sessionId);
 }
 
 function requireSession(sessionId) {
