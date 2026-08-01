@@ -8,6 +8,7 @@ import {
   createSession,
   getSession,
 } from "./src/services/sessionService.js";
+import { sendChatMessage } from "./src/services/chatOrchestrator.js";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const port = Number(process.env.PORT || 3000);
@@ -85,6 +86,14 @@ async function handleApi(req, res) {
     const body = await readJsonBody(req);
     const session = confirmParticipantConsent(participantConsentMatch[1], body);
     sendJson(res, 200, { session });
+    return;
+  }
+
+  const messageMatch = path.match(/^\/api\/sessions\/([^/]+)\/messages$/);
+  if (req.method === "POST" && messageMatch) {
+    const body = await readJsonBody(req);
+    const result = await sendChatMessage(messageMatch[1], body);
+    sendJson(res, 200, result);
     return;
   }
 

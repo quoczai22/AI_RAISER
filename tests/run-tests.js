@@ -5,6 +5,8 @@ import {
   createSession,
   getSession,
 } from "../src/services/sessionService.js";
+import { sendChatMessage } from "../src/services/chatOrchestrator.js";
+import { maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
 
 function expectThrows(fn, message) {
   try {
@@ -42,4 +44,16 @@ const loaded = getSession(created.id);
 assert.equal(loaded.id, created.id);
 assert.equal(loaded.status, "active");
 
-console.log("Sprint 1 tests passed.");
+const masked = maskSensitiveInput("mã của tôi là 123456");
+assert.equal(masked.changed, true);
+assert.equal(masked.masked.includes("[MASKED_OTP]"), true);
+
+const unsafeReply = validateAiReply("Bấm vào https://example.com để xác minh");
+assert.equal(unsafeReply.safe, false);
+
+const chat = await sendChatMessage(created.id, { message: "Tôi sẽ gọi hotline chính thức để kiểm tra lại." });
+assert.ok(chat.reply.length > 0);
+assert.equal(chat.safety.provider, "safe_fallback");
+assert.equal(chat.sessionStatus, "completed");
+
+console.log("Implementation tests passed.");

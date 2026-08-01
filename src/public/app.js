@@ -4,7 +4,8 @@ const state = {
   scenarios: [],
   selectedScenario: null,
   session: null,
-  participantMessages: [],
+  messages: [],
+  safetyNotices: [],
 };
 
 async function api(path, options = {}) {
@@ -200,13 +201,14 @@ function renderChatShell() {
       <div class="chat-topbar">
         <div>
           <h2>${escapeHtml(scenarioTitle)}</h2>
-          <p class="subtitle">Sprint 2: giao diện chat. Sprint 3 sẽ kết nối Gemini động.</p>
+          <p class="subtitle">Gemini phản hồi động theo lịch sử hội thoại và tình huống mô phỏng.</p>
         </div>
         <button class="warning" id="stop-chat">Dừng</button>
       </div>
       <div class="chat-messages" id="chat-messages">
-        <div class="bubble ai">Chào cô/chú, đây là màn hình mô phỏng chat. Kết nối Gemini sẽ được bật ở Sprint 3.</div>
-        ${state.participantMessages.map((message) => `<div class="bubble user">${escapeHtml(message)}</div>`).join("")}
+        ${state.messages.length === 0 ? '<div class="bubble ai">Chào cô/chú, mình là bộ phận hỗ trợ trong tình huống mô phỏng. Tài khoản của cô/chú đang cần xác minh trong hôm nay.</div>' : ""}
+        ${state.messages.map((message) => `<div class="bubble ${message.role}">${escapeHtml(message.content)}</div>`).join("")}
+        ${state.safetyNotices.map((notice) => `<div class="notice danger-note">${escapeHtml(notice)}</div>`).join("")}
       </div>
       <form class="chat-form" id="chat-form">
         <textarea id="chat-input" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn"></textarea>
@@ -216,15 +218,41 @@ function renderChatShell() {
   `);
 
   app.querySelector("#stop-chat").addEventListener("click", renderDashboardShell);
-  app.querySelector("#chat-form").addEventListener("submit", (event) => {
+  app.querySelector("#chat-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = app.querySelector("#chat-input");
     const text = input.value.trim();
     if (!text) return;
-    state.participantMessages.push(text);
+    state.messages.push({ role: "user", content: text });
     input.value = "";
     renderChatShell();
+    await sendChatMessage(text);
   });
+}
+
+async function sendChatMessage(text) {
+  try {
+    const sessionId = getSessionIdFromHash();
+    const payload = await api(`/api/sessions/${sessionId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ message: text }),
+    });
+    if (payload.safety?.maskedSensitiveInput) {
+      state.safetyNotices.push("Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư. Trong tình huống thật, không gửi OTP, mật khẩu hoặc thông tin tài khoản qua chat.");
+    }
+    if (payload.safety?.provider === "safe_fallback") {
+      state.safetyNotices.push("Gemini API chưa được cấu hình trong môi trường này, app đang dùng phản hồi dự phòng an toàn.");
+    }
+    state.messages.push({ role: "ai", content: payload.reply });
+    if (payload.sessionStatus === "completed") {
+      renderDashboardShell();
+      return;
+    }
+    renderChatShell();
+  } catch (error) {
+    state.safetyNotices.push(error.message);
+    renderChatShell();
+  }
 }
 
 function renderDashboardShell() {
@@ -253,7 +281,8 @@ function renderDashboardShell() {
   app.querySelector("#restart").addEventListener("click", () => {
     location.hash = "";
     state.session = null;
-    state.participantMessages = [];
+    state.messages = [];
+    state.safetyNotices = [];
     renderScenarioPicker();
   });
 }
