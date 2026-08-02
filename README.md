@@ -2,7 +2,7 @@
 
 MVP for **AI Riser Vietnam 2026** - anti-fraud / scam inoculation training for Vietnamese families.
 
-The app lets an inviter choose a scam simulation scenario, requires explicit consent, runs a chat-style training session, and shows an immunity score based on recognized red flags.
+The app lets a user self-train against scam simulations, requires explicit consent, runs a Gemini-driven chat session, shows an immunity score based on recognized red flags, and provides a lightweight family share summary.
 
 ## Stack
 
@@ -59,13 +59,14 @@ Implementation tests passed.
 
 ## Demo Flow
 
-1. Choose `Giả ngân hàng xác minh tài khoản`.
-2. Confirm inviter consent.
-3. Open participant screen.
-4. Confirm participant consent.
+1. Enter a display name.
+2. Choose `Giả ngân hàng xác minh tài khoản`.
+3. Pick a difficulty.
+4. Confirm simulation consent.
 5. Send 2-3 chat messages.
 6. Stop or identify the scam.
 7. Review immunity score and red flag dashboard.
+8. Copy/share the family summary.
 
 ## AI-Native Requirement
 

@@ -65,7 +65,7 @@ Each chat turn sends:
    - Turn count.
    - Triggered red flags.
    - Recognized red flags.
-   - Participant consent status.
+   - Single-user consent status.
 
 4. **Conversation history**
    - Masked participant messages.
@@ -79,7 +79,7 @@ Each chat turn sends:
 ```text
 You are an educational simulation writer for AI Scam Inoculation.
 
-This is a consent-based training simulation for Vietnamese families. The participant has been informed that this is a practice scenario to learn how to recognize social engineering and online scams.
+This is a consent-based self-training simulation for Vietnamese users. The user has been informed that this is a practice scenario to learn how to recognize social engineering and online scams.
 
 You are NOT helping anyone commit fraud. You must not provide instructions, operational details, links, QR codes, bank account numbers, malware steps, credential theft tactics, or any content that could be reused for real-world scams.
 
@@ -293,7 +293,7 @@ Important note from Google docs: safety filters classify probability of unsafe c
 
 | Layer | Purpose |
 |---|---|
-| Consent gate | Prevent covert testing/gài bẫy người thân |
+| Consent gate | Ensure the user understands this is simulated self-training |
 | Input masker | Remove sensitive participant data |
 | Prompt guardrails | Frame AI as educational simulation writer |
 | Structured output | Prevent free-form uncontrolled response |
@@ -399,13 +399,7 @@ Google's latest Gemini docs indicate some older sampling parameters may be depre
 - Prefer model defaults for demo unless AI Studio exposes safe controls.
 - Use prompt boundaries, structured output and validator as primary control mechanisms.
 
-If the selected model still supports temperature in AI Studio:
-
-| Use | Suggested |
-|---|---|
-| Chat simulation | 0.6-0.8 for natural variation |
-| Scoring/evaluation | 0.1-0.2 or deterministic structured output |
-| Safety repair | 0.0-0.2 |
+For `gemini-3.6-flash`, do not send `temperature`, `top_p`, or `top_k`. Dynamic behavior must come from context, scenario state, and prompt instructions, then be verified by the dynamic response test.
 
 ## 10. Retry
 

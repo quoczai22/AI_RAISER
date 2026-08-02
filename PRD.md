@@ -2,17 +2,18 @@
 
 ## 1. Executive Summary
 
-**AI Scam Inoculation** là sản phẩm luyện tập “miễn dịch lừa đảo” cho gia đình Việt Nam. Người mời, thường là con/cháu 28-45 tuổi, tạo một buổi luyện tập và mời cha mẹ/ông bà 55+ tham gia qua giao diện chat quen thuộc. Trong buổi luyện tập, **Gemini/Google AI** đóng vai biên kịch tình huống lừa đảo có kiểm soát, phản hồi động theo câu trả lời của người tham gia, sau đó hệ thống chấm “điểm miễn dịch” dựa trên số dấu hiệu cảnh báo người dùng nhận diện đúng.
+**AI Scam Inoculation** là sản phẩm luyện tập “miễn dịch lừa đảo” cho người dùng Việt Nam. Người dùng tự vào app, nhập tên nhẹ, chọn loại scam/cấp độ, xác nhận đây là mô phỏng, chat với **Gemini/Google AI**, sau đó nhận điểm miễn dịch dựa trên số dấu hiệu cảnh báo đã nhận diện đúng. Family angle được giữ bằng tính năng mỏng ở cuối: chia sẻ tóm tắt kết quả cho người thân.
 
 Ngữ cảnh chương trình là **AI Riser Vietnam 2026**, không phải AI Raiser. Sản phẩm thuộc track **phòng chống lừa đảo / anti-fraud** và cần bám tinh thần **#BuildwithGoogleAI**. Do đó PRD ưu tiên demo/build trong hệ sinh thái Google AI, đặc biệt **Google AI Studio**, **Gemini API** và triển khai lên **Google Cloud Run** nếu cần public demo.
 
 MVP tập trung vào một vòng học tập nhỏ nhưng thuyết phục:
 
-1. Người mời chọn kịch bản.
-2. Hai bên xác nhận đồng thuận.
-3. Người tham gia trò chuyện với AI trong tình huống mô phỏng.
-4. Hệ thống chấm điểm theo red flags đã định nghĩa trước.
-5. Người mời xem dashboard đơn giản: điểm, điểm mạnh/yếu, đoạn hội thoại được highlight, gợi ý luyện tiếp.
+1. Người dùng nhập tên nhẹ hoặc bắt đầu không cần tài khoản.
+2. Người dùng chọn loại scam và cấp độ.
+3. Người dùng xác nhận đồng thuận mô phỏng.
+4. Người dùng trò chuyện với AI trong tình huống mô phỏng.
+5. Hệ thống chấm điểm theo red flags đã định nghĩa trước.
+6. Người dùng xem dashboard cá nhân, lịch sử và có thể chia sẻ kết quả cho người thân.
 
 Giá trị AI cốt lõi là **hội thoại mô phỏng không đoán trước được**. Sản phẩm không được vận hành như decision tree cố định. Nếu bỏ Gemini ra khỏi luồng hội thoại chính, MVP không còn đạt mục tiêu AI-native.
 
@@ -29,7 +30,7 @@ Gia đình muốn giúp cha mẹ/ông bà phòng tránh lừa đảo, nhưng thi
 | User | Pain Point | Product Response |
 |---|---|---|
 | Người tham gia 55+ | Khó phân biệt tin nhắn thật/giả khi đối phương nói tự nhiên, dồn dập hoặc dùng danh nghĩa có thẩm quyền | Mô phỏng chat theo tình huống đời sống, feedback rõ red flags |
-| Người mời 28-45 | Lo cha mẹ/ông bà bị lừa nhưng không biết luyện thế nào mà không gây căng thẳng | Tạo buổi luyện tập có consent, kết quả dễ hiểu |
+| Người thân 28-45 | Muốn động viên gia đình luyện tập nhưng không muốn tạo cảm giác giám sát | Nhận tóm tắt chia sẻ tự nguyện sau buổi luyện |
 | Team demo/hackathon | Cần chứng minh AI là bắt buộc, không phải gắn AI cho có | Gemini phản hồi động với bất kỳ câu trả lời nào |
 | Giám khảo | Cần thấy impact, feasibility, ethics và AI-native trong 3 phút demo | MVP có flow ngắn, rõ, chạy được, có điểm và dashboard |
 | AI Riser organizer/context | Cần sản phẩm thể hiện Build with Google AI và có thể demo/deploy trong hệ sinh thái Google | Gemini API, Google AI Studio, Cloud Run-oriented delivery |
@@ -51,13 +52,13 @@ Gia đình muốn giúp cha mẹ/ông bà phòng tránh lừa đảo, nhưng thi
 **Nỗi sợ:** Bị phạt, bị khóa tài khoản, con cháu gặp chuyện gấp, làm sai thủ tục.  
 **Rào cản:** Không thích bị “kiểm tra”, ngại công nghệ, dễ căng thẳng nếu bị chê trách.
 
-### 3.2. Secondary Persona - Người Mời
+### 3.2. Secondary Persona - Người Thân Nhận Chia Sẻ
 
 **Tên đại diện:** Anh Minh, 34 tuổi  
-**Bối cảnh:** Có cha mẹ lớn tuổi, thường nhắc gia đình cảnh giác lừa đảo nhưng thấy lời nhắc không đủ hiệu quả.  
-**Mục tiêu:** Tạo buổi luyện tập nhanh, an toàn, có kết quả cụ thể để biết cha mẹ cần luyện thêm điều gì.  
-**Nỗi sợ:** Cha mẹ bị mất tiền, bị thao túng tâm lý, hoặc cảm thấy bị con cái gài bẫy.  
-**Rào cản:** Không có thời gian cấu hình phức tạp, cần demo dễ chạy.
+**Bối cảnh:** Có cha mẹ lớn tuổi, muốn động viên gia đình luyện tập an toàn.  
+**Mục tiêu:** Nhận tóm tắt kết quả để biết người thân đã luyện tình huống nào và nên luyện thêm gì.  
+**Nỗi sợ:** Người thân bị lừa nhưng không muốn tạo cảm giác bị giám sát.  
+**Rào cản:** Không cần account riêng trong MVP.
 
 ### 3.3. Stakeholder Persona - Giám Khảo AI Riser
 
@@ -68,21 +69,21 @@ Gia đình muốn giúp cha mẹ/ông bà phòng tránh lừa đảo, nhưng thi
 
 ### 4.1. Happy Path
 
-1. Người mời mở app.
-2. Chọn một kịch bản MVP:
+1. Người dùng mở app.
+2. Nhập tên nhẹ hoặc bấm bắt đầu.
+3. Xem dashboard cá nhân.
+4. Chọn một kịch bản MVP và cấp độ:
    - Giả ngân hàng.
    - Giả người thân cần tiền gấp.
    - Giả công an/cơ quan chức năng.
-3. Người mời đọc và xác nhận điều khoản đồng thuận: đây là mô phỏng giáo dục, không phải giám sát bí mật.
-4. App tạo một training session.
-5. Người tham gia mở session.
-6. Người tham gia xác nhận biết đây là mô phỏng luyện tập.
-7. Chat bắt đầu với giao diện đơn giản kiểu messenger/Zalo.
-8. Gemini đóng vai nhân vật lừa đảo mô phỏng, phản hồi theo lịch sử hội thoại và trạng thái scenario.
-9. Người tham gia trả lời tự nhiên.
-10. Session kết thúc khi đạt điều kiện dừng: đủ lượt hội thoại, người dùng nhận diện scam, hoặc người dùng chọn dừng.
-11. Hệ thống chấm điểm miễn dịch theo red flags.
-12. Người mời xem dashboard: điểm tổng, red flags nhận diện đúng/bỏ lỡ, đoạn hội thoại highlight, gợi ý luyện tiếp.
+5. Người dùng xác nhận biết đây là mô phỏng luyện tập và không nhập dữ liệu thật.
+6. Chat bắt đầu với giao diện đơn giản kiểu messenger.
+7. Gemini đóng vai nhân vật lừa đảo mô phỏng, phản hồi theo lịch sử hội thoại và trạng thái scenario.
+8. Người dùng trả lời tự nhiên.
+9. Session kết thúc khi đạt điều kiện dừng: đủ lượt hội thoại, người dùng nhận diện scam, hoặc người dùng chọn dừng.
+10. Hệ thống chấm điểm miễn dịch theo red flags.
+11. Người dùng xem dashboard: điểm tổng, red flags nhận diện đúng/bỏ lỡ, đoạn hội thoại highlight, gợi ý luyện tiếp.
+12. Người dùng có thể bấm chia sẻ tóm tắt kết quả cho người thân.
 
 ### 4.2. Error and Safety Path
 
@@ -104,12 +105,15 @@ Trong demo 3 phút, chứng minh rằng người dùng có thể trải nghiệm
 
 | Feature | MVP Requirement |
 |---|---|
-| Create training session | Người mời chọn 1 trong 3 kịch bản và tạo session |
-| Consent flow | Người mời và người tham gia đều phải xác nhận biết đây là mô phỏng |
+| Lightweight entry | Người dùng nhập tên nhẹ hoặc bắt đầu không cần auth phức tạp |
+| Personal dashboard | Hiển thị lịch sử session trong phiên hiện tại |
+| Create training session | Người dùng chọn 1 trong 3 kịch bản và cấp độ |
+| Consent flow | Người dùng xác nhận biết đây là mô phỏng |
 | Dynamic AI chat | Gemini sinh phản hồi dựa trên system prompt, scenario state và conversation history |
 | Scenario templates | 3 template: giả ngân hàng, giả người thân cần tiền gấp, giả công an/cơ quan chức năng |
 | Immunity score | Công thức minh bạch dựa trên red flags recognized / total red flags |
 | Result dashboard | Điểm, red flags đúng/bỏ lỡ, highlight hội thoại, gợi ý luyện tiếp |
+| Share result | Copy/share bản tóm tắt kết quả cho người thân |
 | Safety handling | Không yêu cầu dữ liệu thật, không tạo link/app/QR thật, không hướng dẫn lừa đảo thực tế |
 
 ### 5.3. Out of Scope
@@ -128,7 +132,7 @@ Trong demo 3 phút, chứng minh rằng người dùng có thể trải nghiệm
 
 1. Gemini/Google AI là AI chính của sản phẩm cuối.
 2. Luồng hội thoại chính không được là decision tree cố định.
-3. Consent là bắt buộc trước khi mô phỏng.
+3. Single-user consent là bắt buộc trước khi mô phỏng.
 4. Không lưu trữ dữ liệu cá nhân thật trong kịch bản mẫu.
 5. Điểm miễn dịch phải minh bạch, không phải “AI tự chấm mơ hồ”.
 6. Feedback phải không phán xét người tham gia.
@@ -153,31 +157,41 @@ MVP không bắt buộc dùng Spring Boot. Vì AI Riser Vietnam 2026 định hư
 
 ## 6. Feature List
 
-### F1. Training Session Creation
+### F1. Lightweight Entry and Dashboard
 
-**User story:** Là người mời, tôi muốn chọn một kịch bản luyện tập để tạo buổi luyện cho cha mẹ/ông bà.
+**User story:** Là người dùng, tôi muốn bắt đầu nhanh mà không cần đăng ký phức tạp.
+
+**Acceptance Criteria:**
+
+- Có thể nhập tên hiển thị.
+- Không yêu cầu password/auth thật trong MVP.
+- Dashboard cá nhân hiển thị session hiện tại/lịch sử trong bộ nhớ.
+
+### F2. Training Session Creation
+
+**User story:** Là người dùng, tôi muốn chọn một kịch bản và cấp độ để tự luyện tập.
 
 **Acceptance Criteria:**
 
 - Hiển thị 3 kịch bản MVP.
-- Mỗi kịch bản có tên, mô tả ngắn và danh sách red flags mục tiêu chỉ hiển thị cho người mời hoặc sau khi session kết thúc.
-- Người mời phải xác nhận consent trước khi tạo session.
-- Tạo được session id/link nội bộ cho demo.
+- Mỗi kịch bản có tên, mô tả ngắn và danh sách red flags mục tiêu chỉ hiển thị sau khi session kết thúc.
+- Có lựa chọn cấp độ: dễ, vừa, khó.
+- Tạo được session id nội bộ cho demo.
 
-### F2. Participant Consent
+### F3. Simulation Consent
 
-**User story:** Là người tham gia, tôi muốn biết rõ đây là buổi luyện tập mô phỏng trước khi bắt đầu.
+**User story:** Là người dùng, tôi muốn biết rõ đây là buổi luyện tập mô phỏng trước khi bắt đầu.
 
 **Acceptance Criteria:**
 
 - Màn hình trước chat nói rõ đây là mô phỏng giáo dục.
-- Người tham gia phải bấm xác nhận.
+- Người dùng phải bấm xác nhận.
 - Có cảnh báo không nhập số tài khoản, CCCD, OTP, mật khẩu hoặc thông tin riêng tư thật.
 - Nếu không đồng ý, session không bắt đầu.
 
-### F3. Dynamic Gemini Chat
+### F4. Dynamic Gemini Chat
 
-**User story:** Là người tham gia, tôi muốn trò chuyện tự nhiên như tình huống thật để luyện phản xạ nhận diện.
+**User story:** Là người dùng, tôi muốn trò chuyện tự nhiên như tình huống thật để luyện phản xạ nhận diện.
 
 **Acceptance Criteria:**
 
@@ -187,7 +201,7 @@ MVP không bắt buộc dùng Spring Boot. Vì AI Riser Vietnam 2026 định hư
 - AI không yêu cầu dữ liệu thật, không tạo link thật, không hướng dẫn phạm tội.
 - Cùng một điểm hội thoại, 2-3 input khác nhau phải tạo phản hồi hợp lý và khác nhau.
 
-### F4. Scenario Templates
+### F5. Scenario Templates
 
 **User story:** Là team sản phẩm, tôi muốn có kịch bản được cấu trúc sẵn để Gemini có khung an toàn nhưng vẫn phản hồi động.
 
@@ -204,9 +218,9 @@ MVP không bắt buộc dùng Spring Boot. Vì AI Riser Vietnam 2026 định hư
   - `safetyConstraints`
 - Scenario template không chứa toàn bộ nhánh hội thoại cố định.
 
-### F5. Immunity Score Engine
+### F6. Immunity Score Engine
 
-**User story:** Là người mời, tôi muốn xem điểm miễn dịch rõ ràng để biết người thân đang nhận diện tốt hay yếu ở đâu.
+**User story:** Là người dùng, tôi muốn xem điểm miễn dịch rõ ràng để biết mình đang nhận diện tốt hay yếu ở đâu.
 
 **Scoring Formula MVP:**
 
@@ -230,9 +244,9 @@ Immunity Score = round((recognizedRedFlags / totalRedFlags) * 100)
 - Có giải thích vì sao mỗi red flag nguy hiểm.
 - Không chỉ hiển thị phần trăm trống rỗng.
 
-### F6. Result Dashboard
+### F7. Result Dashboard
 
-**User story:** Là người mời, tôi muốn xem kết quả sau buổi luyện để biết nên giúp người thân luyện gì tiếp.
+**User story:** Là người dùng, tôi muốn xem kết quả sau buổi luyện để biết nên luyện gì tiếp.
 
 **Acceptance Criteria:**
 
@@ -242,7 +256,18 @@ Immunity Score = round((recognizedRedFlags / totalRedFlags) * 100)
 - Gợi ý scenario tiếp theo dựa trên red flags bỏ lỡ.
 - Tone nội dung hỗ trợ, không đổ lỗi.
 
-### F7. Basic Session History
+### F8. Share Result with Family
+
+**User story:** Là người dùng, tôi muốn chia sẻ tóm tắt kết quả cho người thân để cùng nhắc nhau phòng tránh lừa đảo.
+
+**Acceptance Criteria:**
+
+- Có nút copy/share summary.
+- Summary không chứa hội thoại đầy đủ hoặc dữ liệu nhạy cảm.
+- Không yêu cầu người thân tạo account.
+- Đây là tính năng mỏng, không biến thành Family Shield đầy đủ.
+
+### F9. Basic Session History
 
 **Priority:** Nice-to-have nếu còn thời gian.
 
@@ -261,7 +286,7 @@ Immunity Score = round((recognizedRedFlags / totalRedFlags) * 100)
 | Time to start first simulation | Dưới 60 giây trong demo |
 | Scenario completion rate | Trên 80% người test hoàn thành một session |
 | Consent completion clarity | 100% session có consent trước khi chat |
-| Result interpretability | Người mời hiểu ít nhất 1 điểm yếu cụ thể sau session |
+| Result interpretability | Người dùng hiểu ít nhất 1 điểm cần luyện thêm sau session |
 
 ### 7.2. AI-Native Metrics
 
@@ -290,7 +315,7 @@ Checklist này phải được dùng lại ở Phase 6 Implementation trước k
 | AI Necessity / AI-Native | Nếu bỏ AI khỏi phần này, sản phẩm còn hoạt động đúng như thiết kế không? | Chat simulation bắt buộc dùng Gemini sinh phản hồi động; không dùng decision tree làm luồng chính. |
 | Demo Quality | Với 2-3 câu trả lời khác nhau tại cùng một điểm hội thoại, AI có phản hồi hợp lý, khác nhau, không lặp kịch bản cứng không? | Cần test dynamic response trước khi coi chat feature là xong. |
 | Innovation | Dashboard có vượt qua quiz đúng/sai đơn thuần không? | Dashboard phải highlight red flags trong hội thoại và gợi ý luyện tiếp. |
-| Impact | Người mời có biết chính xác người thân yếu ở dấu hiệu nào không? | Kết quả phải actionable theo từng red flag, không chỉ một điểm số chung. |
+| Impact | Người dùng có biết chính xác mình cần luyện dấu hiệu nào không? | Kết quả phải actionable theo từng red flag, không chỉ một điểm số chung. |
 
 ## 8. Risk
 
@@ -298,7 +323,7 @@ Checklist này phải được dùng lại ở Phase 6 Implementation trước k
 
 | Risk | Severity | Mitigation |
 |---|---|---|
-| Người tham gia cảm thấy bị gài bẫy | High | Consent rõ ràng cho cả hai bên, không che giấu mục đích luyện tập |
+| Người dùng thấy consent thừa thãi | Medium | Consent ngắn, nói rõ đây là tự luyện tập mô phỏng và không nhập dữ liệu thật |
 | Feedback làm người lớn tuổi xấu hổ | Medium | Dùng tone hỗ trợ, tránh ngôn ngữ phán xét |
 | MVP bị hiểu là app quiz đơn giản | Medium | Nhấn mạnh dynamic chat và highlight hành vi trong hội thoại |
 | Scope creep sang detect/report scam thật | High | Giữ out-of-scope rõ trong PRD |
@@ -340,7 +365,7 @@ Các mục sau chỉ xem xét sau MVP, không đưa vào phase implementation ba
 | Chọn gia đình Việt Nam làm persona chính | Impact rõ, khác với security awareness enterprise | Scope hẹp hơn doanh nghiệp nhưng demo cảm xúc và dễ hiểu hơn |
 | Chỉ chọn 3 kịch bản MVP | Đủ chứng minh value và không quá rộng | Bỏ qua một số scam phổ biến như đầu tư giả ở MVP đầu |
 | Dùng Gemini chat động làm core | Chứng minh AI-native | Cần guardrails và kiểm thử kỹ hơn |
-| Consent bắt buộc | Đảm bảo đạo đức và tránh cảm giác gài bẫy | Thêm một bước trước khi vào demo |
+| Consent bắt buộc | Đảm bảo người dùng hiểu đây là mô phỏng | Thêm một bước ngắn trước khi vào demo |
 | Scoring dựa trên red flags | Minh bạch, dễ giải thích với giám khảo | Chưa phản ánh toàn bộ sắc thái tâm lý |
 | Chọn Google AI Studio làm hướng demo chính | Bám AI Riser 2026, Build with Google AI, dễ deploy Cloud Run | Ít kiểm soát stack hơn code thủ công |
 | Chấp nhận React/Node nếu do AI Studio tạo | Đây là default web app của AI Studio và hỗ trợ server-side secrets | Cần giữ scope UI đơn giản để không over-engineer |
@@ -364,7 +389,7 @@ Phase 2 đề xuất hướng cho Phase 3 Technical Design:
 - Hướng chính: Google AI Studio Build Mode + Gemini API + Cloud Run deployment.
 - Chấp nhận React/Node server-side nếu đó là stack AI Studio tạo ra, nhưng giữ UI và logic thật gọn.
 - App cần có session management, scenario template, Gemini orchestration, scoring engine và safety validator.
-- UI cần có 4 màn hình chính: create session, participant consent, chat, dashboard.
+- UI cần có 5 màn hình chính: entry/dashboard, scenario+difficulty, consent, chat, result/share.
 - Storage chỉ cần đủ cho MVP: scenario seed, session state, messages, red flag events, scores. Có thể dùng in-memory/session storage cho demo hoặc Firestore nếu AI Studio setup thuận lợi.
 - API/route/server actions phải phục vụ demo nhanh, ưu tiên ổn định hơn độ phức tạp.
 - Technical Design phải khóa rõ: Gemini là luồng hội thoại chính, không dùng decision tree cố định.

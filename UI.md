@@ -6,9 +6,9 @@ Phase 5 thiết kế trải nghiệm MVP cho **AI Scam Inoculation** theo hướ
 
 UI phải phục vụ 3 mục tiêu:
 
-- Người lớn tuổi 55+ dễ đọc, dễ thao tác, không cảm thấy bị kiểm tra.
+- Người dùng dễ đọc, dễ thao tác, không cảm thấy bị kiểm tra.
 - Giám khảo thấy ngay AI-native value: chat phản hồi động, không phải quiz.
-- Người mời hiểu kết quả: điểm miễn dịch, red flags nhận diện/bỏ lỡ, gợi ý luyện tiếp.
+- Người dùng hiểu kết quả: điểm miễn dịch, red flags nhận diện/bỏ lỡ, gợi ý luyện tiếp, và có thể chia sẻ tóm tắt cho người thân.
 
 ## 2. UX Principles
 
@@ -25,22 +25,40 @@ UI phải phục vụ 3 mục tiêu:
 
 ```mermaid
 flowchart TD
-    A["Home / Scenario Picker"] --> B["Inviter Consent"]
-    B --> C["Session Created"]
-    C --> D["Participant Consent"]
-    D --> E["Chat Simulation"]
+    A["Entry / Personal Dashboard"] --> B["Scenario + Difficulty Picker"]
+    B --> C["Simulation Consent"]
+    C --> E["Chat Simulation"]
     E --> F{"End condition"}
     F -->|"User identifies scam"| G["Result Dashboard"]
     F -->|"Max turns"| G
     F -->|"User stops"| G
-    G --> H["Next Scenario Suggestion"]
+    G --> H["Share Result + Next Scenario"]
 ```
 
 ## 4. Wireframes
 
-### 4.1. Screen 1 - Scenario Picker
+### 4.1. Screen 1 - Entry / Personal Dashboard
 
-Purpose: Người mời chọn một tình huống luyện tập.
+Purpose: Người dùng bắt đầu nhanh và xem lịch sử luyện tập trong phiên hiện tại.
+
+```text
+┌────────────────────────────────────────────┐
+│ AI Scam Inoculation                         │
+│ Luyện miễn dịch lừa đảo                     │
+├────────────────────────────────────────────┤
+│ Tên của bạn                                 │
+│ [ Cô Lan                                    ]│
+│                                            │
+│ Lịch sử luyện tập                           │
+│ Chưa có buổi luyện nào                      │
+│                                            │
+│ [Bắt đầu luyện tập]                         │
+└────────────────────────────────────────────┘
+```
+
+### 4.2. Screen 2 - Scenario Picker
+
+Purpose: Người dùng chọn tình huống và cấp độ.
 
 ```text
 ┌────────────────────────────────────────────┐
@@ -71,70 +89,25 @@ Purpose: Người mời chọn một tình huống luyện tập.
 
 Primary CTA: `Chọn tình huống`
 
-### 4.2. Screen 2 - Inviter Consent
+### 4.3. Screen 3 - Simulation Consent
 
-Purpose: Người mời xác nhận đây là luyện tập có đồng thuận, không gài bẫy.
-
-```text
-┌────────────────────────────────────────────┐
-│ Xác nhận trước khi tạo buổi luyện           │
-├────────────────────────────────────────────┤
-│ Đây là mô phỏng giáo dục.                   │
-│ Người tham gia sẽ được thông báo trước      │
-│ rằng đây không phải tình huống thật.        │
-│                                            │
-│ □ Tôi xác nhận không dùng buổi luyện này    │
-│   để giám sát bí mật hoặc gài bẫy người thân│
-│                                            │
-│ □ Tôi hiểu không được nhập dữ liệu cá nhân  │
-│   thật như OTP, CCCD, số tài khoản          │
-│                                            │
-│ [Tạo buổi luyện tập]                        │
-└────────────────────────────────────────────┘
-```
-
-Primary CTA disabled until both checkboxes are checked.
-
-### 4.3. Screen 3 - Session Created
-
-Purpose: Cho người mời link demo hoặc nút chuyển sang participant mode.
-
-```text
-┌────────────────────────────────────────────┐
-│ Buổi luyện tập đã sẵn sàng                  │
-├────────────────────────────────────────────┤
-│ Tình huống: Giả ngân hàng                   │
-│                                            │
-│ Link tham gia:                              │
-│ /session/abc123/consent                     │
-│                                            │
-│ [Mở màn hình người tham gia]                │
-│ [Xem lại tình huống]                        │
-└────────────────────────────────────────────┘
-```
-
-### 4.4. Screen 4 - Participant Consent
-
-Purpose: Người tham gia xác nhận rõ đây là mô phỏng.
+Purpose: Người dùng xác nhận đây là luyện tập mô phỏng.
 
 ```text
 ┌────────────────────────────────────────────┐
 │ Trước khi bắt đầu                           │
 ├────────────────────────────────────────────┤
-│ Đây là buổi luyện tập mô phỏng để giúp bạn  │
-│ nhận diện dấu hiệu lừa đảo qua tin nhắn.    │
+│ Đây là mô phỏng giáo dục.                   │
+│ Đây không phải tình huống thật.             │
 │                                            │
-│ Bạn không cần nhập thông tin thật.          │
-│ Không nhập OTP, mật khẩu, CCCD, số thẻ      │
-│ hoặc số tài khoản.                          │
+│ □ Tôi hiểu không được nhập dữ liệu cá nhân  │
+│   thật như OTP, CCCD, số tài khoản          │
 │                                            │
-│ □ Tôi hiểu đây là mô phỏng luyện tập        │
-│                                            │
-│ [Bắt đầu luyện tập]                         │
+│ [Bắt đầu mô phỏng]                          │
 └────────────────────────────────────────────┘
 ```
 
-### 4.5. Screen 5 - Chat Simulation
+### 4.4. Screen 4 - Chat Simulation
 
 Purpose: Người tham gia chat với Gemini simulation.
 
@@ -170,9 +143,9 @@ Behavior:
 - Stop button always visible.
 - If sensitive input detected, show inline safety notice.
 
-### 4.6. Screen 6 - Result Dashboard
+### 4.5. Screen 5 - Result Dashboard + Share
 
-Purpose: Người mời xem kết quả actionable.
+Purpose: Người dùng xem kết quả actionable và chia sẻ tóm tắt nếu muốn.
 
 ```text
 ┌────────────────────────────────────────────┐
@@ -197,6 +170,7 @@ Purpose: Người mời xem kết quả actionable.
 │ │ Dấu hiệu: tạo áp lực thời gian          │ │
 │ └────────────────────────────────────────┘ │
 │                                            │
+│ [Copy tóm tắt cho người thân]              │
 │ [Luyện tiếp: Giả công an]                  │
 └────────────────────────────────────────────┘
 ```
@@ -265,7 +239,7 @@ Rules:
 
 - One card per scenario.
 - Shows title, short description, primary CTA.
-- Red flags hidden until dashboard unless user is inviter reviewing after session.
+- Red flags hidden until dashboard to preserve the training effect.
 
 #### Consent Checkbox
 
@@ -303,13 +277,7 @@ Luyện nhận diện lừa đảo cho gia đình
 
 ### 6.2. Consent Copy
 
-Inviter:
-
-```text
-Tôi xác nhận đây là buổi luyện tập có đồng thuận, không phải cách giám sát bí mật hoặc gài bẫy người thân.
-```
-
-Participant:
+User:
 
 ```text
 Tôi hiểu đây là mô phỏng luyện tập và không phải tình huống thật.
@@ -367,12 +335,12 @@ Requirements:
 
 1. Open app on scenario picker.
 2. Select `Giả ngân hàng`.
-3. Confirm inviter consent.
-4. Open participant link.
-5. Confirm participant consent.
-6. Enter 2-3 different participant replies to show Gemini dynamic behavior.
-7. End session.
-8. Show dashboard with score and red flag highlights.
+3. Pick difficulty.
+4. Confirm simulation consent.
+5. Enter 2-3 different replies to show Gemini dynamic behavior.
+6. End session.
+7. Show dashboard with score and red flag highlights.
+8. Copy/share result summary.
 
 ## 10. Phase 5 Risk Report
 

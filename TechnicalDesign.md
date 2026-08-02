@@ -10,7 +10,7 @@ Non-negotiables:
 
 - Gemini/Google AI là lõi hội thoại động.
 - Không dùng decision tree cố định cho chat simulation.
-- Consent, safety và scoring minh bạch là bắt buộc.
+- Single-user consent, safety và scoring minh bạch là bắt buộc.
 - Demo/submission ưu tiên chạy trong hệ sinh thái Google AI.
 - Không dùng Spring Boot cho MVP.
 
@@ -35,8 +35,8 @@ Fallback local only: Python FastAPI + SQLite có thể dùng nếu AI Studio b�
 
 ```mermaid
 flowchart LR
-    Inviter["Người mời 28-45"] --> UI["AI Studio Web UI"]
-    Participant["Người tham gia 55+"] --> UI
+    User["Người dùng tự luyện tập"] --> UI["AI Studio Web UI"]
+    Family["Người thân nhận chia sẻ"] -.-> UI
     UI --> App["AI Studio Full-Stack App"]
     App --> SessionSvc["Session Service"]
     App --> ConsentSvc["Consent Service"]
@@ -55,10 +55,10 @@ flowchart LR
 
 | Component | Responsibility |
 |---|---|
-| Web UI | Render 4 screens: create session, participant consent, chat, dashboard |
+| Web UI | Render 5 screens: entry/dashboard, scenario selection, consent, chat, result/share |
 | Server runtime | Handle server actions/API routes, validate input, orchestrate session |
 | Scenario Service | Load scenario templates and red flag definitions from JSON seed |
-| Consent Service | Enforce inviter and participant consent before chat |
+| Consent Service | Enforce single-user simulation consent before chat |
 | Chat Orchestrator | Build Gemini request from system prompt + scenario + state + history |
 | Gemini Client | Call Gemini API from server-side code only |
 | Safety Validator | Mask sensitive input, reject unsafe AI output, block real links/QR/account/OTP requests |
@@ -110,8 +110,9 @@ The same entities apply whether implemented as in-memory objects, JSON files, Fi
 |---|---|---|
 | `id` | string | UUID |
 | `scenarioId` | string | References `Scenario.id` |
-| `inviterConsentAt` | string/null | Required before creating invite |
-| `participantConsentAt` | string/null | Required before chat |
+| `userName` | string/null | Lightweight display name |
+| `difficulty` | string | `easy`, `medium`, `hard` |
+| `consentAt` | string/null | Required before chat |
 | `status` | string | `created`, `active`, `completed`, `aborted` |
 | `turnCount` | number | Chat turn counter |
 | `messages` | Message[] | Masked conversation history |
@@ -200,8 +201,8 @@ AI Studio may generate API routes or server actions depending on the project str
 | Action | Input | Output |
 |---|---|---|
 | `listScenarios` | none | 3 scenario summaries |
-| `createSession` | `scenarioId`, `inviterConsent=true` | session id/link |
-| `confirmParticipantConsent` | `sessionId`, `participantConsent=true` | session status |
+| `createSession` | `scenarioId`, `difficulty`, `userName` | session id |
+| `confirmConsent` | `sessionId`, `consent=true` | session status |
 | `sendMessage` | `sessionId`, `message` | AI reply + state |
 | `completeSession` | `sessionId` | final score |
 | `getDashboard` | `sessionId` | score, highlights, recommendations |
@@ -269,6 +270,7 @@ ai-scam-inoculation/
       ConsentPanel.jsx
       ChatWindow.jsx
       Dashboard.jsx
+      ShareSummary.jsx
       RedFlagHighlight.jsx
     services/
       scenarioService.js
@@ -300,21 +302,20 @@ If AI Studio generates a different structure, preserve the same module boundarie
 
 ```mermaid
 sequenceDiagram
-    actor Inviter as "Người mời"
-    actor Participant as "Người tham gia"
+    actor User as "Người dùng"
     participant UI as "AI Studio Web UI"
     participant App as "Server runtime"
     participant Store as "Session Store"
     participant Gemini as "Gemini API"
 
-    Inviter->>UI: Chọn scenario + xác nhận consent
+    User->>UI: Nhập tên + chọn scenario/cấp độ
     UI->>App: createSession
     App->>Store: Create session
-    App-->>UI: Session link
-    Participant->>UI: Mở consent screen
-    UI->>App: confirmParticipantConsent
+    App-->>UI: Consent screen
+    User->>UI: Xác nhận mô phỏng
+    UI->>App: confirmConsent
     App->>Store: Save consent
-    Participant->>UI: Gửi chat message
+    User->>UI: Gửi chat message
     UI->>App: sendMessage
     App->>Store: Load scenario + history
     App->>App: Mask sensitive input
@@ -323,12 +324,13 @@ sequenceDiagram
     App->>App: Validate safety + schema
     App->>Store: Save messages/events
     App-->>UI: AI reply
-    Participant->>UI: End session
+    User->>UI: End session
     UI->>App: completeSession
     App->>Store: Load messages/events
     App->>App: Calculate immunity score
     App->>Store: Save score
     App-->>UI: Dashboard data
+    User->>UI: Copy/share family summary
 ```
 
 ## 7. Component Diagram
@@ -488,7 +490,7 @@ Deliverables:
 Exit Criteria:
 
 - Can create session.
-- Cannot start chat without participant consent.
+- Cannot start chat without simulation consent.
 - Gemini key is not exposed client-side.
 
 ### Sprint 2 - UI Flow
@@ -496,8 +498,7 @@ Exit Criteria:
 Deliverables:
 
 - Scenario picker.
-- Inviter consent.
-- Participant consent.
+- Single-user simulation consent.
 - Chat window shell.
 - Dashboard shell.
 - Readable styling for 55+ users.
