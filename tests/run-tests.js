@@ -75,6 +75,11 @@ assert.equal(maskedPhone.changed, true);
 assert.equal(maskedPhone.masked.includes("[MASKED_PHONE]"), true);
 assert.equal(maskedPhone.masked.includes("[MASKED_OTP]"), false);
 
+const maskedAccount = maskSensitiveInput("STK: 1234567890");
+assert.equal(maskedAccount.changed, true);
+assert.equal(maskedAccount.masked.includes("[MASKED_ACCOUNT]"), true);
+assert.equal(maskedAccount.masked.includes("1234567890"), false);
+
 const unsafeReply = validateAiReply("Bấm vào https://example.com để xác minh");
 assert.equal(unsafeReply.safe, false);
 
@@ -93,6 +98,10 @@ assert.ok(unsafeSensitiveReply.reasons.includes("real_sensitive_request"));
 const unsafeCccdReply = validateAiReply("CCCD của bác là 012345678901.");
 assert.equal(unsafeCccdReply.safe, false);
 assert.ok(unsafeCccdReply.reasons.includes("cccd"));
+
+const unsafeAccountReply = validateAiReply("Bác chuyển vào số tài khoản 1234567890 trong mô phỏng này.");
+assert.equal(unsafeAccountReply.safe, false);
+assert.ok(unsafeAccountReply.reasons.includes("account_number"));
 
 const chat = await sendChatMessage(created.id, { message: "Tôi sẽ gọi hotline chính thức để kiểm tra lại." });
 assert.ok(chat.reply.length > 0);

@@ -15,6 +15,11 @@ const sensitivePatterns = [
     placeholder: "[MASKED_PHONE]",
   },
   {
+    key: "account",
+    pattern: /\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/gi,
+    placeholder: "$1 [MASKED_ACCOUNT]",
+  },
+  {
     key: "otp",
     pattern: /\b\d{4,8}\b/g,
     placeholder: "[MASKED_OTP]",
@@ -42,6 +47,10 @@ const blockedOutputRules = [
   {
     key: "card_or_account",
     pattern: /\b(?:\d[ -]?){13,19}\b/,
+  },
+  {
+    key: "account_number",
+    pattern: /\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/i,
   },
   {
     key: "app_install",
