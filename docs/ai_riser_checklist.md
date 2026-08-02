@@ -7,6 +7,7 @@
 - Full demo path can finish in 3 minutes.
 - Cloud Run deployment is supported by `Dockerfile`.
 - Evidence: `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`.
+- Current event/tooling context: `docs/ai_riser_current_context.md`.
 - Deployment blocker to clear: current machine does not have `gcloud` in PATH; see `RiskReport.md`.
 
 ## AI Necessity / AI-Native

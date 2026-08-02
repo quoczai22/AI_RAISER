@@ -4,6 +4,8 @@ MVP for **AI Riser Vietnam 2026** - anti-fraud / scam inoculation training for V
 
 The app lets a user self-train against scam simulations, requires explicit consent, runs a Gemini-driven chat session, shows an immunity score based on recognized red flags, and provides a lightweight family share summary.
 
+Current AI Riser / Google AI Studio context check: `docs/ai_riser_current_context.md`.
+
 ## Stack
 
 - Node.js server with no external dependencies
