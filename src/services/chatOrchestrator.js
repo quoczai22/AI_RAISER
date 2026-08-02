@@ -257,7 +257,7 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
   const recognized = looksLikeScamRecognition(participantMessage.content);
   const stop = isStopRequest(participantMessage.content);
   const shouldEnd = stop || recognized || session.turnCount >= maxTurns;
-  const firstRedFlag = scenario.redFlags[session.turnCount % scenario.redFlags.length];
+  const fallbackRedFlag = chooseFallbackRedFlag({ scenario, session, participantMessage });
 
   const noKey = reason === "NO_GEMINI_API_KEY";
   let reply = noKey
@@ -278,9 +278,9 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
     },
     redFlagSignals: [
       {
-        key: firstRedFlag.key,
+        key: fallbackRedFlag.key,
         status: recognized ? "recognized" : "triggered",
-        evidence: firstRedFlag.label,
+        evidence: fallbackRedFlag.label,
       },
     ],
     safetyAssessment: {
@@ -294,6 +294,50 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
     retryUsed: false,
     fallbackReason: reason,
   };
+}
+
+function chooseFallbackRedFlag({ scenario, session, participantMessage }) {
+  const text = String(participantMessage.content || "").toLowerCase();
+  const preferredKeys = [
+    {
+      key: "request_for_sensitive_info",
+      pattern: /(otp|mã xác minh|mật khẩu|password|cccd|số thẻ|số tài khoản|không cung cấp)/i,
+    },
+    {
+      key: "unofficial_channel",
+      pattern: /(hotline|kênh chính thức|app|chi nhánh|gọi lại|kiểm tra lại)/i,
+    },
+    {
+      key: "request_to_transfer_money",
+      pattern: /(chuyển tiền|chuyển khoản|gửi tiền|không chuyển tiền)/i,
+    },
+    {
+      key: "request_to_keep_secret",
+      pattern: /(bí mật|giữ kín|đừng nói|không nói ai)/i,
+    },
+    {
+      key: "identity_mismatch",
+      pattern: /(người thân|số cũ|gọi lại con|gọi lại cháu|xác minh danh tính)/i,
+    },
+    {
+      key: "authority_pressure",
+      pattern: /(lừa đảo|giả mạo|không tin|xác minh|ngân hàng|công an|cơ quan)/i,
+    },
+    {
+      key: "urgency_threat",
+      pattern: /(gấp|ngay|khẩn|đe dọa|khóa|hậu quả)/i,
+    },
+  ];
+
+  for (const item of preferredKeys) {
+    const flag = scenario.redFlags.find((redFlag) => redFlag.key === item.key);
+    if (flag && item.pattern.test(text)) {
+      return flag;
+    }
+  }
+
+  const fallbackIndex = Math.max(session.turnCount - 1, 0) % scenario.redFlags.length;
+  return scenario.redFlags[fallbackIndex];
 }
 
 function normalizeRedFlagSignals(signals, scenario) {

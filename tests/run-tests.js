@@ -97,9 +97,16 @@ assert.equal(dashboard.recognizedCount, 1);
 assert.equal(dashboard.totalCount, 4);
 assert.ok(dashboard.nextRecommendation.length > 0);
 assert.ok(dashboard.shareSummary.includes("25/100"));
-assert.ok(dashboard.recognizedRedFlags[0].techniqueLabel.includes("urgency"));
+assert.equal(dashboard.recognizedRedFlags[0].key, "unofficial_channel");
+assert.ok(dashboard.recognizedRedFlags[0].techniqueLabel.includes("authority"));
 assert.ok(dashboard.missedRedFlags.every((flag) => flag.techniqueLabel.length > 0));
 assert.ok(dashboard.missedRedFlags.every((flag) => flag.recommendation.startsWith("Pattern:")));
 assert.ok(dashboard.missedRedFlags.every((flag) => !flag.recommendation.includes("Bạn nên trả lời")));
+
+const otpSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+confirmConsent(otpSession.id, { consent: true });
+await sendChatMessage(otpSession.id, { message: "Tôi không cung cấp OTP qua chat." });
+const otpDashboard = getDashboard(otpSession.id);
+assert.equal(otpDashboard.recognizedRedFlags[0].key, "request_for_sensitive_info");
 
 console.log("Implementation tests passed.");
