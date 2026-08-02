@@ -10,6 +10,7 @@ import {
 } from "./safetyValidator.js";
 
 const maxTurns = Number(process.env.MAX_CHAT_TURNS || 8);
+const maxMessageLength = Number(process.env.MAX_MESSAGE_LENGTH || 1000);
 
 const geminiOutputSchema = {
   type: "object",
@@ -74,6 +75,12 @@ Output only valid JSON matching the schema.
 export async function sendChatMessage(sessionId, input) {
   if (!input || typeof input.message !== "string" || input.message.trim().length === 0) {
     const error = new Error("Message is required.");
+    error.status = 400;
+    throw error;
+  }
+
+  if (input.message.trim().length > maxMessageLength) {
+    const error = new Error(`Message must be ${maxMessageLength} characters or fewer.`);
     error.status = 400;
     throw error;
   }

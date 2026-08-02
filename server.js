@@ -30,6 +30,8 @@ const staticTypes = {
   ".json": "application/json; charset=utf-8",
 };
 
+const maxJsonBodyBytes = Number(process.env.MAX_JSON_BODY_BYTES || 64 * 1024);
+
 function sendJson(res, status, payload) {
   res.writeHead(status, jsonHeaders);
   res.end(JSON.stringify(payload));
@@ -37,7 +39,14 @@ function sendJson(res, status, payload) {
 
 async function readJsonBody(req) {
   const chunks = [];
+  let totalBytes = 0;
   for await (const chunk of req) {
+    totalBytes += chunk.length;
+    if (totalBytes > maxJsonBodyBytes) {
+      const error = new Error("Request body is too large.");
+      error.status = 413;
+      throw error;
+    }
     chunks.push(chunk);
   }
 

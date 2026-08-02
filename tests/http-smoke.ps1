@@ -38,6 +38,20 @@ try {
     throw "Expected 3 scenarios."
   }
 
+  try {
+    Invoke-RestMethod `
+      -Uri "$baseUrl/api/sessions" `
+      -Method Post `
+      -ContentType "application/json" `
+      -Body ("{""payload"":""" + ("x" * 70000) + """}") | Out-Null
+    throw "Expected large body to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 413) {
+      throw "Expected large body to return 413."
+    }
+  }
+
   $session = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions" `
     -Method Post `
