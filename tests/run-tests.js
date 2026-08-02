@@ -106,6 +106,12 @@ assert.equal(maskedAccount.masked.includes("1234567890"), false);
 assert.equal(maskedAccount.masked.includes("$1"), false);
 assert.equal(maskedAccount.masked.includes("STK [MASKED_ACCOUNT]"), true);
 
+const maskedLongAccount = maskSensitiveInput("số tài khoản 1234567890123");
+assert.equal(maskedLongAccount.changed, true);
+assert.equal(maskedLongAccount.masked.includes("[MASKED_ACCOUNT]"), true);
+assert.equal(maskedLongAccount.masked.includes("[MASKED_CARD]"), false);
+assert.equal(maskedLongAccount.detected.includes("account"), true);
+
 const unsafeReply = validateAiReply("Bấm vào https://example.com để xác minh");
 assert.equal(unsafeReply.safe, false);
 

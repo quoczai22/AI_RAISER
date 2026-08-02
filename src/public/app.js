@@ -88,10 +88,10 @@ function escapeHtml(value) {
 
 function maskSensitiveForDisplay(value) {
   let masked = String(value || "");
+  masked = masked.replace(/\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/gi, "$1 [MASKED_ACCOUNT]");
   masked = masked.replace(/\b\d{12}\b/g, "[MASKED_CCCD]");
   masked = masked.replace(/\b(?:\d[ -]?){13,19}\b/g, "[MASKED_CARD]");
   masked = masked.replace(/\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/g, "[MASKED_PHONE]");
-  masked = masked.replace(/\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/gi, "$1 [MASKED_ACCOUNT]");
   masked = masked.replace(/\b\d{4,8}\b/g, "[MASKED_OTP]");
   masked = masked.replace(/(mật khẩu|password)\s*[:=]?\s*\S+/gi, "$1 [MASKED_PASSWORD]");
   return {

@@ -50,6 +50,7 @@ Current unit coverage:
 - Verifies phone-like input with spaces is masked as phone, not split into OTP fragments.
 - Masks and blocks account-number-like values near `STK`/`số tài khoản` wording.
 - Preserves safe account-number context labels while masking the raw value.
+- Prioritizes account-number masking over generic card masking when `STK`/`số tài khoản` context is present.
 - Verifies masked sensitive placeholders such as `[MASKED_OTP]` are not counted as scam recognition by themselves.
 - Blocks unsafe AI reply containing URL.
 - Blocks unsafe AI reply containing real-looking CCCD.

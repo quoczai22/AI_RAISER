@@ -1,5 +1,10 @@
 const sensitivePatterns = [
   {
+    key: "account",
+    pattern: /\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/gi,
+    placeholder: "$1 [MASKED_ACCOUNT]",
+  },
+  {
     key: "cccd",
     pattern: /\b\d{12}\b/g,
     placeholder: "[MASKED_CCCD]",
@@ -13,11 +18,6 @@ const sensitivePatterns = [
     key: "phone",
     pattern: /\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/g,
     placeholder: "[MASKED_PHONE]",
-  },
-  {
-    key: "account",
-    pattern: /\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/gi,
-    placeholder: "$1 [MASKED_ACCOUNT]",
   },
   {
     key: "otp",
