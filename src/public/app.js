@@ -6,6 +6,7 @@ const state = {
   session: null,
   messages: [],
   safetyNotices: [],
+  isSending: false,
   userName: localStorage.getItem("aisi_user_name") || "",
   history: JSON.parse(localStorage.getItem("aisi_history") || "[]"),
 };
@@ -181,6 +182,7 @@ async function confirmConsent() {
     state.selectedScenario = scenarioById(state.session.scenarioId);
     state.messages = [];
     state.safetyNotices = [];
+    state.isSending = false;
     location.hash = `chat/${state.session.id}`;
     renderChatShell();
   } catch (error) {
@@ -202,11 +204,12 @@ function renderChatShell() {
       <div class="chat-messages">
         ${state.messages.length === 0 ? '<div class="bubble ai">Chào cô/chú, đây là tình huống mô phỏng. Mình cần trao đổi nhanh về một vấn đề cần xác minh.</div>' : ""}
         ${state.messages.map((message) => `<div class="bubble ${message.role}">${escapeHtml(message.content)}</div>`).join("")}
+        ${state.isSending ? '<div class="bubble ai typing">Gemini đang phản hồi...</div>' : ""}
         ${state.safetyNotices.map((notice) => `<div class="notice danger-note">${escapeHtml(notice)}</div>`).join("")}
       </div>
       <form class="chat-form" id="chat-form">
-        <textarea id="chat-input" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn"></textarea>
-        <button type="submit">Gửi</button>
+        <textarea id="chat-input" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
+        <button type="submit" ${state.isSending ? "disabled" : ""}>Gửi</button>
       </form>
     </section>
   `);
@@ -214,10 +217,12 @@ function renderChatShell() {
   app.querySelector("#stop-chat").addEventListener("click", renderDashboard);
   app.querySelector("#chat-form").addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (state.isSending) return;
     const input = app.querySelector("#chat-input");
     const text = input.value.trim();
     if (!text) return;
     state.messages.push({ role: "user", content: text });
+    state.isSending = true;
     input.value = "";
     renderChatShell();
     await sendChatMessage(text);
@@ -237,12 +242,14 @@ async function sendChatMessage(text) {
       state.safetyNotices.push(fallbackNotice(payload.safety?.fallbackReason));
     }
     state.messages.push({ role: "ai", content: payload.reply });
+    state.isSending = false;
     if (payload.sessionStatus === "completed") {
       await renderDashboard();
       return;
     }
     renderChatShell();
   } catch (error) {
+    state.isSending = false;
     state.safetyNotices.push(error.message);
     renderChatShell();
   }
@@ -314,6 +321,7 @@ function renderDashboardView(dashboard) {
     state.session = null;
     state.messages = [];
     state.safetyNotices = [];
+    state.isSending = false;
     renderScenarioPicker();
   });
   app.querySelector("#home").addEventListener("click", () => {
