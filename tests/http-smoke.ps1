@@ -194,6 +194,16 @@ try {
     throw "Expected active session."
   }
 
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Method Get -UseBasicParsing | Out-Null
+    throw "Expected active dashboard access before completion to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 409) {
+      throw "Expected active dashboard access before completion to return 409."
+    }
+  }
+
   $chat = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions/$sessionId/messages" `
     -Method Post `

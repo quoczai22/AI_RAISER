@@ -94,6 +94,16 @@ export function requireConsentedSession(sessionId) {
   return session;
 }
 
+export function requireCompletedSession(sessionId) {
+  const session = requireConsentedSession(sessionId);
+  if (session.status !== "completed") {
+    const error = new Error("Session must be completed before viewing results.");
+    error.status = 409;
+    throw error;
+  }
+  return session;
+}
+
 function requireSession(sessionId) {
   const session = sessions.get(sessionId);
   if (!session) {

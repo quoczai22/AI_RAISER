@@ -157,6 +157,13 @@ expectThrows(
   "Simulation consent is required before viewing results",
 );
 
+const activeDashboardSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+confirmConsent(activeDashboardSession.id, { consent: true });
+expectThrows(
+  () => getDashboard(activeDashboardSession.id),
+  "Session must be completed before viewing results",
+);
+
 const otpSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
 confirmConsent(otpSession.id, { consent: true });
 await sendChatMessage(otpSession.id, { message: "Tôi không cung cấp OTP qua chat." });
