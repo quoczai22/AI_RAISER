@@ -72,6 +72,12 @@ powershell -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1
 
 The live probe prints provider, fallback reason, validation status and verbatim replies for the same-state fake bank test plus the sensitive fake police test. It never prints `GEMINI_API_KEY`. Use `-DelaySeconds 10` if the free-tier quota is tight.
 
+Cloud Run/local warm-up:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests/warmup.ps1 -BaseUrl "http://localhost:3000"
+```
+
 ## Demo Flow
 
 1. Enter a display name.

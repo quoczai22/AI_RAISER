@@ -10,9 +10,11 @@ Show judges that Gemini is necessary because the simulated scammer adapts to dif
 node tests/run-tests.js
 powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
 powershell -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1
+powershell -ExecutionPolicy Bypass -File tests/warmup.ps1 -BaseUrl "https://YOUR-CLOUD-RUN-URL"
 ```
 
 Use the live probe output to confirm `provider = gemini` for the main dynamic chat path before presenting.
+Use `tests/warmup.ps1 -IncludeGemini` only once shortly before judging if quota is available.
 
 ## 3-Minute Flow
 

@@ -109,6 +109,18 @@ Then run the demo flow:
 Scenario -> Consent -> Gemini Chat -> Dashboard
 ```
 
+Warm up before judging:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests/warmup.ps1 -BaseUrl "https://SERVICE-xxxxx-REGION.a.run.app"
+```
+
+If quota is available and you want to verify the Gemini path too:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests/warmup.ps1 -BaseUrl "https://SERVICE-xxxxx-REGION.a.run.app" -IncludeGemini
+```
+
 ## Demo Risk Notes
 
 - If Gemini API key is missing or Gemini times out, UI will show a fallback notice. This is acceptable for local development but not final AI Riser demo.
