@@ -251,6 +251,21 @@ try {
 
   try {
     Invoke-WebRequest `
+      -Uri "$baseUrl/api/sessions/$sessionId/messages" `
+      -Method Post `
+      -ContentType "application/json" `
+      -Body '{"message":"one more"}' `
+      -UseBasicParsing | Out-Null
+    throw "Expected completed session chat to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 409) {
+      throw "Expected completed session chat to return 409."
+    }
+  }
+
+  try {
+    Invoke-WebRequest `
       -Uri "$baseUrl/api/sessions/$sessionId/consent" `
       -Method Post `
       -ContentType "application/json" `

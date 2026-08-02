@@ -72,6 +72,11 @@ export function getSessionMessages(sessionId) {
 
 export function requireActiveSession(sessionId) {
   const session = requireSession(sessionId);
+  if (session.status === "completed") {
+    const error = new Error("Session is already completed.");
+    error.status = 409;
+    throw error;
+  }
   if (!session.consentAt || session.status !== "active") {
     const error = new Error("Simulation consent is required before chat starts.");
     error.status = 403;

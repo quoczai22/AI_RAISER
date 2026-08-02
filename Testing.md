@@ -39,6 +39,7 @@ Current unit coverage:
 - Rejects chat start without simulation consent.
 - Rejects transcript access before simulation consent.
 - Rejects concurrent chat turns while the same session is already processing.
+- Rejects chat turns after a session is already completed.
 - Rejects dashboard/result access before simulation consent.
 - Rejects read-only dashboard/result access while a consented session is still active.
 - Prevents completed sessions from being reactivated through the consent endpoint.
@@ -90,8 +91,9 @@ Flow tested:
 12. Read-only dashboard before completion returns 409.
 13. `POST /api/sessions/{id}/messages`.
 14. `POST /api/sessions/{id}/complete`.
-15. Completed session consent reactivation returns 409.
-16. Verify score is computed.
+15. Completed session chat returns 409.
+16. Completed session consent reactivation returns 409.
+17. Verify score is computed.
 
 ## 5. Prompt Evaluation
 

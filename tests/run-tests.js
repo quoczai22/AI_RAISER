@@ -150,6 +150,10 @@ expectThrows(
   () => confirmConsent(created.id, { consent: true }),
   "Session is already completed",
 );
+await assert.rejects(
+  () => sendChatMessage(created.id, { message: "Tôi muốn nhắn tiếp." }),
+  /Session is already completed/,
+);
 
 const noConsentSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
 expectThrows(
