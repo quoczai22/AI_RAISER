@@ -448,7 +448,17 @@ function renderError(message) {
       <button id="back-home">Về dashboard</button>
     </section>
   `);
-  app.querySelector("#back-home").addEventListener("click", renderEntryDashboard);
+  app.querySelector("#back-home").addEventListener("click", () => {
+    state.session = null;
+    state.messages = [];
+    state.safetyNotices = [];
+    state.isSending = false;
+    if (location.hash) {
+      location.hash = "";
+      return;
+    }
+    renderEntryDashboard();
+  });
 }
 
 function routeFromHash() {
