@@ -62,6 +62,7 @@ Current unit coverage:
 - Computes dashboard score from recognized red flags.
 - Verifies dashboard feedback uses manipulation taxonomy pattern language.
 - Verifies dashboard technique keys stay within the approved feedback taxonomy.
+- Verifies UI fallback technique text does not use out-of-taxonomy labels.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.
 
 ## 4. Integration Test

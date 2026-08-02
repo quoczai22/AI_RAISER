@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { listScenarios } from "../src/services/scenarioService.js";
 import {
   confirmConsent,
@@ -32,6 +33,8 @@ process.env.UNIT_GOOD_INT = "12";
 assert.equal(getPositiveIntEnv("UNIT_BAD_INT", 7), 7);
 assert.equal(getPositiveIntEnv("UNIT_ZERO_INT", 7), 7);
 assert.equal(getPositiveIntEnv("UNIT_GOOD_INT", 7), 12);
+const publicAppSource = readFileSync(new URL("../src/public/app.js", import.meta.url), "utf8");
+assert.equal(publicAppSource.includes('|| "social engineering"'), false);
 assert.equal(scenarios.length, 3);
 assert.equal(scenarios[0].id, "fake_bank");
 assert.equal(
