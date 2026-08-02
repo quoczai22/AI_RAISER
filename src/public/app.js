@@ -58,7 +58,13 @@ async function api(path, options = {}) {
       ...(options.headers || {}),
     },
   });
-  const payload = await response.json();
+  const rawText = await response.text();
+  let payload = {};
+  try {
+    payload = rawText ? JSON.parse(rawText) : {};
+  } catch {
+    payload = { error: rawText || "Invalid server response." };
+  }
   if (!response.ok) throw new Error(payload.error || "Request failed.");
   return payload;
 }
