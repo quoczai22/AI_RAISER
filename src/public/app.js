@@ -330,6 +330,7 @@ function renderFlags(flags, className, emptyText) {
   return flags.map((flag) => `
     <li class="flag-item ${className}">
       <strong>${escapeHtml(flag.label)}</strong><br>
+      <em>${escapeHtml(flag.techniqueLabel || flag.technique || "social engineering")}</em><br>
       ${escapeHtml(flag.recommendation || flag.explanation || "")}
     </li>
   `).join("");

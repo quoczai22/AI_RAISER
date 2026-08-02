@@ -61,24 +61,72 @@ function buildHighlights({ session, scenario }) {
 }
 
 function formatFlag(flag) {
+  const technique = techniqueFor(flag.key);
   return {
     key: flag.key,
     label: flag.label,
+    technique: technique.key,
+    techniqueLabel: technique.label,
     explanation: flag.explanation,
   };
 }
 
 function recommendationFor(key) {
+  const technique = techniqueFor(key);
   const recommendations = {
-    authority_pressure: "Dừng lại và xác minh qua kênh chính thức trước khi làm theo yêu cầu.",
-    urgency_threat: "Không quyết định khi bị ép thời gian; gọi người thân hoặc hotline chính thức để kiểm tra.",
-    request_for_sensitive_info: "Không gửi OTP, mật khẩu, CCCD, số thẻ hoặc số tài khoản qua chat.",
-    unofficial_channel: "Không xử lý yêu cầu tài chính qua kênh lạ; mở app hoặc gọi hotline chính thức.",
-    identity_mismatch: "Gọi lại số cũ của người thân hoặc hỏi câu chỉ người thật biết.",
-    request_to_transfer_money: "Không chuyển tiền trước khi xác minh bằng cuộc gọi hoặc gặp trực tiếp.",
-    request_to_keep_secret: "Không giữ bí mật khi bị yêu cầu chuyển tiền; hỏi thêm người thân đáng tin cậy.",
+    authority_pressure:
+      "Pattern: authority. Khi một người tự xưng có quyền lực và yêu cầu hành động ngay, hãy nhận diện đây là áp lực thẩm quyền trước khi tin vào danh xưng.",
+    urgency_threat:
+      "Pattern: urgency + fear. Khi bị thúc phải làm ngay hoặc bị dọa hậu quả, điểm đáng học là nhận ra áp lực thời gian đang làm giảm khả năng kiểm chứng.",
+    request_for_sensitive_info:
+      "Pattern: authority + fear. Yêu cầu thông tin nhạy cảm thường đi kèm danh nghĩa uy tín hoặc đe dọa; red flag là hành vi đòi bí mật, không phải câu chữ cụ thể.",
+    unofficial_channel:
+      "Pattern: authority. Kẻ thao túng thường mượn danh tổ chức nhưng kéo bạn sang kênh không chính thức; hãy nhận diện mâu thuẫn giữa danh xưng và kênh liên hệ.",
+    identity_mismatch:
+      "Pattern: reciprocity/social proof. Scam giả người quen lợi dụng lòng tin sẵn có; red flag là danh tính chưa được kiểm chứng, không phải chỉ một câu nhắn lạ.",
+    request_to_transfer_money:
+      "Pattern: urgency + reciprocity. Yêu cầu tiền thường được bọc bằng tình huống gấp hoặc quan hệ thân quen; hãy nhận diện kỹ thuật kéo cảm xúc đi trước kiểm chứng.",
+    request_to_keep_secret:
+      "Pattern: fear + reciprocity. Yêu cầu giữ bí mật cô lập bạn khỏi người có thể giúp kiểm chứng; đây là kỹ thuật thao túng quan hệ và nỗi sợ.",
   };
-  return recommendations[key] || "Luyện thói quen dừng lại, kiểm tra nguồn và hỏi người thân trước khi hành động.";
+  return recommendations[key] || `Pattern: ${technique.key}. Hãy luyện nhận diện kỹ thuật thao túng chung thay vì học thuộc một câu trả lời mẫu.`;
+}
+
+function techniqueFor(key) {
+  const techniques = {
+    authority_pressure: {
+      key: "authority",
+      label: "authority - giả danh quyền lực/uy tín",
+    },
+    urgency_threat: {
+      key: "urgency + fear",
+      label: "urgency + fear - ép gấp và đe dọa hậu quả",
+    },
+    request_for_sensitive_info: {
+      key: "authority + fear",
+      label: "authority + fear - dùng danh nghĩa/đe dọa để xin dữ liệu nhạy cảm",
+    },
+    unofficial_channel: {
+      key: "authority",
+      label: "authority - danh xưng uy tín nhưng kênh liên hệ bất thường",
+    },
+    identity_mismatch: {
+      key: "social proof/reciprocity",
+      label: "social proof/reciprocity - lợi dụng lòng tin quan hệ",
+    },
+    request_to_transfer_money: {
+      key: "urgency + reciprocity",
+      label: "urgency + reciprocity - việc gấp cộng quan hệ thân quen",
+    },
+    request_to_keep_secret: {
+      key: "fear + reciprocity",
+      label: "fear + reciprocity - cô lập nạn nhân bằng bí mật và cảm xúc",
+    },
+  };
+  return techniques[key] || {
+    key: "social engineering",
+    label: "social engineering - thao túng tâm lý",
+  };
 }
 
 function recommendNextScenario(currentScenarioId, missedFlags) {
