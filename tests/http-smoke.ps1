@@ -61,6 +61,19 @@ try {
   }
 
   try {
+    Invoke-WebRequest -Uri "$baseUrl/" -Method Post -UseBasicParsing | Out-Null
+    throw "Expected wrong static method to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 405) {
+      throw "Expected wrong static method to return 405."
+    }
+    if ((Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Allow") -ne "GET, HEAD") {
+      throw "Expected static 405 to include Allow header."
+    }
+  }
+
+  try {
     Invoke-WebRequest -Uri "$baseUrl/%2e%2e%2fserver.js" -Method Get -UseBasicParsing | Out-Null
     throw "Expected encoded path traversal to be blocked."
   }
@@ -117,6 +130,9 @@ try {
   catch {
     if ($_.Exception.Response.StatusCode.value__ -ne 405) {
       throw "Expected wrong API method to return 405."
+    }
+    if ((Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Allow") -ne "POST") {
+      throw "Expected API 405 to include Allow header."
     }
     if (-not (Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Content-Security-Policy")) {
       throw "Expected 405 to include security headers."

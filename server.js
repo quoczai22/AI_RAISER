@@ -45,17 +45,22 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function sendText(res, status, message) {
+function sendText(res, status, message, extraHeaders = {}) {
   res.writeHead(status, {
     "content-type": "text/plain; charset=utf-8",
     "cache-control": "no-store",
     ...securityHeaders,
+    ...extraHeaders,
   });
   res.end(message);
 }
 
-function sendMethodNotAllowed(res) {
-  sendJson(res, 405, { error: "Method not allowed." });
+function sendMethodNotAllowed(res, allow) {
+  res.writeHead(405, {
+    ...jsonHeaders,
+    allow,
+  });
+  res.end(JSON.stringify({ error: "Method not allowed." }));
 }
 
 async function readJsonBody(req) {
@@ -86,7 +91,7 @@ async function readJsonBody(req) {
 
 async function serveStatic(req, res) {
   if (req.method !== "GET" && req.method !== "HEAD") {
-    sendText(res, 405, "Method not allowed");
+    sendText(res, 405, "Method not allowed", { allow: "GET, HEAD" });
     return;
   }
 
@@ -129,7 +134,7 @@ async function handleApi(req, res) {
       sendJson(res, 200, { scenarios: listScenarios() });
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "GET");
     return;
   }
 
@@ -145,7 +150,7 @@ async function handleApi(req, res) {
       });
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "GET");
     return;
   }
 
@@ -156,7 +161,7 @@ async function handleApi(req, res) {
       sendJson(res, 201, { session });
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "POST");
     return;
   }
 
@@ -168,7 +173,7 @@ async function handleApi(req, res) {
       sendJson(res, 200, { session });
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "POST");
     return;
   }
 
@@ -185,7 +190,7 @@ async function handleApi(req, res) {
       sendJson(res, 200, result);
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "GET, POST");
     return;
   }
 
@@ -196,7 +201,7 @@ async function handleApi(req, res) {
       sendJson(res, 200, { session });
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "GET");
     return;
   }
 
@@ -207,7 +212,7 @@ async function handleApi(req, res) {
       sendJson(res, 200, dashboard);
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "POST");
     return;
   }
 
@@ -218,7 +223,7 @@ async function handleApi(req, res) {
       sendJson(res, 200, dashboard);
       return;
     }
-    sendMethodNotAllowed(res);
+    sendMethodNotAllowed(res, "GET");
     return;
   }
 

@@ -77,7 +77,7 @@ Flow tested:
 3. Encoded static path traversal returns 404.
 4. Static and static-error responses include `Cache-Control: no-store`, security headers and restrictive permissions policy.
 5. `GET /api/scenarios`.
-6. Wrong method on a known API route returns 405 with security headers.
+6. Wrong method on a known API route returns 405 with `Allow` and security headers.
 7. `POST /api/sessions`.
 8. Dashboard before consent returns 403.
 9. `POST /api/sessions/{id}/consent`.
