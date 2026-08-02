@@ -78,6 +78,8 @@ gcloud run deploy $SERVICE `
   --allow-unauthenticated `
   --set-env-vars "GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=45000" `
   --set-secrets "GEMINI_API_KEY=gemini-api-key:latest"
+
+Remove-Item -Path "$env:TEMP\gemini-key.txt" -Force
 ```
 
 If the secret already exists, replace the create command with:
@@ -87,6 +89,8 @@ Set-Content -Path "$env:TEMP\gemini-key.txt" -Value $GEMINI_API_KEY -NoNewline
 gcloud secrets versions add gemini-api-key `
   --project $PROJECT_ID `
   --data-file "$env:TEMP\gemini-key.txt"
+
+Remove-Item -Path "$env:TEMP\gemini-key.txt" -Force
 ```
 
 ## Post-Deploy Check
