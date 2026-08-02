@@ -68,10 +68,12 @@ AI Scam Inoculation dùng Gemini để tạo các tình huống chat mô phỏng
 Before demo:
 
 - Run local app or Cloud Run URL.
-- Configure `GEMINI_API_KEY`.
-- Use `GEMINI_MODEL=gemini-3.6-flash` if available.
+- Configure `GEMINI_API_KEY` through local `.env` or Cloud Run Secret Manager.
+- Use `GEMINI_MODEL=gemini-3.6-flash`.
 - Run `node tests/run-tests.js`.
 - Run `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`.
+- Run `powershell -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1 -DelaySeconds 10`.
+- Warm up deployed app with `powershell -ExecutionPolicy Bypass -File tests/warmup.ps1 -BaseUrl "<Cloud Run URL>"`.
 
 ### 3.2. Demo Script
 
@@ -117,6 +119,7 @@ If Gemini API is slow or unavailable:
 
 - Use safe fallback flow.
 - Explain fallback is safety continuity.
+- If fallback reason is `GEMINI_HTTP_429`, explain this is quota/rate limit, not missing AI implementation.
 - Show code/docs proving Gemini path exists server-side.
 - Re-run with Gemini key if network recovers.
 
@@ -157,7 +160,7 @@ Many platforms focus on enterprise phishing emails. This MVP focuses on Vietname
 
 ### Q6. What if users enter real personal data?
 
-The UI warns before chat, and the app masks OTP-like, phone/card-like and password-like input. The model sees masked content, and the dashboard does not display raw sensitive data.
+The UI warns before chat, and the app masks OTP-like, CCCD-like, phone/card-like and password-like input. The model sees masked content, and the dashboard does not display raw sensitive data.
 
 ### Q7. How do you prove it is not a decision tree?
 
@@ -169,7 +172,6 @@ Test the same scenario state with 3 different participant messages. Gemini shoul
 - Progress over multiple sessions.
 - Firestore persistence.
 - Difficulty levels.
-- Optional voice module only after safety review.
 - Google AI Studio/Cloud Run production hardening.
 
 ## 5. FAQ
@@ -216,7 +218,8 @@ Roadmap phases 1-8 are now covered.
 
 Remaining practical work:
 
-- Configure real Gemini API key.
+- Configure Gemini secret in the deployed environment.
+- Avoid or resolve `GEMINI_HTTP_429` quota/rate-limit before judging.
 - Test in Google AI Studio or deploy to Cloud Run.
 - Rehearse dynamic response demo.
 - Improve UI polish if time remains.
