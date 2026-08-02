@@ -9,6 +9,7 @@ import {
 import { sendChatMessage } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
 import { loadEnvFile } from "../src/services/env.js";
+import { generateGeminiJson } from "../src/services/geminiClient.server.js";
 import { maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
 
 function expectThrows(fn, message) {
@@ -111,6 +112,31 @@ assert.equal(otpDashboard.recognizedRedFlags[0].key, "request_for_sensitive_info
 
 const originalFetch = globalThis.fetch;
 try {
+  process.env.GEMINI_API_KEY = "unit-test-key";
+  globalThis.fetch = async () => new Response("upstream overloaded", { status: 500 });
+  await assert.rejects(
+    () => generateGeminiJson({ systemInstruction: "test", prompt: "test", schema: {} }),
+    (error) => error.code === "GEMINI_HTTP_500",
+  );
+
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: "not json" }],
+            },
+          },
+        ],
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  await assert.rejects(
+    () => generateGeminiJson({ systemInstruction: "test", prompt: "test", schema: {} }),
+    (error) => error.code === "GEMINI_INVALID_JSON",
+  );
+
   process.env.GEMINI_API_KEY = "unit-test-key";
   globalThis.fetch = async () =>
     new Response(

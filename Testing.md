@@ -40,6 +40,8 @@ Current unit coverage:
 - Masks OTP-like and CCCD-like input.
 - Blocks unsafe AI reply containing URL.
 - Blocks unsafe AI reply containing real-looking CCCD.
+- Verifies Gemini client exposes non-JSON HTTP failures as explicit `GEMINI_HTTP_*` errors.
+- Verifies invalid model JSON is surfaced as `GEMINI_INVALID_JSON`.
 - Computes dashboard score from recognized red flags.
 - Verifies dashboard feedback uses manipulation taxonomy pattern language.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.
