@@ -16,7 +16,7 @@ Phase 7 đảm bảo MVP có thể chạy demo ổn định cho **AI Riser Vietn
 |---|---|---|
 | Unit Test | Implemented | Scenario loading, consent, safety masking, unsafe output validation, scoring |
 | Integration Test | Implemented | Create session -> single consent -> chat -> dashboard/share |
-| Prompt Evaluation | Manual checklist | Dynamic Gemini response, safety, JSON schema |
+| Prompt Evaluation | Script + manual review | `tests/live-gemini-probe.ps1`, dynamic Gemini response, safety, JSON schema |
 | User Acceptance Test | Manual checklist | 3-minute demo flow, 55+ readability, actionable dashboard |
 
 ## 3. Unit Test
@@ -37,9 +37,11 @@ Current unit coverage:
 
 - Loads exactly 3 MVP scenarios.
 - Rejects chat start without simulation consent.
-- Masks OTP-like input.
+- Masks OTP-like and CCCD-like input.
 - Blocks unsafe AI reply containing URL.
+- Blocks unsafe AI reply containing real-looking CCCD.
 - Computes dashboard score from recognized red flags.
+- Verifies dashboard feedback uses manipulation taxonomy pattern language.
 
 ## 4. Integration Test
 
@@ -58,16 +60,26 @@ HTTP smoke test passed.
 Flow tested:
 
 1. Start local server.
-2. `GET /api/scenarios`.
-3. `POST /api/sessions`.
-4. `POST /api/sessions/{id}/consent`.
-5. `POST /api/sessions/{id}/messages`.
-6. `POST /api/sessions/{id}/complete`.
-7. Verify score is computed.
+2. `HEAD /`.
+3. Encoded static path traversal returns 404.
+4. `GET /api/scenarios`.
+5. `POST /api/sessions`.
+6. `POST /api/sessions/{id}/consent`.
+7. `POST /api/sessions/{id}/messages`.
+8. `POST /api/sessions/{id}/complete`.
+9. Verify score is computed.
 
 ## 5. Prompt Evaluation
 
 Prompt evaluation requires a valid `GEMINI_API_KEY`.
+
+Run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1 -DelaySeconds 10
+```
+
+The script prints provider, fallback reason, validation status, detected red flag events and verbatim replies. It does not print the API key.
 
 ### 5.1. Dynamic Response Test
 
@@ -166,7 +178,8 @@ Expected:
 | Limitation | Impact | Plan |
 |---|---|---|
 | Session storage is in-memory | Refresh/server restart loses sessions | Accept for MVP; add Firestore if needed |
-| No real Gemini test without API key | Local fallback cannot prove AI-native alone | Configure `GEMINI_API_KEY` before final demo |
+| Deployed environment may miss Gemini key | Deployed demo falls back and cannot prove AI-native alone | Configure Secret Manager before final demo |
+| Gemini free-tier quota can return `GEMINI_HTTP_429` | Live probe may fall back even when key is valid | Wait for quota reset, increase delay, use billing-enabled project |
 | UI is static JS, not AI Studio-generated React | Repo runs locally and Cloud Run-ready, but not native AI Studio export | Can port module boundaries into AI Studio if required |
 | Fallback reply is intentionally simple | Does not represent final AI-native behavior | Use only as safety/demo continuity fallback |
 
@@ -175,6 +188,7 @@ Expected:
 | Risk | Severity | Mitigation |
 |---|---|---|
 | Demo accidentally runs without Gemini key | High | README and UI show fallback notice; final checklist requires key |
+| Demo hits Gemini quota/rate limit | High | `RiskReport.md`, live probe delay, billing/quota backup, warm-up once only |
 | Gemini output fails schema | High | Validator and fallback path |
 | Judge interprets fallback as main chat | High | Demo script must configure key and explain fallback only if needed |
 | In-memory storage loses result | Medium | Keep demo flow linear; avoid refresh during presentation |
@@ -186,6 +200,8 @@ Expected:
 - Prompt Evaluation plan: completed.
 - User Acceptance Test plan: completed.
 - HTTP smoke test script: completed.
+- Live Gemini probe script: completed.
+- Warm-up script: completed.
 
 ## 10. Phase 7 Review Gate
 
