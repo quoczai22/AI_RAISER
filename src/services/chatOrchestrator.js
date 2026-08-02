@@ -229,6 +229,7 @@ function isModelResultSafe(modelResult, aiValidation) {
   return (
     aiValidation.safe &&
     modelResult.safetyAssessment?.safeToShow !== false &&
+    modelResult.safetyAssessment?.containsSensitiveRequest !== true &&
     modelResult.safetyAssessment?.containsRealWorldInstruction !== true
   );
 }

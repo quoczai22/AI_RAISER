@@ -177,6 +177,57 @@ try {
     (error) => error.code === "GEMINI_INVALID_JSON",
   );
 
+  let repairCallCount = 0;
+  globalThis.fetch = async () => {
+    repairCallCount += 1;
+    const unsafeSelfAssessment = repairCallCount === 1;
+    return new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    reply: unsafeSelfAssessment
+                      ? "Bác cần cung cấp mã xác minh giả lập để tiếp tục."
+                      : "Mình chỉ mô phỏng tình huống, không cần bất kỳ mã hay thông tin thật nào.",
+                    simulationState: {
+                      status: "active",
+                      reason: "continue_training",
+                      shouldEnd: false,
+                    },
+                    redFlagSignals: [
+                      {
+                        key: "request_for_sensitive_info",
+                        status: "triggered",
+                        evidence: "Nhắc tới mã xác minh trong mô phỏng.",
+                      },
+                    ],
+                    safetyAssessment: {
+                      containsSensitiveRequest: unsafeSelfAssessment,
+                      containsRealWorldInstruction: false,
+                      safeToShow: true,
+                      notes: unsafeSelfAssessment ? "Self-reported sensitive request." : "",
+                    },
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  };
+
+  const repairSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  confirmConsent(repairSession.id, { consent: true });
+  const repairChat = await sendChatMessage(repairSession.id, { message: "Xin chào." });
+  assert.equal(repairChat.safety.provider, "gemini");
+  assert.equal(repairChat.safety.retryUsed, true);
+  assert.equal(repairCallCount, 2);
+
   process.env.GEMINI_API_KEY = "unit-test-key";
   globalThis.fetch = async () =>
     new Response(
