@@ -87,6 +87,10 @@ The live probe prints provider, fallback reason, validation status and verbatim 
 
 The primary chat path uses Gemini through server-side `generateContent` with structured JSON output. The app must not replace this with a fixed decision tree. Deterministic logic is only used for consent, safety validation, stop conditions and scoring.
 
+## Demo Risks
+
+See `RiskReport.md` before final rehearsal, especially the `GEMINI_HTTP_429` quota/rate-limit risk.
+
 ## Safety
 
 The app masks sensitive input and blocks unsafe AI output patterns such as URLs, phone numbers, card/account-like numbers, app install instructions and requests for OTP/password/CCCD.
