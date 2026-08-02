@@ -15,7 +15,7 @@ Phase 7 đảm bảo MVP có thể chạy demo ổn định cho **AI Riser Vietn
 | Test Type | Status | Coverage |
 |---|---|---|
 | Unit Test | Implemented | Scenario loading, consent, safety masking, unsafe output validation, scoring |
-| Integration Test | Implemented | Create session -> participant consent -> chat -> dashboard |
+| Integration Test | Implemented | Create session -> single consent -> chat -> dashboard/share |
 | Prompt Evaluation | Manual checklist | Dynamic Gemini response, safety, JSON schema |
 | User Acceptance Test | Manual checklist | 3-minute demo flow, 55+ readability, actionable dashboard |
 
@@ -36,8 +36,7 @@ Implementation tests passed.
 Current unit coverage:
 
 - Loads exactly 3 MVP scenarios.
-- Rejects session creation without inviter consent.
-- Rejects chat start without participant consent.
+- Rejects chat start without simulation consent.
 - Masks OTP-like input.
 - Blocks unsafe AI reply containing URL.
 - Computes dashboard score from recognized red flags.
@@ -61,7 +60,7 @@ Flow tested:
 1. Start local server.
 2. `GET /api/scenarios`.
 3. `POST /api/sessions`.
-4. `POST /api/sessions/{id}/participant-consent`.
+4. `POST /api/sessions/{id}/consent`.
 5. `POST /api/sessions/{id}/messages`.
 6. `POST /api/sessions/{id}/complete`.
 7. Verify score is computed.
@@ -133,13 +132,14 @@ Expected:
 
 ## 6. User Acceptance Test
 
-### 6.1. Inviter UAT
+### 6.1. Self-Training UAT
 
 | Step | Expected |
 |---|---|
-| Select scenario | 3 scenarios visible and understandable |
-| Confirm inviter consent | CTA disabled until consent checked |
-| Create session | Participant link/screen appears |
+| Enter display name | User can start without password/auth |
+| Select scenario/difficulty | 3 scenarios visible and understandable |
+| Confirm simulation consent | CTA disabled until consent checked |
+| Create session | Chat starts after consent |
 | View dashboard | Score and red flags are clear |
 
 ### 6.2. Participant UAT
@@ -159,7 +159,7 @@ Expected:
 | AI Necessity | Gemini chat endpoint with structured JSON output |
 | Demo Quality | 3-input dynamic response test |
 | Innovation | Dashboard highlights red flags from conversation |
-| Impact | Inviter sees missed red flags and next recommendation |
+| Impact | User sees missed red flags, next recommendation and share summary |
 
 ## 7. Known Limitations
 

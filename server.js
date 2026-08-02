@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { loadEnvFile } from "./src/services/env.js";
 import { listScenarios } from "./src/services/scenarioService.js";
 import {
-  confirmParticipantConsent,
+  confirmConsent,
   createSession,
   getSession,
 } from "./src/services/sessionService.js";
@@ -84,10 +84,10 @@ async function handleApi(req, res) {
     return;
   }
 
-  const participantConsentMatch = path.match(/^\/api\/sessions\/([^/]+)\/participant-consent$/);
-  if (req.method === "POST" && participantConsentMatch) {
+  const consentMatch = path.match(/^\/api\/sessions\/([^/]+)\/consent$/);
+  if (req.method === "POST" && consentMatch) {
     const body = await readJsonBody(req);
-    const session = confirmParticipantConsent(participantConsentMatch[1], body);
+    const session = confirmConsent(consentMatch[1], body);
     sendJson(res, 200, { session });
     return;
   }

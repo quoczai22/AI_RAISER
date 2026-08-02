@@ -7,10 +7,10 @@ Show judges that Gemini is necessary because the simulated scammer adapts to dif
 ## 3-Minute Flow
 
 1. Open the app.
-2. Select `Giả ngân hàng xác minh tài khoản`.
-3. Confirm inviter consent.
-4. Open participant screen.
-5. Confirm participant consent.
+2. Enter a display name.
+3. Select `Giả ngân hàng xác minh tài khoản`.
+4. Pick difficulty.
+5. Confirm simulation consent.
 6. Send message 1:
 
 ```text
@@ -25,7 +25,8 @@ Tôi sẽ gọi hotline chính thức để kiểm tra lại.
 
 8. Show that the session ends or moves to wrap-up.
 9. Open dashboard.
-10. Explain:
+10. Copy/share result summary.
+11. Explain:
 
 - Score formula is transparent.
 - Recognized red flags are shown.

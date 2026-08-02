@@ -27,9 +27,10 @@
 
 ## Impact
 
-- Inviter can see which red flags were recognized or missed.
+- User can see which red flags were recognized or missed.
 - Feedback uses non-judgmental language.
-- Consent is explicit for inviter and participant.
+- Consent is explicit before simulation.
+- Family share summary is optional and thin.
 
 ## Safety
 

@@ -112,10 +112,10 @@ Không dùng ngôn ngữ “giám sát bí mật/gài bẫy” trong core flow t
 
 ## 8. Implementation Change Required
 
-Current code still contains the older 2-role flow:
+Earlier implementation contained the older 2-role flow:
 
 ```text
-scenario picker -> inviter consent -> participant consent -> chat -> dashboard
+scenario picker -> dual consent -> chat -> dashboard
 ```
 
 It must be refactored to:

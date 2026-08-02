@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { listScenarios } from "../src/services/scenarioService.js";
 import {
-  confirmParticipantConsent,
+  confirmConsent,
   createSession,
   getSession,
 } from "../src/services/sessionService.js";
@@ -26,23 +26,24 @@ assert.equal(scenarios.length, 3);
 assert.equal(scenarios[0].id, "fake_bank");
 
 expectThrows(
-  () => createSession({ scenarioId: "fake_bank", inviterConsent: false }),
-  "Inviter consent is required",
+  () => confirmConsent("missing", { consent: true }),
+  "Session not found",
 );
 
-const created = createSession({ scenarioId: "fake_bank", inviterConsent: true });
+const created = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
 assert.equal(created.status, "created");
 assert.equal(created.scenarioId, "fake_bank");
-assert.equal(created.participantConsentAt, null);
+assert.equal(created.consentAt, null);
+assert.equal(created.difficulty, "medium");
 
 expectThrows(
-  () => confirmParticipantConsent(created.id, { participantConsent: false }),
-  "Participant consent is required",
+  () => confirmConsent(created.id, { consent: false }),
+  "Simulation consent is required",
 );
 
-const active = confirmParticipantConsent(created.id, { participantConsent: true });
+const active = confirmConsent(created.id, { consent: true });
 assert.equal(active.status, "active");
-assert.ok(active.participantConsentAt);
+assert.ok(active.consentAt);
 
 const loaded = getSession(created.id);
 assert.equal(loaded.id, created.id);
@@ -65,5 +66,6 @@ assert.equal(dashboard.immunityScore, 25);
 assert.equal(dashboard.recognizedCount, 1);
 assert.equal(dashboard.totalCount, 4);
 assert.ok(dashboard.nextRecommendation.length > 0);
+assert.ok(dashboard.shareSummary.includes("25/100"));
 
 console.log("Implementation tests passed.");

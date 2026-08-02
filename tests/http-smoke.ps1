@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$port = 3999
+$port = Get-Random -Minimum 4100 -Maximum 4999
 $baseUrl = "http://localhost:$port"
 $process = Start-Process `
   -FilePath powershell `
@@ -27,14 +27,14 @@ try {
     -Uri "$baseUrl/api/sessions" `
     -Method Post `
     -ContentType "application/json" `
-    -Body '{"scenarioId":"fake_bank","inviterConsent":true}'
+    -Body '{"scenarioId":"fake_bank","difficulty":"medium","userName":"Co Lan"}'
 
   $sessionId = $session.session.id
   $active = Invoke-RestMethod `
-    -Uri "$baseUrl/api/sessions/$sessionId/participant-consent" `
+    -Uri "$baseUrl/api/sessions/$sessionId/consent" `
     -Method Post `
     -ContentType "application/json" `
-    -Body '{"participantConsent":true}'
+    -Body '{"consent":true}'
 
   if ($active.session.status -ne "active") {
     throw "Expected active session."
@@ -60,6 +60,10 @@ try {
 
   if ($dashboard.recognizedCount -lt 1) {
     throw "Expected at least one recognized red flag."
+  }
+
+  if (-not $dashboard.shareSummary) {
+    throw "Expected share summary."
   }
 
   Write-Output "HTTP smoke test passed."

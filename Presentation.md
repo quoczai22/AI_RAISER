@@ -10,7 +10,7 @@
 
 Lừa đảo trực tuyến không chỉ là vấn đề thiếu thông tin. Nạn nhân thường bị thao túng trong một cuộc trò chuyện có áp lực, có danh nghĩa thẩm quyền, có cảm giác gấp và có yêu cầu chuyển tiền hoặc cung cấp thông tin.
 
-AI Scam Inoculation cho phép con cháu tạo một buổi luyện tập có đồng thuận cho cha mẹ/ông bà. Gemini đóng vai tình huống lừa đảo mô phỏng, phản hồi tự nhiên theo bất kỳ câu trả lời nào của người tham gia. Sau buổi luyện, hệ thống chấm điểm miễn dịch dựa trên dấu hiệu cảnh báo đã nhận diện và gợi ý bài luyện tiếp theo.
+AI Scam Inoculation cho phép người dùng tự luyện tập trong một môi trường mô phỏng có đồng thuận. Gemini đóng vai tình huống lừa đảo mô phỏng, phản hồi tự nhiên theo bất kỳ câu trả lời nào của người dùng. Sau buổi luyện, hệ thống chấm điểm miễn dịch dựa trên dấu hiệu cảnh báo đã nhận diện, gợi ý bài luyện tiếp theo và cho phép chia sẻ tóm tắt cho người thân.
 
 ### 1.3. 2-Minute Pitch
 
@@ -38,12 +38,12 @@ Luyện miễn dịch lừa đảo cho gia đình Việt Nam
 | Section | Content |
 |---|---|
 | Problem | Scam không chỉ là thiếu kiến thức; đó là thao túng trong hội thoại có áp lực |
-| Target User | Con/cháu 28-45 tạo buổi luyện cho cha mẹ/ông bà 55+ |
+| Target User | Người dùng Việt Nam tự luyện tập; gia đình nhận tóm tắt tự nguyện |
 | Solution | Gemini mô phỏng chat lừa đảo có kiểm soát và phản hồi động |
 | Learning Loop | Chọn kịch bản -> consent -> chat -> điểm miễn dịch -> luyện tiếp |
 | AI-Native | Không decision tree; Gemini phản hồi theo lịch sử hội thoại |
 | Safety | Consent, mask dữ liệu nhạy cảm, không link/QR/OTP thật |
-| Impact | Gia đình biết người thân yếu ở red flag nào |
+| Impact | Người dùng biết mình yếu ở red flag nào và có thể chia sẻ kết quả cho gia đình |
 
 ### 2.3. Poster Copy
 
@@ -76,34 +76,34 @@ Before demo:
 ### 3.2. Demo Script
 
 1. Open app.
-2. Say: “Con/cháu chọn một buổi luyện tập cho người thân.”
+2. Enter a display name.
 3. Select `Giả ngân hàng xác minh tài khoản`.
-4. Show inviter consent.
-5. Say: “Consent là bắt buộc, vì đây không phải công cụ gài bẫy.”
-6. Open participant screen.
-7. Show participant consent and safety warning.
-8. Start chat.
-9. Type:
+4. Pick difficulty.
+5. Show simulation consent and safety warning.
+6. Say: “Consent là bắt buộc, vì đây là môi trường luyện tập mô phỏng.”
+7. Start chat.
+8. Type:
 
 ```text
 Bạn có đúng là ngân hàng không?
 ```
 
-10. Show Gemini reply.
-11. Type:
+9. Show Gemini reply.
+10. Type:
 
 ```text
 Tôi không cung cấp OTP qua chat. Tôi sẽ tự gọi hotline chính thức.
 ```
 
-12. End session.
-13. Show dashboard:
+11. End session.
+12. Show dashboard:
 
 - Immunity score.
 - Recognized red flags.
 - Missed red flags.
 - Highlighted conversation.
 - Next scenario recommendation.
+- Share summary for family.
 
 ### 3.3. Demo Talk Track
 

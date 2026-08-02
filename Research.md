@@ -6,7 +6,7 @@ Phase 1 xác lập cơ sở nghiên cứu cho MVP **AI Scam Inoculation**: một
 
 Phạm vi nghiên cứu chỉ phục vụ MVP đã chốt. Không mở rộng sang hệ thống phát hiện gian lận giao dịch, điều tra tội phạm, hay nền tảng cybersecurity doanh nghiệp đầy đủ.
 
-MVP context bổ sung từ prompt dự án: sản phẩm ưu tiên bối cảnh **gia đình Việt Nam**, trong đó con/cháu 28-45 tuổi tạo buổi luyện tập và mời cha mẹ/ông bà 55+ tham gia qua trải nghiệm chat quen thuộc. Giá trị AI cốt lõi không phải là chatbot hỏi đáp chung, mà là khả năng tạo phản hồi hội thoại tự nhiên, có kiểm soát và không đi theo cây quyết định cố định.
+MVP context hợp nhất: sản phẩm ưu tiên **tự luyện tập trực tiếp** để chứng minh AI-native trong demo. Người dùng tự chọn tình huống/cấp độ, xác nhận mô phỏng, chat với Gemini và xem điểm miễn dịch. Góc gia đình được giữ ở cuối bằng tính năng mỏng “chia sẻ kết quả cho người thân”. Giá trị AI cốt lõi không phải là chatbot hỏi đáp chung, mà là khả năng tạo phản hồi hội thoại tự nhiên, có kiểm soát và không đi theo cây quyết định cố định.
 
 ### 1.1. AI Riser Vietnam 2026 Context Update
 
@@ -63,7 +63,7 @@ Các kịch bản phù hợp cho MVP:
 
 Người dùng Việt Nam không chỉ cần “biết danh sách chiêu trò”, mà cần luyện cách phản ứng trong thời điểm bị gây áp lực. Nhiều cảnh báo hiện tại là dạng đọc thụ động, trong khi scam thật thường xảy ra dưới áp lực cảm xúc: sợ bị phạt, sợ mất cơ hội, muốn kiếm tiền nhanh, muốn giúp người thân, hoặc tin vào người đang xây dựng quan hệ.
 
-Với persona 55+, rủi ro không chỉ nằm ở thiếu kiến thức kỹ thuật mà còn ở thói quen tin vào cuộc gọi/tin nhắn từ người có vẻ có thẩm quyền hoặc người thân. Vì vậy, MVP cần ưu tiên các kịch bản gần đời sống gia đình: giả ngân hàng, giả người thân cần tiền gấp, giả công an/cơ quan chức năng. Các kịch bản này phải có bước đồng thuận rõ ràng trước khi bắt đầu để tránh biến luyện tập thành giám sát bí mật.
+Với người dùng phổ thông và nhóm 55+, rủi ro không chỉ nằm ở thiếu kiến thức kỹ thuật mà còn ở thói quen tin vào cuộc gọi/tin nhắn từ người có vẻ có thẩm quyền hoặc người thân. Vì vậy, MVP cần ưu tiên các kịch bản gần đời sống: giả ngân hàng, giả người thân cần tiền gấp, giả công an/cơ quan chức năng. Các kịch bản này phải có bước đồng thuận rõ ràng trước khi bắt đầu để người dùng hiểu đây là mô phỏng tự luyện tập.
 
 ## 3. Social Engineering
 
@@ -240,7 +240,7 @@ Từ các nguồn trên, khoảng trống nghiên cứu/sản phẩm cho MVP là
 |---|---|---|
 | Mô phỏng scam quá thật có thể bị lạm dụng thành hướng dẫn lừa đảo | Cao | AIDesign phải có guardrails: không tạo link thật, không hướng dẫn chiếm đoạt, không yêu cầu dữ liệu thật, không xuất kịch bản tấn công có thể dùng nguyên xi ngoài môi trường học. |
 | Người dùng có thể bị stress khi gặp kịch bản gần trải nghiệm từng bị lừa | Trung bình | PRD cần có cảnh báo nhẹ, nút thoát scenario, tone feedback không phán xét. |
-| Luyện tập không có đồng thuận rõ ràng có thể bị hiểu thành kiểm tra/gài bẫy người thân | Cao | PRD phải có consent flow cho người mời và người tham gia trước khi scenario bắt đầu. |
+| Luyện tập không có đồng thuận rõ ràng có thể khiến người dùng hiểu nhầm đây là tình huống thật | Cao | PRD phải có single-user consent flow trước khi scenario bắt đầu. |
 | Implement hội thoại bằng cây quyết định sẽ làm mất điểm AI-native | Cao | Technical Design phải mô tả LLM-driven dialogue engine; scenario template chỉ định mục tiêu/red flags, không định nghĩa toàn bộ nhánh hội thoại. |
 | Dữ liệu scam thay đổi nhanh theo thời sự | Trung bình | Technical Design cần tách scenario template khỏi code, có versioning và metadata nguồn. |
 | Dùng số liệu GASA dựa trên khảo sát có thể có bias mẫu | Trung bình | Trong PRD không dùng số liệu như thống kê tuyệt đối duy nhất; kết hợp nguồn MIC/MPS và ghi rõ đây là survey/report. |
@@ -259,7 +259,7 @@ Phase 1 đề xuất hướng sản phẩm cho Phase 2:
 - MVP nên tập trung vào **simulation-based learning** cho scam/social engineering bằng tiếng Việt.
 - Core loop nên là: chọn scenario -> trò chuyện mô phỏng -> người dùng ra quyết định -> Gemini/scoring engine đánh giá -> feedback red flags -> gợi ý phản ứng an toàn.
 - Kịch bản MVP nên ưu tiên: giả ngân hàng, giả người thân cần tiền gấp, giả công an/cơ quan chức năng.
-- Persona trọng tâm nên là gia đình Việt Nam: người mời 28-45 tuổi, người tham gia 55+.
+- Persona trọng tâm nên là người dùng tự luyện tập; family angle chỉ là chia sẻ kết quả tự nguyện ở cuối luồng.
 - Consent flow là yêu cầu đạo đức bắt buộc, không phải tính năng phụ.
 - Phase 3 nên ưu tiên kiến trúc gọn cho demo trên **Google AI Studio/Cloud Run**. Nếu dùng AI Studio Build Mode, chấp nhận stack web mặc định React + Node server-side do nền tảng tạo ra. Không dùng Spring Boot cho MVP.
 - Không đưa deepfake hoặc điều tra/report scam vào MVP nếu chưa cần, vì tăng scope và rủi ro safety.

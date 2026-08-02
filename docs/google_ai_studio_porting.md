@@ -22,11 +22,12 @@ Keep these modules conceptually the same:
 ## Porting Steps
 
 1. Create a new web app in Google AI Studio Build Mode.
-2. Recreate 4 UI screens:
-   - Scenario picker.
-   - Inviter consent.
-   - Participant consent.
-   - Chat + dashboard.
+2. Recreate 5 UI screens:
+   - Entry/personal dashboard.
+   - Scenario + difficulty picker.
+   - Simulation consent.
+   - Chat.
+   - Result dashboard + share summary.
 3. Copy scenario data from `src/data/scenarios.json`.
 4. Put Gemini calls in server-side code only.
 5. Copy the prompt strategy from `AIDesign.md`.
@@ -49,5 +50,5 @@ Use the local repo for fast development and fallback demo. Use the AI Studio ver
 Both versions should tell the same story:
 
 ```text
-Scenario -> Consent -> Gemini dynamic chat -> Red flag scoring -> Actionable dashboard
+Entry -> Scenario + difficulty -> Consent -> Gemini dynamic chat -> Red flag scoring -> Shareable dashboard
 ```

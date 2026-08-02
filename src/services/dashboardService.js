@@ -31,6 +31,8 @@ export function buildDashboard({ session, scenario }) {
     sessionId: session.id,
     scenarioId: scenario.id,
     scenarioTitle: scenario.title,
+    userName: session.userName,
+    difficulty: session.difficulty,
     status: session.status,
     immunityScore: score.immunityScore,
     recognizedCount: score.recognizedCount,
@@ -42,6 +44,7 @@ export function buildDashboard({ session, scenario }) {
     })),
     highlights,
     nextRecommendation: recommendNextScenario(scenario.id, score.missedRedFlags),
+    shareSummary: buildShareSummary({ session, scenario, score }),
   };
 }
 
@@ -90,4 +93,10 @@ function recommendNextScenario(currentScenarioId, missedFlags) {
     return "Luyện tiếp kịch bản giả ngân hàng để rèn phản xạ không cung cấp mã xác minh.";
   }
   return "Luyện lại cùng kịch bản với câu trả lời khác để kiểm tra phản xạ trước áp lực mới.";
+}
+
+function buildShareSummary({ session, scenario, score }) {
+  const missed = score.missedRedFlags.slice(0, 2).map((flag) => flag.label).join(", ");
+  const needsPractice = missed || "duy trì thói quen kiểm tra nguồn trước khi hành động";
+  return `${session.userName || "Mình"} vừa hoàn thành buổi luyện AI Scam Inoculation: ${scenario.title}. Điểm miễn dịch: ${score.immunityScore}/100. Cần luyện thêm: ${needsPractice}.`;
 }

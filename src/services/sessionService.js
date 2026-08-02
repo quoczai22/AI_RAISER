@@ -13,18 +13,14 @@ export function createSession(input) {
     throw error;
   }
 
-  if (input.inviterConsent !== true) {
-    const error = new Error("Inviter consent is required before creating a session.");
-    error.status = 400;
-    throw error;
-  }
-
   const scenario = getScenario(input.scenarioId);
+  const difficulty = normalizeDifficulty(input.difficulty);
   const session = {
     id: randomUUID(),
     scenarioId: scenario.id,
-    inviterConsentAt: now(),
-    participantConsentAt: null,
+    userName: normalizeUserName(input.userName),
+    difficulty,
+    consentAt: null,
     status: "created",
     turnCount: 0,
     messages: [],
@@ -37,15 +33,15 @@ export function createSession(input) {
   return summarizeSession(session);
 }
 
-export function confirmParticipantConsent(sessionId, input) {
+export function confirmConsent(sessionId, input) {
   const session = requireSession(sessionId);
-  if (!input || input.participantConsent !== true) {
-    const error = new Error("Participant consent is required before chat starts.");
+  if (!input || input.consent !== true) {
+    const error = new Error("Simulation consent is required before chat starts.");
     error.status = 400;
     throw error;
   }
 
-  session.participantConsentAt = now();
+  session.consentAt = now();
   session.status = "active";
   session.startedAt = now();
   sessions.set(session.id, session);
@@ -58,8 +54,8 @@ export function getSession(sessionId) {
 
 export function requireActiveSession(sessionId) {
   const session = requireSession(sessionId);
-  if (!session.participantConsentAt || session.status !== "active") {
-    const error = new Error("Participant consent is required before chat starts.");
+  if (!session.consentAt || session.status !== "active") {
+    const error = new Error("Simulation consent is required before chat starts.");
     error.status = 403;
     throw error;
   }
@@ -84,8 +80,9 @@ function summarizeSession(session) {
   return {
     id: session.id,
     scenarioId: session.scenarioId,
-    inviterConsentAt: session.inviterConsentAt,
-    participantConsentAt: session.participantConsentAt,
+    userName: session.userName,
+    difficulty: session.difficulty,
+    consentAt: session.consentAt,
     status: session.status,
     turnCount: session.turnCount,
     messageCount: session.messages.length,
@@ -95,4 +92,18 @@ function summarizeSession(session) {
     startedAt: session.startedAt || null,
     completedAt: session.completedAt || null,
   };
+}
+
+function normalizeDifficulty(value) {
+  const difficulty = String(value || "easy").toLowerCase();
+  if (["easy", "medium", "hard"].includes(difficulty)) {
+    return difficulty;
+  }
+  return "easy";
+}
+
+function normalizeUserName(value) {
+  const name = String(value || "").trim();
+  if (!name) return "Bạn";
+  return name.slice(0, 40);
 }

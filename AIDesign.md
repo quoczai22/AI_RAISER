@@ -163,7 +163,7 @@ MVP keeps context small:
   "maxTurns": 8,
   "triggeredRedFlags": ["authority_pressure", "urgency_threat"],
   "recognizedRedFlags": ["unofficial_channel"],
-  "participantConsentConfirmed": true,
+  "consentConfirmed": true,
   "sessionStatus": "active"
 }
 ```
