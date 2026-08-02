@@ -341,6 +341,7 @@ function renderDashboardView(dashboard) {
         <button class="secondary" id="restart">Luyện tiếp</button>
         <button class="secondary" id="home">Dashboard</button>
       </div>
+      ${state.safetyNotices.map((notice) => `<div class="notice">${escapeHtml(notice)}</div>`).join("")}
     </section>
   `);
 
