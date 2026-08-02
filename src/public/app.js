@@ -116,7 +116,7 @@ function renderEntryDashboard() {
       </div>
       <label class="stack">
         <strong>Tên hiển thị</strong>
-        <input id="user-name" value="${escapeHtml(state.userName)}" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
+        <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
       </label>
       <div>
         <button id="start-training">Bắt đầu luyện tập</button>

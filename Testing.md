@@ -39,6 +39,7 @@ Current unit coverage:
 - Rejects chat start without simulation consent.
 - Rejects dashboard/result access before simulation consent.
 - Prevents completed sessions from being reactivated through the consent endpoint.
+- Normalizes display names so control characters do not leak into history/share summaries.
 - Masks OTP-like and CCCD-like input.
 - Verifies phone-like input with spaces is masked as phone, not split into OTP fragments.
 - Masks and blocks account-number-like values near `STK`/`số tài khoản` wording.

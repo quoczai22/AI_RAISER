@@ -129,7 +129,10 @@ function normalizeDifficulty(value) {
 }
 
 function normalizeUserName(value) {
-  const name = String(value || "").trim();
+  const name = String(value || "")
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!name) return "Bạn";
   return name.slice(0, 40);
 }

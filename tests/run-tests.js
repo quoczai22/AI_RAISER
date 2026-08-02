@@ -57,6 +57,13 @@ const loaded = getSession(created.id);
 assert.equal(loaded.id, created.id);
 assert.equal(loaded.status, "active");
 
+const weirdNameSession = createSession({
+  scenarioId: "fake_bank",
+  difficulty: "medium",
+  userName: "  Cô\nLan\t<script>  ",
+});
+assert.equal(weirdNameSession.userName, "Cô Lan <script>");
+
 await assert.rejects(
   () => sendChatMessage(created.id, { message: "x".repeat(1001) }),
   /Message must be 1000 characters or fewer/,
