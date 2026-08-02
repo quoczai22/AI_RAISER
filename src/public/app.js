@@ -10,6 +10,7 @@ const state = {
   runtime: {
     maxMessageLength: 1000,
   },
+  accessibility: loadAccessibilitySettings(),
   userName: safeStorageGet("aisi_user_name") || "",
   history: loadHistory(),
 };
@@ -50,6 +51,31 @@ function loadHistory() {
   }
 }
 
+function loadAccessibilitySettings() {
+  try {
+    const parsed = JSON.parse(safeStorageGet("aisi_accessibility") || "{}");
+    return {
+      largeText: parsed.largeText === true,
+      highContrast: parsed.highContrast === true,
+    };
+  } catch {
+    safeStorageRemove("aisi_accessibility");
+    return {
+      largeText: false,
+      highContrast: false,
+    };
+  }
+}
+
+function saveAccessibilitySettings() {
+  safeStorageSet("aisi_accessibility", JSON.stringify(state.accessibility));
+}
+
+function applyAccessibilitySettings() {
+  document.body.classList.toggle("large-text", state.accessibility.largeText);
+  document.body.classList.toggle("high-contrast", state.accessibility.highContrast);
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
@@ -74,6 +100,7 @@ function scenarioById(id) {
 }
 
 function render(content) {
+  applyAccessibilitySettings();
   app.innerHTML = content;
 }
 
@@ -120,6 +147,16 @@ function renderEntryDashboard() {
         <h2>Dashboard cá nhân</h2>
         <p class="subtitle">Bắt đầu nhanh, không cần tài khoản phức tạp.</p>
       </div>
+      <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
+        <label class="toggle-row">
+          <input id="large-text-toggle" type="checkbox" ${state.accessibility.largeText ? "checked" : ""}>
+          <span>Chữ to</span>
+        </label>
+        <label class="toggle-row">
+          <input id="high-contrast-toggle" type="checkbox" ${state.accessibility.highContrast ? "checked" : ""}>
+          <span>Tương phản cao</span>
+        </label>
+      </div>
       <label class="stack">
         <strong>Tên hiển thị</strong>
         <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
@@ -139,6 +176,16 @@ function renderEntryDashboard() {
     </section>
   `);
 
+  app.querySelector("#large-text-toggle").addEventListener("change", (event) => {
+    state.accessibility.largeText = event.target.checked;
+    saveAccessibilitySettings();
+    applyAccessibilitySettings();
+  });
+  app.querySelector("#high-contrast-toggle").addEventListener("change", (event) => {
+    state.accessibility.highContrast = event.target.checked;
+    saveAccessibilitySettings();
+    applyAccessibilitySettings();
+  });
   app.querySelector("#start-training").addEventListener("click", () => {
     const name = app.querySelector("#user-name").value.trim();
     state.userName = name || "Bạn";

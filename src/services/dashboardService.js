@@ -75,27 +75,27 @@ function recommendationFor(key) {
   const technique = techniqueFor(key);
   const recommendations = {
     authority_pressure:
-      "Pattern: authority. Khi một người tự xưng có quyền lực và yêu cầu hành động ngay, hãy nhận diện đây là áp lực thẩm quyền trước khi tin vào danh xưng.",
+      "Pattern: authority. Họ mượn danh tổ chức để tạo niềm tin. Hãy kiểm chứng qua kênh chính thức trước.",
     urgency_threat:
-      "Pattern: urgency + fear. Khi bị thúc phải làm ngay hoặc bị dọa hậu quả, điểm đáng học là nhận ra áp lực thời gian đang làm giảm khả năng kiểm chứng.",
+      "Pattern: urgency + fear. Họ ép bạn làm ngay và làm bạn sợ. Hãy chậm lại trước khi hành động.",
     request_for_sensitive_info:
-      "Pattern: authority + fear. Yêu cầu thông tin nhạy cảm thường đi kèm danh nghĩa uy tín hoặc đe dọa; red flag là hành vi đòi bí mật, không phải câu chữ cụ thể.",
+      "Pattern: authority + fear. Họ xin thông tin riêng tư bằng danh nghĩa uy tín. Không gửi mã, giấy tờ hoặc tài khoản qua chat.",
     unofficial_channel:
-      "Pattern: authority. Kẻ thao túng thường mượn danh tổ chức nhưng kéo bạn sang kênh không chính thức; hãy nhận diện mâu thuẫn giữa danh xưng và kênh liên hệ.",
+      "Pattern: authority. Họ tự xưng là tổ chức lớn nhưng kéo bạn sang kênh lạ. Hãy kiểm tra lại ở kênh chính thức.",
     identity_mismatch:
-      "Pattern: reciprocity/social proof. Scam giả người quen lợi dụng lòng tin sẵn có; red flag là danh tính chưa được kiểm chứng, không phải chỉ một câu nhắn lạ.",
+      "Pattern: social proof/reciprocity. Họ lợi dụng lòng tin với người quen. Hãy xác minh danh tính bằng cách khác.",
     request_to_transfer_money:
-      "Pattern: urgency + reciprocity. Yêu cầu tiền thường được bọc bằng tình huống gấp hoặc quan hệ thân quen; hãy nhận diện kỹ thuật kéo cảm xúc đi trước kiểm chứng.",
+      "Pattern: urgency + reciprocity. Họ dùng chuyện gấp hoặc tình cảm để xin tiền. Hãy gọi xác minh trước.",
     request_to_keep_secret:
-      "Pattern: fear + reciprocity. Yêu cầu giữ bí mật cô lập bạn khỏi người có thể giúp kiểm chứng; đây là kỹ thuật thao túng quan hệ và nỗi sợ.",
+      "Pattern: fear + reciprocity. Họ bảo giữ bí mật để bạn không hỏi người khác. Đây là dấu hiệu nguy hiểm.",
     fake_company_authority:
-      "Pattern: authority. Tên công ty lớn có thể bị mượn để tạo uy tín giả; red flag là danh xưng chưa được kiểm chứng qua kênh tuyển dụng chính thức.",
+      "Pattern: authority. Tên công ty lớn có thể bị mạo danh. Hãy kiểm tra tin tuyển dụng ở kênh chính thức.",
     urgency_scarcity_fee:
-      "Pattern: urgency + scarcity. Khi cơ hội được mô tả là sắp hết và cần đóng phí/giữ chỗ ngay, áp lực khan hiếm đang thay thế bước kiểm chứng.",
+      "Pattern: urgency + scarcity. Họ nói sắp hết chỗ và cần đóng phí ngay. Đừng trả tiền chỉ vì bị thúc ép.",
     unrealistic_salary_social_proof:
-      "Pattern: social proof/reciprocity. Lương cao bất thường kèm lời kể nhiều người đã thành công là kỹ thuật kéo niềm tin theo đám đông.",
+      "Pattern: social proof/reciprocity. Họ hứa lương cao và nói nhiều người đã thành công. Hãy nghi ngờ lời hứa quá tốt.",
   };
-  return recommendations[key] || `Pattern: ${technique.key}. Hãy luyện nhận diện kỹ thuật thao túng chung thay vì học thuộc một câu trả lời mẫu.`;
+  return recommendations[key] || `Pattern: ${technique.key}. Hãy nhận diện dấu hiệu chung. Đừng học thuộc một câu trả lời mẫu.`;
 }
 
 function techniqueFor(key) {

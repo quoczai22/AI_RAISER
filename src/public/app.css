@@ -25,6 +25,24 @@ body {
   line-height: 1.5;
 }
 
+body.large-text {
+  font-size: 20px;
+}
+
+body.high-contrast {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+  --color-muted: #374151;
+  --color-primary: #1d4ed8;
+  --color-primary-soft: #eff6ff;
+  --color-success: #166534;
+  --color-warning: #92400e;
+  --color-danger: #991b1b;
+  --color-border: #4b5563;
+  --shadow: none;
+}
+
 button,
 input,
 select,
@@ -145,6 +163,29 @@ h3 {
 .stack {
   display: grid;
   gap: 16px;
+}
+
+.accessibility-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  font-weight: 700;
+}
+
+.toggle-row input {
+  width: 24px;
+  height: 24px;
 }
 
 .scenario-grid {
@@ -304,6 +345,29 @@ h3 {
 .flag-item.success {
   border-left-color: var(--color-success);
   background: #dcfce7;
+}
+
+body.high-contrast .notice,
+body.high-contrast .score-card,
+body.high-contrast .chat-messages,
+body.high-contrast .session-link {
+  background: #ffffff;
+}
+
+body.high-contrast .danger-note {
+  background: #fff1f2;
+}
+
+body.high-contrast .flag-item {
+  background: #fffbeb;
+}
+
+body.high-contrast .flag-item.success {
+  background: #f0fdf4;
+}
+
+body.high-contrast .bubble.ai {
+  background: #ffffff;
 }
 
 @media (max-width: 780px) {

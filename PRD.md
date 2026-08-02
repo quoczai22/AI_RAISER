@@ -107,10 +107,10 @@ Trong demo 3 phút, chứng minh rằng người dùng có thể trải nghiệm
 |---|---|
 | Lightweight entry | Người dùng nhập tên nhẹ hoặc bắt đầu không cần auth phức tạp |
 | Personal dashboard | Hiển thị lịch sử session trong phiên hiện tại |
-| Create training session | Người dùng chọn 1 trong 3 kịch bản và cấp độ |
+| Create training session | Người dùng chọn 1 trong 4 kịch bản và cấp độ |
 | Consent flow | Người dùng xác nhận biết đây là mô phỏng |
 | Dynamic AI chat | Gemini sinh phản hồi dựa trên system prompt, scenario state và conversation history |
-| Scenario templates | 3 template: giả ngân hàng, giả người thân cần tiền gấp, giả công an/cơ quan chức năng |
+| Scenario templates | 4 template: giả ngân hàng, giả người thân cần tiền gấp, giả công an/cơ quan chức năng, tuyển dụng giả |
 | Immunity score | Công thức minh bạch dựa trên red flags recognized / total red flags |
 | Result dashboard | Điểm, red flags đúng/bỏ lỡ, highlight hội thoại, gợi ý luyện tiếp |
 | Share result | Copy/share bản tóm tắt kết quả cho người thân |
@@ -173,7 +173,7 @@ MVP không bắt buộc dùng Spring Boot. Vì AI Riser Vietnam 2026 định hư
 
 **Acceptance Criteria:**
 
-- Hiển thị 3 kịch bản MVP.
+- Hiển thị 4 kịch bản MVP.
 - Mỗi kịch bản có tên, mô tả ngắn và danh sách red flags mục tiêu chỉ hiển thị sau khi session kết thúc.
 - Có lựa chọn cấp độ: dễ, vừa, khó.
 - Tạo được session id nội bộ cho demo.
@@ -347,10 +347,12 @@ Checklist này phải được dùng lại ở Phase 6 Implementation trước k
 
 ## 9. Future Scope
 
+MVP có thể phát triển thành dự án xã hội hoặc sản phẩm B2B có nhóm người dùng ổn định. Hướng xã hội là hợp tác với ngân hàng, trường đại học, hội phụ nữ, đoàn thanh niên hoặc tổ chức cộng đồng để triển khai buổi luyện tập cho người lớn tuổi và sinh viên. Hướng business là gói đào tạo nội bộ cho doanh nghiệp, trường học hoặc trung tâm dịch vụ khách hàng, nơi nhân viên cần luyện phản xạ trước social engineering chứ không chỉ đọc tài liệu cảnh báo.
+
 Các mục sau chỉ xem xét sau MVP, không đưa vào phase implementation ban đầu:
 
 1. Lịch sử nhiều buổi luyện tập và biểu đồ tiến bộ.
-2. Thư viện scenario mở rộng: việc nhẹ lương cao, đầu tư tài chính giả, mua sắm/vé Tết.
+2. Thư viện scenario mở rộng: đầu tư tài chính giả, mua sắm/vé Tết, shipper giả.
 3. Chế độ nhóm gia đình nhiều người.
 4. Mức độ khó tăng dần theo năng lực người tham gia.
 5. Tích hợp nguồn cảnh báo chính thống để cập nhật scenario thủ công.
@@ -363,7 +365,7 @@ Các mục sau chỉ xem xét sau MVP, không đưa vào phase implementation ba
 | Decision | Rationale | Trade-off |
 |---|---|---|
 | Chọn gia đình Việt Nam làm persona chính | Impact rõ, khác với security awareness enterprise | Scope hẹp hơn doanh nghiệp nhưng demo cảm xúc và dễ hiểu hơn |
-| Chỉ chọn 3 kịch bản MVP | Đủ chứng minh value và không quá rộng | Bỏ qua một số scam phổ biến như đầu tư giả ở MVP đầu |
+| Chỉ chọn 4 kịch bản MVP | Đủ chứng minh value và không quá rộng | Bỏ qua một số scam phổ biến như đầu tư giả ở MVP đầu |
 | Dùng Gemini chat động làm core | Chứng minh AI-native | Cần guardrails và kiểm thử kỹ hơn |
 | Consent bắt buộc | Đảm bảo người dùng hiểu đây là mô phỏng | Thêm một bước ngắn trước khi vào demo |
 | Scoring dựa trên red flags | Minh bạch, dễ giải thích với giám khảo | Chưa phản ánh toàn bộ sắc thái tâm lý |

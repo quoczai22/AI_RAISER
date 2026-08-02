@@ -6,6 +6,8 @@
 
 **AI Scam Inoculation** giúp gia đình Việt Nam luyện “miễn dịch lừa đảo” bằng các tình huống chat mô phỏng do Gemini tạo động, để người lớn tuổi nhận ra dấu hiệu Social Engineering trước khi gặp scam thật.
 
+Điểm khác biệt cốt lõi: đây là sản phẩm **training, không phải detection**. Thay vì hỏi “tin nhắn này có lừa đảo không?”, app cho người dùng luyện phản xạ trong hội thoại động, tránh biến bài học thành template hoặc câu trả lời mẫu dễ học thuộc.
+
 ### 1.2. 30-Second Pitch
 
 Lừa đảo trực tuyến không chỉ là vấn đề thiếu thông tin. Nạn nhân thường bị thao túng trong một cuộc trò chuyện có áp lực, có danh nghĩa thẩm quyền, có cảm giác gấp và có yêu cầu chuyển tiền hoặc cung cấp thông tin.
