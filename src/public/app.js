@@ -438,7 +438,7 @@ function renderDashboardView(dashboard) {
     </section>
   `);
 
-  app.querySelector("#copy-share").addEventListener("click", copyShareSummary);
+  app.querySelector("#copy-share").addEventListener("click", () => copyShareSummary(dashboard));
   app.querySelector("#restart").addEventListener("click", () => {
     location.hash = "scenarios";
     state.session = null;
@@ -453,7 +453,7 @@ function renderDashboardView(dashboard) {
   });
 }
 
-async function copyShareSummary() {
+async function copyShareSummary(dashboard) {
   const text = app.querySelector("#share-summary").value;
   try {
     await navigator.clipboard.writeText(text);
@@ -462,7 +462,7 @@ async function copyShareSummary() {
     state.safetyNotices = ["Không copy tự động được. Bạn có thể chọn và copy thủ công."];
   }
   renderDashboardView({
-    ...state.lastDashboard,
+    ...dashboard,
     shareSummary: text,
   });
 }
