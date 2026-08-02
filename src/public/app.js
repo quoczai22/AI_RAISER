@@ -268,9 +268,17 @@ function fallbackNotice(reason) {
   return "Gemini gặp lỗi tạm thời; app tạm dùng phản hồi dự phòng an toàn.";
 }
 
-async function renderDashboard() {
+async function renderDashboard(options = {}) {
   try {
-    const dashboard = await api(`/api/sessions/${state.session.id}/complete`, { method: "POST" });
+    const sessionId = state.session?.id || getSessionIdFromHash();
+    if (!sessionId) throw new Error("Session not found.");
+    state.session = state.session || { id: sessionId };
+    const dashboard = options.readOnly
+      ? await api(`/api/sessions/${sessionId}/dashboard`)
+      : await api(`/api/sessions/${sessionId}/complete`, { method: "POST" });
+    if (location.hash !== `#dashboard/${sessionId}`) {
+      history.replaceState(null, "", `#dashboard/${sessionId}`);
+    }
     saveHistory(dashboard);
     renderDashboardView(dashboard);
   } catch (error) {
@@ -396,6 +404,10 @@ function routeFromHash() {
   }
   if (location.hash.startsWith("#chat/")) {
     renderChatShell();
+    return;
+  }
+  if (location.hash.startsWith("#dashboard/")) {
+    renderDashboard({ readOnly: true });
     return;
   }
   renderEntryDashboard();
