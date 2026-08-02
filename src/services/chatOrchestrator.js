@@ -137,7 +137,12 @@ export async function sendChatMessage(sessionId, input) {
   };
   session.messages.push(aiMessage);
 
-  const redFlagSignals = normalizeRedFlagSignals(modelResult.redFlagSignals, scenario);
+  const redFlagSignals = applyParticipantRecognition({
+    signals: normalizeRedFlagSignals(modelResult.redFlagSignals, scenario),
+    scenario,
+    session,
+    participantMessage,
+  });
   session.redFlagEvents.push(
     ...redFlagSignals.map((event) => ({
       id: randomUUID(),
@@ -338,6 +343,29 @@ function chooseFallbackRedFlag({ scenario, session, participantMessage }) {
 
   const fallbackIndex = Math.max(session.turnCount - 1, 0) % scenario.redFlags.length;
   return scenario.redFlags[fallbackIndex];
+}
+
+function applyParticipantRecognition({ signals, scenario, session, participantMessage }) {
+  if (!looksLikeScamRecognition(participantMessage.content)) {
+    return signals;
+  }
+
+  const recognizedFlag = chooseFallbackRedFlag({ scenario, session, participantMessage });
+  const existingSignal = signals.find((signal) => signal.key === recognizedFlag.key);
+  if (existingSignal) {
+    existingSignal.status = "recognized";
+    existingSignal.evidence = existingSignal.evidence || recognizedFlag.label;
+    return signals;
+  }
+
+  return [
+    ...signals,
+    {
+      key: recognizedFlag.key,
+      status: "recognized",
+      evidence: recognizedFlag.label,
+    },
+  ];
 }
 
 function normalizeRedFlagSignals(signals, scenario) {

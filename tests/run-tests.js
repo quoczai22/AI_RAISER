@@ -109,4 +109,58 @@ await sendChatMessage(otpSession.id, { message: "Tôi không cung cấp OTP qua 
 const otpDashboard = getDashboard(otpSession.id);
 assert.equal(otpDashboard.recognizedRedFlags[0].key, "request_for_sensitive_info");
 
+const originalFetch = globalThis.fetch;
+try {
+  process.env.GEMINI_API_KEY = "unit-test-key";
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    reply: "Dạ bác cần xử lý qua kênh này ngay ạ.",
+                    simulationState: {
+                      status: "completed",
+                      reason: "participant_safe_verification",
+                      shouldEnd: true,
+                    },
+                    redFlagSignals: [
+                      {
+                        key: "unofficial_channel",
+                        status: "triggered",
+                        evidence: "Kéo người dùng sang kênh chat.",
+                      },
+                    ],
+                    safetyAssessment: {
+                      containsSensitiveRequest: false,
+                      containsRealWorldInstruction: false,
+                      safeToShow: true,
+                      notes: "",
+                    },
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+
+  const geminiSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  confirmConsent(geminiSession.id, { consent: true });
+  const geminiChat = await sendChatMessage(geminiSession.id, {
+    message: "Tôi sẽ gọi hotline chính thức để kiểm tra lại.",
+  });
+  assert.equal(geminiChat.safety.provider, "gemini");
+  const geminiDashboard = getDashboard(geminiSession.id);
+  assert.equal(geminiDashboard.recognizedRedFlags[0].key, "unofficial_channel");
+} finally {
+  globalThis.fetch = originalFetch;
+  process.env.GEMINI_API_KEY = "";
+}
+
 console.log("Implementation tests passed.");
