@@ -127,3 +127,4 @@ powershell -ExecutionPolicy Bypass -File tests/warmup.ps1 -BaseUrl "https://SERV
 - In-memory sessions reset when Cloud Run instance restarts.
 - Keep demo flow linear and avoid refreshing the page mid-session.
 - Send a warm-up request 5-10 minutes before judging to reduce cold-start risk.
+- Docker image runs as the non-root `node` user.
