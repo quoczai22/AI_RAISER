@@ -44,6 +44,14 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
+function sendText(res, status, message) {
+  res.writeHead(status, {
+    "content-type": "text/plain; charset=utf-8",
+    ...securityHeaders,
+  });
+  res.end(message);
+}
+
 async function readJsonBody(req) {
   const chunks = [];
   let totalBytes = 0;
@@ -72,18 +80,22 @@ async function readJsonBody(req) {
 
 async function serveStatic(req, res) {
   if (req.method !== "GET" && req.method !== "HEAD") {
-    res.writeHead(405, { "content-type": "text/plain; charset=utf-8" });
-    res.end("Method not allowed");
+    sendText(res, 405, "Method not allowed");
     return;
   }
 
   const requestPath = new URL(req.url, `http://${req.headers.host}`).pathname;
-  const decodedPath = decodeURIComponent(requestPath);
+  let decodedPath = "";
+  try {
+    decodedPath = decodeURIComponent(requestPath);
+  } catch {
+    sendText(res, 400, "Bad request");
+    return;
+  }
   const safePath = decodedPath === "/" ? "/index.html" : decodedPath;
   const filePath = resolve(publicDir, `.${safePath}`);
   if (filePath !== publicDir && !filePath.startsWith(`${publicDir}${sep}`)) {
-    res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-    res.end("Not found");
+    sendText(res, 404, "Not found");
     return;
   }
 
@@ -97,8 +109,7 @@ async function serveStatic(req, res) {
     });
     res.end(req.method === "HEAD" ? undefined : file);
   } catch {
-    res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-    res.end("Not found");
+    sendText(res, 404, "Not found");
   }
 }
 

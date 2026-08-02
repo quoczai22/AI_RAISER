@@ -35,6 +35,19 @@ try {
     if ($_.Exception.Response.StatusCode.value__ -ne 404) {
       throw "Expected encoded path traversal to return 404."
     }
+    if (-not $_.Exception.Response.Headers["Content-Security-Policy"]) {
+      throw "Expected 404 to include security headers."
+    }
+  }
+
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/%E0%A4%A" -Method Get -UseBasicParsing | Out-Null
+    throw "Expected malformed encoded path to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 400) {
+      throw "Expected malformed encoded path to return 400."
+    }
   }
 
   $scenarios = Invoke-RestMethod -Uri "$baseUrl/api/scenarios"
