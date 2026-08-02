@@ -36,6 +36,7 @@ Implementation tests passed.
 Current unit coverage:
 
 - Loads exactly 3 MVP scenarios.
+- Verifies scenario tactics do not encourage checking through unofficial channels.
 - Rejects chat start without simulation consent.
 - Rejects transcript access before simulation consent.
 - Rejects concurrent chat turns while the same session is already processing.

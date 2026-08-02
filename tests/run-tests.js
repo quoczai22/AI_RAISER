@@ -34,6 +34,12 @@ assert.equal(getPositiveIntEnv("UNIT_ZERO_INT", 7), 7);
 assert.equal(getPositiveIntEnv("UNIT_GOOD_INT", 7), 12);
 assert.equal(scenarios.length, 3);
 assert.equal(scenarios[0].id, "fake_bank");
+assert.equal(
+  scenarios.some((scenario) =>
+    scenario.allowedTactics?.some((tactic) => /khuyến khích.*kiểm tra qua kênh không chính thức/i.test(tactic)),
+  ),
+  false,
+);
 
 expectThrows(
   () => confirmConsent("missing", { consent: true }),
