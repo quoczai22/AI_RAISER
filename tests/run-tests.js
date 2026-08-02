@@ -10,7 +10,7 @@ import { sendChatMessage } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
 import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
-import { maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
+import { looksLikeScamRecognition, maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
 
 function expectThrows(fn, message) {
   try {
@@ -78,6 +78,8 @@ assert.equal(safeRefusalReply.safe, true);
 
 const safePlaceholderReply = validateAiReply("Bác đọc giúp em [mã xác minh giả] trong mô phỏng.");
 assert.equal(safePlaceholderReply.safe, true);
+assert.equal(looksLikeScamRecognition("mã của tôi là [MASKED_OTP]"), false);
+assert.equal(looksLikeScamRecognition("Tôi không cung cấp OTP qua chat."), true);
 
 const unsafeSensitiveReply = validateAiReply("Bác đọc giúp em OTP để xác minh.");
 assert.equal(unsafeSensitiveReply.safe, false);
@@ -115,6 +117,13 @@ confirmConsent(otpSession.id, { consent: true });
 await sendChatMessage(otpSession.id, { message: "Tôi không cung cấp OTP qua chat." });
 const otpDashboard = getDashboard(otpSession.id);
 assert.equal(otpDashboard.recognizedRedFlags[0].key, "request_for_sensitive_info");
+
+const leakedOtpSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+confirmConsent(leakedOtpSession.id, { consent: true });
+const leakedOtpChat = await sendChatMessage(leakedOtpSession.id, { message: "Mã của tôi là 123456" });
+assert.equal(leakedOtpChat.safety.maskedSensitiveInput, true);
+assert.equal(leakedOtpChat.sessionStatus, "active");
+assert.equal(leakedOtpChat.detectedEvents[0].status, "triggered");
 
 const originalFetch = globalThis.fetch;
 try {

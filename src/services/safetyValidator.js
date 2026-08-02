@@ -96,7 +96,7 @@ export function isStopRequest(input) {
 }
 
 export function looksLikeScamRecognition(input) {
-  return /(lừa đảo|giả mạo|không tin|gọi hotline|hotline|xác minh|verify|kiểm tra lại|check|không cung cấp|otp|không gửi otp|không chuyển tiền|scam)/i.test(
+  return /(lừa đảo|giả mạo|scam|không tin|gọi hotline|hotline|xác minh|verify|kiểm tra lại|check|không chuyển tiền|không\s+(cung cấp|gửi|đọc|cho).{0,40}(otp|mã xác minh|mật khẩu|password|cccd|thông tin|số thẻ|số tài khoản))/i.test(
     String(input || ""),
   );
 }
