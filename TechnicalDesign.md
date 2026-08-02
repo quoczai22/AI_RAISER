@@ -440,7 +440,7 @@ MVP uses hybrid scoring:
 - Scenario defines expected red flags.
 - Chat orchestrator records when a red flag tactic was presented.
 - Lightweight evaluator checks whether participant response shows recognition or safe behavior.
-- Gemini may suggest red flag labels in JSON, but scoring engine validates against scenario schema.
+- Gemini may suggest red flag labels in JSON, but the app post-processes clear participant safety patterns and validates all keys against the scenario schema.
 
 ### 9.3. Recognition Examples
 
