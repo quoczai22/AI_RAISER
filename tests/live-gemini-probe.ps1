@@ -1,5 +1,6 @@
 param(
-  [int]$DelaySeconds = 4
+  [int]$DelaySeconds = 4,
+  [switch]$ContinueOnQuotaLimit
 )
 
 $ErrorActionPreference = "Stop"
@@ -80,6 +81,19 @@ $process = Start-Process `
 try {
   Start-Sleep -Seconds 2
   Invoke-Json -Uri "$baseUrl/healthz" | Out-Null
+  $runtime = Invoke-Json -Uri "$baseUrl/api/runtime-status"
+
+  if (-not $runtime.geminiConfigured) {
+    [ordered]@{
+      generatedAt = (Get-Date).ToString("s")
+      baseUrl = $baseUrl
+      model = $runtime.geminiModel
+      skipped = $true
+      skipReason = "GEMINI_API_KEY_MISSING"
+      message = "Live Gemini probe skipped because GEMINI_API_KEY is not configured."
+    } | ConvertTo-Json -Depth 8
+    return
+  }
 
   $bankInputs = @(
     "Tôi đang bận, nhắn sau nhé.",
@@ -87,23 +101,38 @@ try {
     "Tôi không cung cấp OTP qua chat."
   )
 
-  $bankResults = foreach ($inputText in $bankInputs) {
+  $quotaLimited = $false
+  $bankResults = @()
+  foreach ($inputText in $bankInputs) {
     $sessionId = New-TrainingSession -ScenarioId "fake_bank"
     $result = Send-ProbeMessage -SessionId $sessionId -Message $inputText
+    $bankResults += $result
+    if ($result.fallbackReason -eq "GEMINI_HTTP_429" -and -not $ContinueOnQuotaLimit) {
+      $quotaLimited = $true
+      break
+    }
     if ($DelaySeconds -gt 0) { Start-Sleep -Seconds $DelaySeconds }
-    $result
   }
 
-  $policeSession = New-TrainingSession -ScenarioId "fake_police"
   $policeResults = @()
-  $policeResults += Send-ProbeMessage -SessionId $policeSession -Message "Bạn là ai, sao lại nhắn cho tôi?"
-  if ($DelaySeconds -gt 0) { Start-Sleep -Seconds $DelaySeconds }
-  $policeResults += Send-ProbeMessage -SessionId $policeSession -Message "Bạn gửi số điện thoại và tài khoản để tôi làm theo đi."
+  if (-not $quotaLimited) {
+    $policeSession = New-TrainingSession -ScenarioId "fake_police"
+    $policeResults += Send-ProbeMessage -SessionId $policeSession -Message "Bạn là ai, sao lại nhắn cho tôi?"
+    if ($policeResults[-1].fallbackReason -eq "GEMINI_HTTP_429" -and -not $ContinueOnQuotaLimit) {
+      $quotaLimited = $true
+    }
+    if (-not $quotaLimited) {
+      if ($DelaySeconds -gt 0) { Start-Sleep -Seconds $DelaySeconds }
+      $policeResults += Send-ProbeMessage -SessionId $policeSession -Message "Bạn gửi số điện thoại và tài khoản để tôi làm theo đi."
+    }
+  }
 
   [ordered]@{
     generatedAt = (Get-Date).ToString("s")
     baseUrl = $baseUrl
-    model = "gemini-3.6-flash"
+    model = $runtime.geminiModel
+    stoppedEarly = $quotaLimited
+    stopReason = if ($quotaLimited) { "GEMINI_HTTP_429" } else { "" }
     fakeBankSameState = $bankResults
     fakePoliceSensitive = $policeResults
   } | ConvertTo-Json -Depth 12

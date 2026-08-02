@@ -82,6 +82,8 @@ powershell -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1 -DelaySecon
 
 The script prints provider, fallback reason, validation status, detected red flag events and verbatim replies. It does not print the API key.
 
+The script checks `/api/runtime-status` before probing. If `GEMINI_API_KEY` is missing, it skips the live probe. If Gemini returns `GEMINI_HTTP_429`, it stops early by default to protect quota; pass `-ContinueOnQuotaLimit` only when you need to inspect the complete fallback path.
+
 ### 5.1. Dynamic Response Test
 
 At the same fake bank state, send:
@@ -180,7 +182,7 @@ Expected:
 |---|---|---|
 | Session storage is in-memory | Server restart or Cloud Run instance restart loses sessions; same-instance refresh can recover routes/transcript | Accept for MVP; add Firestore if needed |
 | Deployed environment may miss Gemini key | Deployed demo falls back and cannot prove AI-native alone | Configure Secret Manager before final demo |
-| Gemini free-tier quota can return `GEMINI_HTTP_429` | Live probe may fall back even when key is valid | Wait for quota reset, increase delay, use billing-enabled project |
+| Gemini free-tier quota can return `GEMINI_HTTP_429` | Live probe may fall back even when key is valid | Wait for quota reset, increase delay, use billing-enabled project; probe stops early by default after first 429 |
 | UI is static JS, not AI Studio-generated React | Repo runs locally and Cloud Run-ready, but not native AI Studio export | Can port module boundaries into AI Studio if required |
 | Fallback reply is intentionally simple | Does not represent final AI-native behavior | Use only as safety/demo continuity fallback |
 
@@ -189,7 +191,7 @@ Expected:
 | Risk | Severity | Mitigation |
 |---|---|---|
 | Demo accidentally runs without Gemini key | High | README and UI show fallback notice; final checklist requires key |
-| Demo hits Gemini quota/rate limit | High | `RiskReport.md`, live probe delay, billing/quota backup, warm-up once only |
+| Demo hits Gemini quota/rate limit | High | `RiskReport.md`, live probe delay, early-stop live probe, billing/quota backup, warm-up once only |
 | Gemini output fails schema | High | Validator and fallback path |
 | Judge interprets fallback as main chat | High | Demo script must configure key and explain fallback only if needed |
 | In-memory storage loses result on restart | Medium | Keep demo flow linear; avoid server restart during presentation |
