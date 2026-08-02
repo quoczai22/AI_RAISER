@@ -11,8 +11,18 @@ const state = {
     maxMessageLength: 1000,
   },
   userName: localStorage.getItem("aisi_user_name") || "",
-  history: JSON.parse(localStorage.getItem("aisi_history") || "[]"),
+  history: loadHistory(),
 };
+
+function loadHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem("aisi_history") || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    localStorage.removeItem("aisi_history");
+    return [];
+  }
+}
 
 async function api(path, options = {}) {
   const response = await fetch(path, {

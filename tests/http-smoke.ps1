@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$port = Get-Random -Minimum 4100 -Maximum 4999
+$port = Get-Random -Minimum 20000 -Maximum 29999
 $baseUrl = "http://localhost:$port"
 
 function Get-HeaderValue {
