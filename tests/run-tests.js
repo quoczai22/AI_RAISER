@@ -70,6 +70,11 @@ const maskedCccd = maskSensitiveInput("CCCD của tôi là 012345678901");
 assert.equal(maskedCccd.changed, true);
 assert.equal(maskedCccd.masked.includes("[MASKED_CCCD]"), true);
 
+const maskedPhone = maskSensitiveInput("Số của tôi là 090 123 4567");
+assert.equal(maskedPhone.changed, true);
+assert.equal(maskedPhone.masked.includes("[MASKED_PHONE]"), true);
+assert.equal(maskedPhone.masked.includes("[MASKED_OTP]"), false);
+
 const unsafeReply = validateAiReply("Bấm vào https://example.com để xác minh");
 assert.equal(unsafeReply.safe, false);
 

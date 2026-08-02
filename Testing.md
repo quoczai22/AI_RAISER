@@ -38,6 +38,7 @@ Current unit coverage:
 - Loads exactly 3 MVP scenarios.
 - Rejects chat start without simulation consent.
 - Masks OTP-like and CCCD-like input.
+- Verifies phone-like input with spaces is masked as phone, not split into OTP fragments.
 - Verifies masked sensitive placeholders such as `[MASKED_OTP]` are not counted as scam recognition by themselves.
 - Blocks unsafe AI reply containing URL.
 - Blocks unsafe AI reply containing real-looking CCCD.

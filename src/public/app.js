@@ -54,6 +54,19 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function maskSensitiveForDisplay(value) {
+  let masked = String(value || "");
+  masked = masked.replace(/\b\d{12}\b/g, "[MASKED_CCCD]");
+  masked = masked.replace(/\b(?:\d[ -]?){13,19}\b/g, "[MASKED_CARD]");
+  masked = masked.replace(/\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/g, "[MASKED_PHONE]");
+  masked = masked.replace(/\b\d{4,8}\b/g, "[MASKED_OTP]");
+  masked = masked.replace(/(mật khẩu|password)\s*[:=]?\s*\S+/gi, "$1 [MASKED_PASSWORD]");
+  return {
+    masked,
+    changed: masked !== String(value || ""),
+  };
+}
+
 async function loadScenarios() {
   const [scenarioPayload, runtimePayload] = await Promise.all([
     api("/api/scenarios"),
@@ -267,7 +280,8 @@ function renderChatShell() {
       renderChatShell();
       return;
     }
-    state.messages.push({ role: "user", content: text });
+    const displayMessage = maskSensitiveForDisplay(text);
+    state.messages.push({ role: "user", content: displayMessage.masked });
     state.isSending = true;
     input.value = "";
     renderChatShell();

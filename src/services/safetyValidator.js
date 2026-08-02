@@ -5,11 +5,6 @@ const sensitivePatterns = [
     placeholder: "[MASKED_CCCD]",
   },
   {
-    key: "otp",
-    pattern: /\b\d{4,8}\b/g,
-    placeholder: "[MASKED_OTP]",
-  },
-  {
     key: "card",
     pattern: /\b(?:\d[ -]?){13,19}\b/g,
     placeholder: "[MASKED_CARD]",
@@ -18,6 +13,11 @@ const sensitivePatterns = [
     key: "phone",
     pattern: /\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/g,
     placeholder: "[MASKED_PHONE]",
+  },
+  {
+    key: "otp",
+    pattern: /\b\d{4,8}\b/g,
+    placeholder: "[MASKED_OTP]",
   },
   {
     key: "password",
