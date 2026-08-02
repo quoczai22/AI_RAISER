@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadEnvFile } from "./src/services/env.js";
+import { getPositiveIntEnv, loadEnvFile } from "./src/services/env.js";
 import { listScenarios } from "./src/services/scenarioService.js";
 import {
   confirmConsent,
@@ -16,7 +16,7 @@ import { completeSession, getDashboard } from "./src/services/dashboardService.j
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const publicDir = resolve(rootDir, "src", "public");
 loadEnvFile();
-const port = Number(process.env.PORT || 3000);
+const port = getPositiveIntEnv("PORT", 3000);
 
 const jsonHeaders = {
   "content-type": "application/json; charset=utf-8",
@@ -30,7 +30,7 @@ const staticTypes = {
   ".json": "application/json; charset=utf-8",
 };
 
-const maxJsonBodyBytes = Number(process.env.MAX_JSON_BODY_BYTES || 64 * 1024);
+const maxJsonBodyBytes = getPositiveIntEnv("MAX_JSON_BODY_BYTES", 64 * 1024);
 const securityHeaders = {
   "x-content-type-options": "nosniff",
   "referrer-policy": "no-referrer",
@@ -126,8 +126,8 @@ async function handleApi(req, res) {
     sendJson(res, 200, {
       geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
       geminiModel: process.env.GEMINI_MODEL || "gemini-3.6-flash",
-      maxChatTurns: Number(process.env.MAX_CHAT_TURNS || 8),
-      maxMessageLength: Number(process.env.MAX_MESSAGE_LENGTH || 1000),
+      maxChatTurns: getPositiveIntEnv("MAX_CHAT_TURNS", 8),
+      maxMessageLength: getPositiveIntEnv("MAX_MESSAGE_LENGTH", 1000),
       maxJsonBodyBytes,
     });
     return;

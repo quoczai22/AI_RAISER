@@ -8,7 +8,7 @@ import {
 } from "../src/services/sessionService.js";
 import { sendChatMessage } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
-import { loadEnvFile } from "../src/services/env.js";
+import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
 import { maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
 
@@ -24,6 +24,12 @@ function expectThrows(fn, message) {
 const scenarios = listScenarios();
 loadEnvFile();
 process.env.GEMINI_API_KEY = "";
+process.env.UNIT_BAD_INT = "abc";
+process.env.UNIT_ZERO_INT = "0";
+process.env.UNIT_GOOD_INT = "12";
+assert.equal(getPositiveIntEnv("UNIT_BAD_INT", 7), 7);
+assert.equal(getPositiveIntEnv("UNIT_ZERO_INT", 7), 7);
+assert.equal(getPositiveIntEnv("UNIT_GOOD_INT", 7), 12);
 assert.equal(scenarios.length, 3);
 assert.equal(scenarios[0].id, "fake_bank");
 

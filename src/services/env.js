@@ -25,3 +25,11 @@ export function loadEnvFile() {
     }
   }
 }
+
+export function getPositiveIntEnv(name, fallback) {
+  const parsed = Number(process.env[name]);
+  if (Number.isInteger(parsed) && parsed > 0) {
+    return parsed;
+  }
+  return fallback;
+}

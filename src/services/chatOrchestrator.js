@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { getPositiveIntEnv } from "./env.js";
 import { getScenario } from "./scenarioService.js";
 import { requireActiveSession } from "./sessionService.js";
 import { generateGeminiJson } from "./geminiClient.server.js";
@@ -9,8 +10,8 @@ import {
   validateAiReply,
 } from "./safetyValidator.js";
 
-const maxTurns = Number(process.env.MAX_CHAT_TURNS || 8);
-const maxMessageLength = Number(process.env.MAX_MESSAGE_LENGTH || 1000);
+const maxTurns = getPositiveIntEnv("MAX_CHAT_TURNS", 8);
+const maxMessageLength = getPositiveIntEnv("MAX_MESSAGE_LENGTH", 1000);
 
 const geminiOutputSchema = {
   type: "object",

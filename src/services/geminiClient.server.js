@@ -1,11 +1,11 @@
-import { loadEnvFile } from "./env.js";
+import { getPositiveIntEnv, loadEnvFile } from "./env.js";
 
 loadEnvFile();
 
 export async function generateGeminiJson({ systemInstruction, prompt, schema }) {
   const defaultModel = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   const apiKey = process.env.GEMINI_API_KEY || "";
-  const timeoutMs = Number(process.env.GEMINI_TIMEOUT_MS || 45000);
+  const timeoutMs = getPositiveIntEnv("GEMINI_TIMEOUT_MS", 45000);
 
   if (!apiKey) {
     const error = new Error("GEMINI_API_KEY is not configured.");
