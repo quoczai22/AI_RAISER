@@ -1,5 +1,10 @@
 const sensitivePatterns = [
   {
+    key: "cccd",
+    pattern: /\b\d{12}\b/g,
+    placeholder: "[MASKED_CCCD]",
+  },
+  {
     key: "otp",
     pattern: /\b\d{4,8}\b/g,
     placeholder: "[MASKED_OTP]",
@@ -29,6 +34,10 @@ const blockedOutputRules = [
   {
     key: "phone",
     pattern: /\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/,
+  },
+  {
+    key: "cccd",
+    pattern: /\b\d{12}\b/,
   },
   {
     key: "card_or_account",

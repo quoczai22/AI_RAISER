@@ -18,6 +18,21 @@ try {
     throw "Expected health check to pass."
   }
 
+  $head = Invoke-WebRequest -Uri "$baseUrl/" -Method Head -UseBasicParsing
+  if ($head.StatusCode -ne 200) {
+    throw "Expected static HEAD request to pass."
+  }
+
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/%2e%2e%2fserver.js" -Method Get -UseBasicParsing | Out-Null
+    throw "Expected encoded path traversal to be blocked."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 404) {
+      throw "Expected encoded path traversal to return 404."
+    }
+  }
+
   $scenarios = Invoke-RestMethod -Uri "$baseUrl/api/scenarios"
   if ($scenarios.scenarios.Count -ne 3) {
     throw "Expected 3 scenarios."

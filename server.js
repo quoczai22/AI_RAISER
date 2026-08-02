@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname, join } from "node:path";
+import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnvFile } from "./src/services/env.js";
 import { listScenarios } from "./src/services/scenarioService.js";
@@ -13,6 +13,7 @@ import { sendChatMessage } from "./src/services/chatOrchestrator.js";
 import { completeSession, getDashboard } from "./src/services/dashboardService.js";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
+const publicDir = resolve(rootDir, "src", "public");
 loadEnvFile();
 const port = Number(process.env.PORT || 3000);
 
@@ -53,15 +54,28 @@ async function readJsonBody(req) {
 }
 
 async function serveStatic(req, res) {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.writeHead(405, { "content-type": "text/plain; charset=utf-8" });
+    res.end("Method not allowed");
+    return;
+  }
+
   const requestPath = new URL(req.url, `http://${req.headers.host}`).pathname;
-  const safePath = requestPath === "/" ? "/index.html" : requestPath;
-  const filePath = join(rootDir, "src", "public", safePath);
+  const decodedPath = decodeURIComponent(requestPath);
+  const safePath = decodedPath === "/" ? "/index.html" : decodedPath;
+  const filePath = resolve(publicDir, `.${safePath}`);
+  if (filePath !== publicDir && !filePath.startsWith(`${publicDir}${sep}`)) {
+    res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+    res.end("Not found");
+    return;
+  }
+
   const contentType = staticTypes[extname(filePath)] || "application/octet-stream";
 
   try {
     const file = await readFile(filePath);
     res.writeHead(200, { "content-type": contentType });
-    res.end(file);
+    res.end(req.method === "HEAD" ? undefined : file);
   } catch {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
     res.end("Not found");
