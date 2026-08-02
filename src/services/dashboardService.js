@@ -88,6 +88,12 @@ function recommendationFor(key) {
       "Pattern: urgency + reciprocity. Yêu cầu tiền thường được bọc bằng tình huống gấp hoặc quan hệ thân quen; hãy nhận diện kỹ thuật kéo cảm xúc đi trước kiểm chứng.",
     request_to_keep_secret:
       "Pattern: fear + reciprocity. Yêu cầu giữ bí mật cô lập bạn khỏi người có thể giúp kiểm chứng; đây là kỹ thuật thao túng quan hệ và nỗi sợ.",
+    fake_company_authority:
+      "Pattern: authority. Tên công ty lớn có thể bị mượn để tạo uy tín giả; red flag là danh xưng chưa được kiểm chứng qua kênh tuyển dụng chính thức.",
+    urgency_scarcity_fee:
+      "Pattern: urgency + scarcity. Khi cơ hội được mô tả là sắp hết và cần đóng phí/giữ chỗ ngay, áp lực khan hiếm đang thay thế bước kiểm chứng.",
+    unrealistic_salary_social_proof:
+      "Pattern: social proof/reciprocity. Lương cao bất thường kèm lời kể nhiều người đã thành công là kỹ thuật kéo niềm tin theo đám đông.",
   };
   return recommendations[key] || `Pattern: ${technique.key}. Hãy luyện nhận diện kỹ thuật thao túng chung thay vì học thuộc một câu trả lời mẫu.`;
 }
@@ -122,6 +128,18 @@ function techniqueFor(key) {
       key: "fear + reciprocity",
       label: "fear + reciprocity - cô lập nạn nhân bằng bí mật và cảm xúc",
     },
+    fake_company_authority: {
+      key: "authority",
+      label: "authority - mượn danh công ty lớn",
+    },
+    urgency_scarcity_fee: {
+      key: "urgency + scarcity",
+      label: "urgency + scarcity - ép giữ chỗ gấp bằng cơ hội khan hiếm",
+    },
+    unrealistic_salary_social_proof: {
+      key: "social proof/reciprocity",
+      label: "social proof/reciprocity - lời chứng đám đông và hứa hẹn thu nhập",
+    },
   };
   return techniques[key] || {
     key: "authority",
@@ -136,6 +154,9 @@ function recommendNextScenario(currentScenarioId, missedFlags) {
   }
   if (currentScenarioId !== "fake_relative" && missedKeys.has("request_to_transfer_money")) {
     return "Luyện tiếp kịch bản giả người thân cần tiền gấp để rèn xác minh danh tính.";
+  }
+  if (currentScenarioId !== "fake_job" && missedKeys.has("urgency_scarcity_fee")) {
+    return "Luyện tiếp kịch bản tuyển dụng giả để nhận diện phí giữ chỗ và cơ hội khan hiếm giả.";
   }
   if (currentScenarioId !== "fake_bank") {
     return "Luyện tiếp kịch bản giả ngân hàng để rèn phản xạ không cung cấp mã xác minh.";

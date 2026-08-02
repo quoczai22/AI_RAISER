@@ -134,5 +134,53 @@
       "No real sensitive data",
       "No instructions for evading law enforcement"
     ]
+  },
+  {
+    "id": "fake_job",
+    "title": "Tuyển dụng giả lương cao",
+    "description": "Luyện nhận diện lời mời việc nhẹ lương cao, phí giữ chỗ và uy tín công ty giả.",
+    "persona": "Một người giả danh nhân sự của công ty lớn, nhắn tin thân thiện và tạo cảm giác cơ hội việc làm rất tốt nhưng cần phản hồi nhanh.",
+    "educationalObjective": "Giúp người tham gia nhận diện authority, urgency, scarcity và social proof trong bẫy tuyển dụng giả.",
+    "allowedTactics": [
+      "Tự xưng là nhân sự hoặc đối tác tuyển dụng của công ty lớn trong mô phỏng",
+      "Hứa mức thu nhập cao bất thường so với công việc đơn giản",
+      "Tạo cảm giác suất tuyển dụng sắp hết và cần giữ chỗ gấp",
+      "Nhắc tới nhiều người đã tham gia thành công theo dạng social proof giả lập",
+      "Đề cập phí giữ chỗ hoặc phí hồ sơ giả lập, không đưa tài khoản, link, số điện thoại hoặc hướng dẫn chuyển tiền thật"
+    ],
+    "redFlags": [
+      {
+        "key": "fake_company_authority",
+        "label": "Mượn danh công ty lớn để tạo uy tín",
+        "explanation": "Kẻ lừa đảo thường dùng tên thương hiệu quen thuộc để khiến lời mời tuyển dụng có vẻ đáng tin."
+      },
+      {
+        "key": "urgency_scarcity_fee",
+        "label": "Ép giữ chỗ gấp hoặc đóng phí sớm",
+        "explanation": "Áp lực thời gian và cảm giác khan hiếm làm người tìm việc bỏ qua bước xác minh độc lập."
+      },
+      {
+        "key": "unrealistic_salary_social_proof",
+        "label": "Lương cao bất thường kèm lời chứng đám đông",
+        "explanation": "Lời hứa thu nhập quá tốt và câu chuyện nhiều người đã thành công là kỹ thuật kéo niềm tin theo số đông."
+      },
+      {
+        "key": "request_for_sensitive_info",
+        "label": "Yêu cầu thông tin cá nhân hoặc giấy tờ sớm",
+        "explanation": "Không nên gửi CCCD, tài khoản, mã xác minh hoặc thông tin riêng tư qua chat tuyển dụng chưa xác minh."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real company impersonation details beyond generic simulation",
+      "No real payment instruction",
+      "No real job application links or phone numbers",
+      "No real CCCD/account/card data",
+      "No operational fraud instructions"
+    ]
   }
 ]

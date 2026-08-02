@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { listScenarios } from "../src/services/scenarioService.js";
+import { getScenario, listScenarios } from "../src/services/scenarioService.js";
 import {
   confirmConsent,
   createSession,
@@ -35,8 +35,16 @@ assert.equal(getPositiveIntEnv("UNIT_ZERO_INT", 7), 7);
 assert.equal(getPositiveIntEnv("UNIT_GOOD_INT", 7), 12);
 const publicAppSource = readFileSync(new URL("../src/public/app.js", import.meta.url), "utf8");
 assert.equal(publicAppSource.includes('|| "social engineering"'), false);
-assert.equal(scenarios.length, 3);
+assert.equal(scenarios.length, 4);
 assert.equal(scenarios[0].id, "fake_bank");
+assert.ok(scenarios.some((scenario) => scenario.id === "fake_job"));
+const fakeJobSummary = scenarios.find((scenario) => scenario.id === "fake_job");
+assert.equal(fakeJobSummary.redFlagCount, 4);
+const fakeJobScenario = getScenario("fake_job");
+assert.equal(fakeJobScenario.redFlags.length, 4);
+assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "urgency_scarcity_fee"));
+assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "fake_company_authority"));
+assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "unrealistic_salary_social_proof"));
 assert.equal(
   scenarios.some((scenario) =>
     scenario.allowedTactics?.some((tactic) => /khuyến khích.*kiểm tra qua kênh không chính thức/i.test(tactic)),

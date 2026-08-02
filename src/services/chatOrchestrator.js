@@ -354,6 +354,18 @@ function chooseFallbackRedFlag({ scenario, session, participantMessage }) {
       pattern: /(lừa đảo|giả mạo|không tin|xác minh|ngân hàng|công an|cơ quan)/i,
     },
     {
+      key: "fake_company_authority",
+      pattern: /(tuyển dụng|nhân sự|hr|công ty|việc làm|job|xác minh công ty)/i,
+    },
+    {
+      key: "urgency_scarcity_fee",
+      pattern: /(phí|giữ chỗ|đặt cọc|suất|hết chỗ|đóng tiền|không đóng phí)/i,
+    },
+    {
+      key: "unrealistic_salary_social_proof",
+      pattern: /(lương cao|việc nhẹ|thu nhập|nhiều người|ai cũng|đã làm|kiếm được)/i,
+    },
+    {
       key: "urgency_threat",
       pattern: /(gấp|ngay|khẩn|đe dọa|khóa|hậu quả)/i,
     },

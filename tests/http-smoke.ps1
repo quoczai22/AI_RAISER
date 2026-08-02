@@ -113,8 +113,12 @@ try {
   }
 
   $scenarios = Invoke-RestMethod -Uri "$baseUrl/api/scenarios"
-  if ($scenarios.scenarios.Count -ne 3) {
-    throw "Expected 3 scenarios."
+  if ($scenarios.scenarios.Count -ne 4) {
+    throw "Expected 4 scenarios."
+  }
+
+  if (-not ($scenarios.scenarios | Where-Object { $_.id -eq "fake_job" })) {
+    throw "Expected fake job recruitment scenario."
   }
 
   $scenarioResponse = Invoke-WebRequest -Uri "$baseUrl/api/scenarios" -UseBasicParsing

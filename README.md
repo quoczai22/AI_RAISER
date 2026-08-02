@@ -11,6 +11,7 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 - Không dùng `temperature`, `top_p`, `top_k`.
 - Gemini được gọi server-side, không lộ API key ra client.
 - Chat động, không phải decision tree cố định.
+- Có 4 kịch bản MVP: giả ngân hàng, giả người thân, giả công an/cơ quan chức năng, tuyển dụng giả.
 - Score minh bạch: số red flags nhận diện đúng / tổng red flags của kịch bản.
 - Feedback chỉ dạy pattern thao túng: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
 - Safety validator mask/chặn OTP, CCCD, số tài khoản, số thẻ, số điện thoại, mật khẩu, link thật.
@@ -125,7 +126,7 @@ powershell -ExecutionPolicy Bypass -File tests/warmup.ps1 -BaseUrl "http://local
 
 1. Mở `http://localhost:3000`.
 2. Nhập tên hiển thị, ví dụ `Cô Lan`.
-3. Chọn `Giả ngân hàng xác minh tài khoản`.
+3. Chọn `Giả ngân hàng xác minh tài khoản` hoặc `Tuyển dụng giả lương cao`.
 4. Chọn cấp độ `Vừa`.
 5. Tick consent và bắt đầu mô phỏng.
 6. Gửi thử:

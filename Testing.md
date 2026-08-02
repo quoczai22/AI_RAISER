@@ -35,7 +35,7 @@ Implementation tests passed.
 
 Current unit coverage:
 
-- Loads exactly 3 MVP scenarios.
+- Loads exactly 4 MVP scenarios, including fake job recruitment.
 - Verifies scenario tactics do not encourage checking through unofficial channels.
 - Rejects chat start without simulation consent.
 - Rejects transcript access before simulation consent.
@@ -181,7 +181,7 @@ Expected:
 | Step | Expected |
 |---|---|
 | Enter display name | User can start without password/auth |
-| Select scenario/difficulty | 3 scenarios visible and understandable |
+| Select scenario/difficulty | 4 scenarios visible and understandable |
 | Confirm simulation consent | CTA disabled until consent checked |
 | Create session | Chat starts after consent |
 | View dashboard | Score and red flags are clear |
