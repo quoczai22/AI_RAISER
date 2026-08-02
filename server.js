@@ -34,6 +34,7 @@ const maxJsonBodyBytes = getPositiveIntEnv("MAX_JSON_BODY_BYTES", 64 * 1024);
 const securityHeaders = {
   "x-content-type-options": "nosniff",
   "referrer-policy": "no-referrer",
+  "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=()",
   "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'",
 };
 

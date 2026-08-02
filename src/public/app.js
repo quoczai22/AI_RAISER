@@ -262,7 +262,7 @@ function renderChatShell() {
         ${state.safetyNotices.map((notice) => `<div class="notice danger-note">${escapeHtml(notice)}</div>`).join("")}
       </div>
       <form class="chat-form" id="chat-form">
-        <textarea id="chat-input" maxlength="${state.runtime.maxMessageLength}" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
+        <textarea id="chat-input" maxlength="${state.runtime.maxMessageLength}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
         <button type="submit" ${state.isSending ? "disabled" : ""}>Gửi</button>
       </form>
     </section>

@@ -51,6 +51,11 @@ try {
     throw "Expected static security headers."
   }
 
+  $permissionsPolicy = Get-HeaderValue -Headers $head.Headers -Name "Permissions-Policy"
+  if (-not $permissionsPolicy -or $permissionsPolicy -notmatch "camera=\(\)") {
+    throw "Expected static permissions policy header."
+  }
+
   try {
     Invoke-WebRequest -Uri "$baseUrl/%2e%2e%2fserver.js" -Method Get -UseBasicParsing | Out-Null
     throw "Expected encoded path traversal to be blocked."
