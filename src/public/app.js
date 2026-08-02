@@ -10,16 +10,42 @@ const state = {
   runtime: {
     maxMessageLength: 1000,
   },
-  userName: localStorage.getItem("aisi_user_name") || "",
+  userName: safeStorageGet("aisi_user_name") || "",
   history: loadHistory(),
 };
 
+function safeStorageGet(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageSet(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+function safeStorageRemove(key) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    return false;
+  }
+  return true;
+}
+
 function loadHistory() {
   try {
-    const parsed = JSON.parse(localStorage.getItem("aisi_history") || "[]");
+    const parsed = JSON.parse(safeStorageGet("aisi_history") || "[]");
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    localStorage.removeItem("aisi_history");
+    safeStorageRemove("aisi_history");
     return [];
   }
 }
@@ -110,7 +136,7 @@ function renderEntryDashboard() {
   app.querySelector("#start-training").addEventListener("click", () => {
     const name = app.querySelector("#user-name").value.trim();
     state.userName = name || "Bạn";
-    localStorage.setItem("aisi_user_name", state.userName);
+    safeStorageSet("aisi_user_name", state.userName);
     location.hash = "scenarios";
     renderScenarioPicker();
   });
@@ -457,7 +483,7 @@ function saveHistory(dashboard) {
     createdAt: new Date().toLocaleString("vi-VN"),
   };
   state.history = [item, ...state.history.filter((entry) => entry.sessionId !== item.sessionId)].slice(0, 5);
-  localStorage.setItem("aisi_history", JSON.stringify(state.history));
+  safeStorageSet("aisi_history", JSON.stringify(state.history));
 }
 
 function getSessionIdFromHash() {
