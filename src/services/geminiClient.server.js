@@ -62,9 +62,16 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
     }),
   }).finally(() => clearTimeout(timeout));
 
-  const payload = await response.json();
+  const rawPayload = await response.text();
+  let payload = {};
+  try {
+    payload = rawPayload ? JSON.parse(rawPayload) : {};
+  } catch {
+    payload = {};
+  }
+
   if (!response.ok) {
-    const error = new Error(payload.error?.message || "Gemini request failed.");
+    const error = new Error(payload.error?.message || rawPayload.slice(0, 200) || "Gemini request failed.");
     error.code = `GEMINI_HTTP_${response.status}`;
     error.status = response.status;
     throw error;
@@ -77,5 +84,12 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
     throw error;
   }
 
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch (parseError) {
+    const error = new Error("Gemini returned invalid JSON.");
+    error.code = "GEMINI_INVALID_JSON";
+    error.cause = parseError;
+    throw error;
+  }
 }
