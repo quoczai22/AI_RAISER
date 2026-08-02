@@ -1,6 +1,30 @@
 .env
+.env.*
+!.env.example
 node_modules/
 npm-debug.log*
 .DS_Store
 dist/
 coverage/
+
+# Local-only notes and handoff files
+LOCAL_STATUS.md
+*_LOCAL.md
+
+# Runtime data and temporary files
+*.db
+*.sqlite
+*.sqlite3
+*.log
+tmp/
+temp/
+.cache/
+
+# Editor and OS metadata
+.vscode/
+.idea/
+Thumbs.db
+
+# Codex/local workspace metadata
+.codex/
+.agents/
