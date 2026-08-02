@@ -37,6 +37,7 @@ Current unit coverage:
 
 - Loads exactly 3 MVP scenarios.
 - Rejects chat start without simulation consent.
+- Rejects transcript access before simulation consent.
 - Rejects concurrent chat turns while the same session is already processing.
 - Rejects dashboard/result access before simulation consent.
 - Rejects read-only dashboard/result access while a consented session is still active.
@@ -84,12 +85,13 @@ Flow tested:
 7. Wrong method on a known API route returns 405 with `Allow` and security headers.
 8. `POST /api/sessions`.
 9. Dashboard before consent returns 403.
-10. `POST /api/sessions/{id}/consent`.
-11. Read-only dashboard before completion returns 409.
-12. `POST /api/sessions/{id}/messages`.
-13. `POST /api/sessions/{id}/complete`.
-14. Completed session consent reactivation returns 409.
-15. Verify score is computed.
+10. Transcript before consent returns 403.
+11. `POST /api/sessions/{id}/consent`.
+12. Read-only dashboard before completion returns 409.
+13. `POST /api/sessions/{id}/messages`.
+14. `POST /api/sessions/{id}/complete`.
+15. Completed session consent reactivation returns 409.
+16. Verify score is computed.
 
 ## 5. Prompt Evaluation
 

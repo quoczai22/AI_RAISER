@@ -61,7 +61,7 @@ export function getSession(sessionId) {
 }
 
 export function getSessionMessages(sessionId) {
-  const session = requireSession(sessionId);
+  const session = requireConsentedSession(sessionId);
   return session.messages.map((message) => ({
     id: message.id,
     role: message.role === "participant" ? "user" : message.role,

@@ -156,6 +156,10 @@ expectThrows(
   () => getDashboard(noConsentSession.id),
   "Simulation consent is required before viewing results",
 );
+expectThrows(
+  () => getSessionMessages(noConsentSession.id),
+  "Simulation consent is required before viewing results",
+);
 
 const activeDashboardSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
 confirmConsent(activeDashboardSession.id, { consent: true });

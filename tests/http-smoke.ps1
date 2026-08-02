@@ -184,6 +184,16 @@ try {
     }
   }
 
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/messages" -Method Get -UseBasicParsing | Out-Null
+    throw "Expected messages before consent to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 403) {
+      throw "Expected messages before consent to return 403."
+    }
+  }
+
   $active = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions/$sessionId/consent" `
     -Method Post `
