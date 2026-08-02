@@ -23,6 +23,10 @@ try {
     throw "Expected static HEAD request to pass."
   }
 
+  if ($head.Headers["X-Content-Type-Options"] -ne "nosniff") {
+    throw "Expected static security headers."
+  }
+
   try {
     Invoke-WebRequest -Uri "$baseUrl/%2e%2e%2fserver.js" -Method Get -UseBasicParsing | Out-Null
     throw "Expected encoded path traversal to be blocked."
@@ -36,6 +40,11 @@ try {
   $scenarios = Invoke-RestMethod -Uri "$baseUrl/api/scenarios"
   if ($scenarios.scenarios.Count -ne 3) {
     throw "Expected 3 scenarios."
+  }
+
+  $scenarioResponse = Invoke-WebRequest -Uri "$baseUrl/api/scenarios" -UseBasicParsing
+  if (-not $scenarioResponse.Headers["Content-Security-Policy"]) {
+    throw "Expected API security headers."
   }
 
   try {

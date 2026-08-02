@@ -31,6 +31,13 @@ const staticTypes = {
 };
 
 const maxJsonBodyBytes = Number(process.env.MAX_JSON_BODY_BYTES || 64 * 1024);
+const securityHeaders = {
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "no-referrer",
+  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'",
+};
+
+Object.assign(jsonHeaders, securityHeaders);
 
 function sendJson(res, status, payload) {
   res.writeHead(status, jsonHeaders);
@@ -84,7 +91,10 @@ async function serveStatic(req, res) {
 
   try {
     const file = await readFile(filePath);
-    res.writeHead(200, { "content-type": contentType });
+    res.writeHead(200, {
+      "content-type": contentType,
+      ...securityHeaders,
+    });
     res.end(req.method === "HEAD" ? undefined : file);
   } catch {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
