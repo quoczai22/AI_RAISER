@@ -207,6 +207,7 @@ AI Studio may generate API routes or server actions depending on the project str
 
 | Action | Input | Output |
 |---|---|---|
+| `getRuntimeStatus` | none | Gemini configured flag, model and runtime limits without secrets |
 | `listScenarios` | none | 3 scenario summaries |
 | `createSession` | `scenarioId`, `difficulty`, `userName` | session id |
 | `confirmConsent` | `sessionId`, `consent=true` | session status |
