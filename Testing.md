@@ -52,6 +52,7 @@ Current unit coverage:
 - Verifies invalid model JSON is surfaced as `GEMINI_INVALID_JSON`.
 - Verifies Gemini self-reported sensitive requests trigger one repair retry before display.
 - Verifies malformed Gemini JSON fields are normalized before affecting session state or scoring.
+- Verifies duplicate Gemini red flag signals are deduplicated, preferring `recognized` over weaker statuses.
 - Computes dashboard score from recognized red flags.
 - Verifies dashboard feedback uses manipulation taxonomy pattern language.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.

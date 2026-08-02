@@ -290,6 +290,56 @@ try {
   assert.equal(badShapeChat.sessionStatus, "active");
   assert.equal(badShapeChat.detectedEvents[0].status, "triggered");
 
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    reply: "Mình ghi nhận phản ứng an toàn của bạn.",
+                    simulationState: {
+                      status: "active",
+                      reason: "dedupe_test",
+                      shouldEnd: false,
+                    },
+                    redFlagSignals: [
+                      {
+                        key: "authority_pressure",
+                        status: "triggered",
+                        evidence: "Áp lực danh nghĩa.",
+                      },
+                      {
+                        key: "authority_pressure",
+                        status: "recognized",
+                        evidence: "Người dùng đã nghi ngờ danh nghĩa.",
+                      },
+                    ],
+                    safetyAssessment: {
+                      containsSensitiveRequest: false,
+                      containsRealWorldInstruction: false,
+                      safeToShow: true,
+                      notes: "",
+                    },
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+
+  const duplicateSignalSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  confirmConsent(duplicateSignalSession.id, { consent: true });
+  const duplicateSignalChat = await sendChatMessage(duplicateSignalSession.id, { message: "Tôi nghi là giả mạo." });
+  assert.equal(duplicateSignalChat.detectedEvents.length, 1);
+  assert.equal(duplicateSignalChat.detectedEvents[0].key, "authority_pressure");
+  assert.equal(duplicateSignalChat.detectedEvents[0].status, "recognized");
+
   process.env.GEMINI_API_KEY = "unit-test-key";
   globalThis.fetch = async () =>
     new Response(

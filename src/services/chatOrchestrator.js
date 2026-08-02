@@ -396,13 +396,31 @@ function applyParticipantRecognition({ signals, scenario, session, participantMe
 function normalizeRedFlagSignals(signals, scenario) {
   const allowed = new Set(scenario.redFlags.map((flag) => flag.key));
   const allowedStatuses = new Set(["triggered", "recognized", "missed", "not_applicable"]);
-  return signals
+  const normalized = signals
     .filter((signal) => signal && allowed.has(signal.key))
     .map((signal) => ({
       key: signal.key,
       status: allowedStatuses.has(signal.status) ? signal.status : "triggered",
       evidence: String(signal.evidence || "").slice(0, 180),
     }));
+  return dedupeSignalsByKey(normalized);
+}
+
+function dedupeSignalsByKey(signals) {
+  const statusRank = {
+    recognized: 4,
+    triggered: 3,
+    missed: 2,
+    not_applicable: 1,
+  };
+  const byKey = new Map();
+  for (const signal of signals) {
+    const current = byKey.get(signal.key);
+    if (!current || statusRank[signal.status] > statusRank[current.status]) {
+      byKey.set(signal.key, signal);
+    }
+  }
+  return Array.from(byKey.values());
 }
 
 function now() {
