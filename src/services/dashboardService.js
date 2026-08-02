@@ -1,10 +1,10 @@
 import { getScenario } from "./scenarioService.js";
-import { requireStoredSession } from "./sessionService.js";
+import { requireConsentedSession } from "./sessionService.js";
 import { calculateScore } from "./scoringEngine.js";
 import { sessions } from "./store.js";
 
 export function completeSession(sessionId) {
-  const session = requireStoredSession(sessionId);
+  const session = requireConsentedSession(sessionId);
   const scenario = getScenario(session.scenarioId);
   if (!session.score) {
     session.score = calculateScore({ session, scenario });
@@ -16,7 +16,7 @@ export function completeSession(sessionId) {
 }
 
 export function getDashboard(sessionId) {
-  const session = requireStoredSession(sessionId);
+  const session = requireConsentedSession(sessionId);
   const scenario = getScenario(session.scenarioId);
   if (!session.score) {
     session.score = calculateScore({ session, scenario });

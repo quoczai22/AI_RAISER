@@ -117,6 +117,17 @@ assert.ok(dashboard.missedRedFlags.every((flag) => flag.techniqueLabel.length > 
 assert.ok(dashboard.missedRedFlags.every((flag) => flag.recommendation.startsWith("Pattern:")));
 assert.ok(dashboard.missedRedFlags.every((flag) => !flag.recommendation.includes("Bạn nên trả lời")));
 
+expectThrows(
+  () => confirmConsent(created.id, { consent: true }),
+  "Session is already completed",
+);
+
+const noConsentSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+expectThrows(
+  () => getDashboard(noConsentSession.id),
+  "Simulation consent is required before viewing results",
+);
+
 const otpSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
 confirmConsent(otpSession.id, { consent: true });
 await sendChatMessage(otpSession.id, { message: "Tôi không cung cấp OTP qua chat." });

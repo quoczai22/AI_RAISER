@@ -41,9 +41,15 @@ export function confirmConsent(sessionId, input) {
     throw error;
   }
 
-  session.consentAt = now();
+  if (session.status === "completed") {
+    const error = new Error("Session is already completed.");
+    error.status = 409;
+    throw error;
+  }
+
+  session.consentAt = session.consentAt || now();
   session.status = "active";
-  session.startedAt = now();
+  session.startedAt = session.startedAt || now();
   sessions.set(session.id, session);
   return summarizeSession(session);
 }
@@ -74,6 +80,16 @@ export function requireActiveSession(sessionId) {
 
 export function requireStoredSession(sessionId) {
   return requireSession(sessionId);
+}
+
+export function requireConsentedSession(sessionId) {
+  const session = requireSession(sessionId);
+  if (!session.consentAt) {
+    const error = new Error("Simulation consent is required before viewing results.");
+    error.status = 403;
+    throw error;
+  }
+  return session;
 }
 
 function requireSession(sessionId) {

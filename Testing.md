@@ -37,6 +37,8 @@ Current unit coverage:
 
 - Loads exactly 3 MVP scenarios.
 - Rejects chat start without simulation consent.
+- Rejects dashboard/result access before simulation consent.
+- Prevents completed sessions from being reactivated through the consent endpoint.
 - Masks OTP-like and CCCD-like input.
 - Verifies phone-like input with spaces is masked as phone, not split into OTP fragments.
 - Verifies masked sensitive placeholders such as `[MASKED_OTP]` are not counted as scam recognition by themselves.
