@@ -228,6 +228,50 @@ try {
   assert.equal(repairChat.safety.retryUsed, true);
   assert.equal(repairCallCount, 2);
 
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    reply: "Mình tiếp tục mô phỏng an toàn.",
+                    simulationState: {
+                      status: "finished-but-not-valid",
+                      reason: "bad_shape_test",
+                      shouldEnd: "false",
+                    },
+                    redFlagSignals: [
+                      {
+                        key: "authority_pressure",
+                        status: "recognized-ish",
+                        evidence: "Status sai enum phải về triggered.",
+                      },
+                    ],
+                    safetyAssessment: {
+                      containsSensitiveRequest: "false",
+                      containsRealWorldInstruction: "false",
+                      safeToShow: "true",
+                      notes: "Bad booleans should not be trusted as booleans.",
+                    },
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+
+  const badShapeSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  confirmConsent(badShapeSession.id, { consent: true });
+  const badShapeChat = await sendChatMessage(badShapeSession.id, { message: "Xin chào." });
+  assert.equal(badShapeChat.sessionStatus, "active");
+  assert.equal(badShapeChat.detectedEvents[0].status, "triggered");
+
   process.env.GEMINI_API_KEY = "unit-test-key";
   globalThis.fetch = async () =>
     new Response(

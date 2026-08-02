@@ -240,23 +240,35 @@ function validateGeminiShape(result) {
     error.status = 502;
     throw error;
   }
+  const simulationState = normalizeSimulationState(result.simulationState);
+  const safetyAssessment = normalizeSafetyAssessment(result.safetyAssessment);
   return {
     reply: result.reply,
-    simulationState: result.simulationState || {
-      status: "active",
-      reason: "default_state",
-      shouldEnd: false,
-    },
+    simulationState,
     redFlagSignals: Array.isArray(result.redFlagSignals) ? result.redFlagSignals : [],
-    safetyAssessment: result.safetyAssessment || {
-      containsSensitiveRequest: false,
-      containsRealWorldInstruction: false,
-      safeToShow: true,
-      notes: "",
-    },
+    safetyAssessment,
     provider: result.provider,
     modelUsed: result.modelUsed,
     retryUsed: Boolean(result.retryUsed),
+  };
+}
+
+function normalizeSimulationState(value) {
+  const allowedStatuses = new Set(["active", "wrap_up", "completed", "aborted"]);
+  const status = allowedStatuses.has(value?.status) ? value.status : "active";
+  return {
+    status,
+    reason: String(value?.reason || "default_state").slice(0, 120),
+    shouldEnd: value?.shouldEnd === true,
+  };
+}
+
+function normalizeSafetyAssessment(value) {
+  return {
+    containsSensitiveRequest: value?.containsSensitiveRequest === true,
+    containsRealWorldInstruction: value?.containsRealWorldInstruction === true,
+    safeToShow: value?.safeToShow !== false,
+    notes: String(value?.notes || "").slice(0, 180),
   };
 }
 
@@ -372,11 +384,12 @@ function applyParticipantRecognition({ signals, scenario, session, participantMe
 
 function normalizeRedFlagSignals(signals, scenario) {
   const allowed = new Set(scenario.redFlags.map((flag) => flag.key));
+  const allowedStatuses = new Set(["triggered", "recognized", "missed", "not_applicable"]);
   return signals
     .filter((signal) => signal && allowed.has(signal.key))
     .map((signal) => ({
       key: signal.key,
-      status: signal.status || "triggered",
+      status: allowedStatuses.has(signal.status) ? signal.status : "triggered",
       evidence: String(signal.evidence || "").slice(0, 180),
     }));
 }
