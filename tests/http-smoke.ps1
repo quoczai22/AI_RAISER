@@ -128,6 +128,17 @@ try {
     -Body '{"scenarioId":"fake_bank","difficulty":"medium","userName":"Co Lan"}'
 
   $sessionId = $session.session.id
+
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Method Get -UseBasicParsing | Out-Null
+    throw "Expected dashboard before consent to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 403) {
+      throw "Expected dashboard before consent to return 403."
+    }
+  }
+
   $active = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions/$sessionId/consent" `
     -Method Post `
@@ -171,6 +182,21 @@ try {
 
   if (-not $dashboard.shareSummary) {
     throw "Expected share summary."
+  }
+
+  try {
+    Invoke-WebRequest `
+      -Uri "$baseUrl/api/sessions/$sessionId/consent" `
+      -Method Post `
+      -ContentType "application/json" `
+      -Body '{"consent":true}' `
+      -UseBasicParsing | Out-Null
+    throw "Expected completed session consent to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 409) {
+      throw "Expected completed session consent to return 409."
+    }
   }
 
   Write-Output "HTTP smoke test passed."

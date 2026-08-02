@@ -72,10 +72,12 @@ Flow tested:
 4. `GET /api/scenarios`.
 5. Wrong method on a known API route returns 405 with security headers.
 6. `POST /api/sessions`.
-7. `POST /api/sessions/{id}/consent`.
-8. `POST /api/sessions/{id}/messages`.
-9. `POST /api/sessions/{id}/complete`.
-10. Verify score is computed.
+7. Dashboard before consent returns 403.
+8. `POST /api/sessions/{id}/consent`.
+9. `POST /api/sessions/{id}/messages`.
+10. `POST /api/sessions/{id}/complete`.
+11. Completed session consent reactivation returns 409.
+12. Verify score is computed.
 
 ## 5. Prompt Evaluation
 
