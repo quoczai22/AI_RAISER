@@ -234,7 +234,11 @@ const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname === "/healthz") {
-      sendJson(res, 200, { ok: true });
+      if (req.method === "GET" || req.method === "HEAD") {
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+      sendMethodNotAllowed(res, "GET, HEAD");
       return;
     }
     if (url.pathname.startsWith("/api/")) {

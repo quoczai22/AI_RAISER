@@ -42,6 +42,19 @@ $process = Start-Process `
 try {
   Wait-ForHealth
 
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/healthz" -Method Post -UseBasicParsing | Out-Null
+    throw "Expected wrong health method to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 405) {
+      throw "Expected wrong health method to return 405."
+    }
+    if ((Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Allow") -ne "GET, HEAD") {
+      throw "Expected health 405 to include Allow header."
+    }
+  }
+
   $head = Invoke-WebRequest -Uri "$baseUrl/" -Method Head -UseBasicParsing
   if ($head.StatusCode -ne 200) {
     throw "Expected static HEAD request to pass."

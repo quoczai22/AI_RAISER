@@ -74,18 +74,19 @@ HTTP smoke test passed.
 Flow tested:
 
 1. Start local server.
-2. `HEAD /`.
-3. Encoded static path traversal returns 404.
-4. Static and static-error responses include `Cache-Control: no-store`, security headers and restrictive permissions policy.
-5. `GET /api/scenarios`.
-6. Wrong method on a known API route returns 405 with `Allow` and security headers.
-7. `POST /api/sessions`.
-8. Dashboard before consent returns 403.
-9. `POST /api/sessions/{id}/consent`.
-10. `POST /api/sessions/{id}/messages`.
-11. `POST /api/sessions/{id}/complete`.
-12. Completed session consent reactivation returns 409.
-13. Verify score is computed.
+2. Wrong method on `/healthz` returns 405 with `Allow: GET, HEAD`.
+3. `HEAD /`.
+4. Encoded static path traversal returns 404.
+5. Static and static-error responses include `Cache-Control: no-store`, security headers and restrictive permissions policy.
+6. `GET /api/scenarios`.
+7. Wrong method on a known API route returns 405 with `Allow` and security headers.
+8. `POST /api/sessions`.
+9. Dashboard before consent returns 403.
+10. `POST /api/sessions/{id}/consent`.
+11. `POST /api/sessions/{id}/messages`.
+12. `POST /api/sessions/{id}/complete`.
+13. Completed session consent reactivation returns 409.
+14. Verify score is computed.
 
 ## 5. Prompt Evaluation
 
