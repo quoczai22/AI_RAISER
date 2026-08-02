@@ -60,6 +60,16 @@ try {
     throw "Expected API security headers."
   }
 
+  $runtimeResponse = Invoke-WebRequest -Uri "$baseUrl/api/runtime-status" -UseBasicParsing
+  $runtime = $runtimeResponse.Content | ConvertFrom-Json
+  if ($runtime.geminiModel -ne "gemini-3.6-flash") {
+    throw "Expected runtime status to include default Gemini model."
+  }
+
+  if ($runtimeResponse.Content -match "GEMINI_API_KEY") {
+    throw "Runtime status must not expose secret names or values."
+  }
+
   try {
     Invoke-RestMethod `
       -Uri "$baseUrl/api/sessions" `

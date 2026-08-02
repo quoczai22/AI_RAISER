@@ -26,12 +26,15 @@ function Invoke-Json {
 
 $health = Invoke-Json -Uri "$base/healthz"
 $scenarios = Invoke-Json -Uri "$base/api/scenarios"
+$runtime = Invoke-Json -Uri "$base/api/runtime-status"
 $homeResponse = Invoke-WebRequest -Uri "$base/" -Method Head -UseBasicParsing
 
 $result = [ordered]@{
   baseUrl = $base
   health = $health.ok
   scenarioCount = $scenarios.scenarios.Count
+  geminiConfigured = $runtime.geminiConfigured
+  geminiModel = $runtime.geminiModel
   homeStatus = $homeResponse.StatusCode
   geminiProvider = ""
   fallbackReason = ""

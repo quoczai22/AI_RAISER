@@ -122,6 +122,17 @@ async function handleApi(req, res) {
     return;
   }
 
+  if (req.method === "GET" && path === "/api/runtime-status") {
+    sendJson(res, 200, {
+      geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+      geminiModel: process.env.GEMINI_MODEL || "gemini-3.6-flash",
+      maxChatTurns: Number(process.env.MAX_CHAT_TURNS || 8),
+      maxMessageLength: Number(process.env.MAX_MESSAGE_LENGTH || 1000),
+      maxJsonBodyBytes,
+    });
+    return;
+  }
+
   if (req.method === "POST" && path === "/api/sessions") {
     const body = await readJsonBody(req);
     const session = createSession(body);

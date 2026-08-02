@@ -30,6 +30,12 @@ Health check:
 http://localhost:3000/healthz
 ```
 
+Runtime status without exposing secrets:
+
+```text
+http://localhost:3000/api/runtime-status
+```
+
 ## Configure Gemini
 
 Create `.env` from `.env.example` or set environment variables. The app loads `.env` automatically when you run `node server.js`.
