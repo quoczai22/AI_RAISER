@@ -51,10 +51,19 @@ Keep these modules conceptually the same:
 
 ## Demo Recommendation
 
-Use the local repo for fast development and fallback demo. Use the AI Studio version for final AI Riser submission if required by the event workflow. If Gemini quota is tight, avoid repeated live probes and run one warm-up shortly before judging.
+Use the local repo for fast development and fallback demo. Use the AI Studio version for final AI Riser submission. If Gemini quota is tight, avoid repeated live probes and run one warm-up shortly before judging.
 
 Both versions should tell the same story:
 
 ```text
 Entry -> Scenario + difficulty -> Consent -> Gemini dynamic chat -> Red flag scoring -> Shareable dashboard
 ```
+
+## Submission Checklist
+
+- Open the AI Studio project and verify the 5-screen flow works end to end.
+- Verify the Gemini API key is configured through AI Studio/server-side secrets, not client code.
+- Run one dynamic response check with 2-3 different participant messages.
+- Use Share -> Public for the AI Studio project link.
+- Open the public link in a clean/incognito browser before submitting.
+- Keep the GitHub repo and Cloud Run URL as backup evidence only.

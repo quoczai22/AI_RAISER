@@ -5,10 +5,20 @@
 - App starts with `node server.js`.
 - Local URL opens at `http://localhost:3000`.
 - Full demo path can finish in 3 minutes.
-- Cloud Run deployment is supported by `Dockerfile`.
+- Submission target is a Google AI Studio project shared as Public.
+- GitHub/Cloud Run are bonus/fallback delivery paths, not the primary submission artifact.
+- Cloud Run deployment is supported by `Dockerfile` if a public backup URL is needed.
 - Evidence: `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`.
 - Current event/tooling context: `docs/ai_riser_current_context.md`.
-- Deployment blocker to clear: current machine does not have `gcloud` in PATH; see `RiskReport.md`.
+- Cloud Run blocker to clear only for the bonus path: current machine does not have `gcloud` in PATH; see `RiskReport.md`.
+
+## Submission
+
+- Create or port the app in Google AI Studio Build Mode.
+- Confirm Gemini calls stay server-side and no API key is exposed in client code.
+- Use Share -> Public for the AI Studio project link.
+- Open the public link in a clean browser session before submitting.
+- Keep GitHub repo and Cloud Run URL ready only as supporting evidence.
 
 ## AI Necessity / AI-Native
 
