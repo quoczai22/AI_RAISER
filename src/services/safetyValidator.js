@@ -74,6 +74,9 @@ export function maskSensitiveInput(input) {
   for (const item of sensitivePatterns) {
     masked = masked.replace(item.pattern, (match, prefix) => {
       detected.add(item.key);
+      if (item.key === "account" && prefix) {
+        return `${prefix} [MASKED_ACCOUNT]`;
+      }
       if (item.key === "password" && prefix) {
         return `${prefix} [MASKED_PASSWORD]`;
       }

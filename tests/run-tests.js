@@ -97,6 +97,8 @@ const maskedAccount = maskSensitiveInput("STK: 1234567890");
 assert.equal(maskedAccount.changed, true);
 assert.equal(maskedAccount.masked.includes("[MASKED_ACCOUNT]"), true);
 assert.equal(maskedAccount.masked.includes("1234567890"), false);
+assert.equal(maskedAccount.masked.includes("$1"), false);
+assert.equal(maskedAccount.masked.includes("STK [MASKED_ACCOUNT]"), true);
 
 const unsafeReply = validateAiReply("Bấm vào https://example.com để xác minh");
 assert.equal(unsafeReply.safe, false);
