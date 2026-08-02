@@ -88,6 +88,14 @@ export async function sendChatMessage(sessionId, input) {
 
   const session = requireActiveSession(sessionId);
   const scenario = getScenario(session.scenarioId);
+  if (session.isProcessing) {
+    const error = new Error("A chat message is already being processed.");
+    error.status = 409;
+    throw error;
+  }
+  session.isProcessing = true;
+
+  try {
   const masked = maskSensitiveInput(input.message.trim());
 
   const participantMessage = {
@@ -179,6 +187,9 @@ export async function sendChatMessage(sessionId, input) {
       fallbackReason: modelResult.fallbackReason || "",
     },
   };
+  } finally {
+    session.isProcessing = false;
+  }
 }
 
 async function generateModelReply({ session, scenario, participantMessage, repairReason = "" }) {

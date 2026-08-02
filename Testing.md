@@ -37,6 +37,7 @@ Current unit coverage:
 
 - Loads exactly 3 MVP scenarios.
 - Rejects chat start without simulation consent.
+- Rejects concurrent chat turns while the same session is already processing.
 - Rejects dashboard/result access before simulation consent.
 - Prevents completed sessions from being reactivated through the consent endpoint.
 - Prunes old in-memory sessions when `MAX_SESSIONS` is exceeded.

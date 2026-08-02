@@ -5,6 +5,7 @@ import {
   createSession,
   getSessionMessages,
   getSession,
+  requireStoredSession,
 } from "../src/services/sessionService.js";
 import { sendChatMessage } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
@@ -57,6 +58,15 @@ assert.ok(active.consentAt);
 const loaded = getSession(created.id);
 assert.equal(loaded.id, created.id);
 assert.equal(loaded.status, "active");
+
+const processingSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+confirmConsent(processingSession.id, { consent: true });
+requireStoredSession(processingSession.id).isProcessing = true;
+await assert.rejects(
+  () => sendChatMessage(processingSession.id, { message: "Xin chào." }),
+  /already being processed/,
+);
+requireStoredSession(processingSession.id).isProcessing = false;
 
 const weirdNameSession = createSession({
   scenarioId: "fake_bank",
