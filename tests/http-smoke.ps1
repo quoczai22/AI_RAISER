@@ -65,6 +65,15 @@ try {
     throw "Expected chat reply."
   }
 
+  $messages = Invoke-RestMethod -Uri "$baseUrl/api/sessions/$sessionId/messages"
+  if ($messages.messages.Count -lt 2) {
+    throw "Expected stored chat transcript."
+  }
+
+  if (($messages.messages | Where-Object { $_.role -eq "participant" }).Count -gt 0) {
+    throw "Expected participant role to be mapped to UI user role."
+  }
+
   $dashboard = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions/$sessionId/complete" `
     -Method Post

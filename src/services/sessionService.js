@@ -52,6 +52,16 @@ export function getSession(sessionId) {
   return summarizeSession(requireSession(sessionId));
 }
 
+export function getSessionMessages(sessionId) {
+  const session = requireSession(sessionId);
+  return session.messages.map((message) => ({
+    id: message.id,
+    role: message.role === "participant" ? "user" : message.role,
+    content: message.content,
+    createdAt: message.createdAt,
+  }));
+}
+
 export function requireActiveSession(sessionId) {
   const session = requireSession(sessionId);
   if (!session.consentAt || session.status !== "active") {

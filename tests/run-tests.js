@@ -3,6 +3,7 @@ import { listScenarios } from "../src/services/scenarioService.js";
 import {
   confirmConsent,
   createSession,
+  getSessionMessages,
   getSession,
 } from "../src/services/sessionService.js";
 import { sendChatMessage } from "../src/services/chatOrchestrator.js";
@@ -79,6 +80,11 @@ assert.ok(chat.reply.length > 0);
 assert.equal(chat.safety.provider, "safe_fallback");
 assert.equal(chat.safety.fallbackReason, "NO_GEMINI_API_KEY");
 assert.equal(chat.sessionStatus, "completed");
+
+const transcript = getSessionMessages(created.id);
+assert.equal(transcript.length, 2);
+assert.equal(transcript[0].role, "user");
+assert.equal(transcript[1].role, "ai");
 
 const dashboard = getDashboard(created.id);
 assert.equal(dashboard.immunityScore, 25);

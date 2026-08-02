@@ -293,7 +293,8 @@ async function renderChatFromRoute() {
     const payload = await api(`/api/sessions/${sessionId}`);
     state.session = payload.session;
     state.selectedScenario = scenarioById(state.session.scenarioId);
-    state.messages = [];
+    const transcript = await api(`/api/sessions/${sessionId}/messages`);
+    state.messages = transcript.messages || [];
     state.safetyNotices = [];
     state.isSending = false;
     if (state.session.status === "completed") {
