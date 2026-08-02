@@ -65,6 +65,7 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
   const payload = await response.json();
   if (!response.ok) {
     const error = new Error(payload.error?.message || "Gemini request failed.");
+    error.code = `GEMINI_HTTP_${response.status}`;
     error.status = response.status;
     throw error;
   }

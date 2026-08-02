@@ -255,6 +255,9 @@ function fallbackNotice(reason) {
   if (reason === "GEMINI_TIMEOUT") {
     return "Gemini phản hồi chậm; app tạm dùng phản hồi dự phòng an toàn để demo không bị gián đoạn.";
   }
+  if (reason === "GEMINI_HTTP_429") {
+    return "Gemini đang bị giới hạn quota/rate limit; app tạm dùng phản hồi dự phòng an toàn.";
+  }
   return "Gemini gặp lỗi tạm thời; app tạm dùng phản hồi dự phòng an toàn.";
 }
 

@@ -4,6 +4,16 @@
 
 Show judges that Gemini is necessary because the simulated scammer adapts to different participant replies, while the scoring dashboard turns the conversation into actionable learning.
 
+## Pre-Demo Check
+
+```powershell
+node tests/run-tests.js
+powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
+powershell -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1
+```
+
+Use the live probe output to confirm `provider = gemini` for the main dynamic chat path before presenting.
+
 ## 3-Minute Flow
 
 1. Open the app.
@@ -57,4 +67,4 @@ Expected:
 
 ## Fallback Note
 
-If `GEMINI_API_KEY` is missing, the app shows a safe fallback notice. For final demo, configure Gemini so the AI-native requirement is satisfied.
+If `GEMINI_API_KEY` is missing or Gemini times out, the app shows a safe fallback notice. For final demo, configure Gemini and warm up the service 5-10 minutes before judging so the AI-native requirement is satisfied.

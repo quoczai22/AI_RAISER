@@ -58,6 +58,20 @@ Expected:
 Implementation tests passed.
 ```
 
+HTTP smoke test:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
+```
+
+Live Gemini probe for final demo rehearsal:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1
+```
+
+The live probe prints provider, fallback reason, validation status and verbatim replies for the same-state fake bank test plus the sensitive fake police test. It never prints `GEMINI_API_KEY`. Use `-DelaySeconds 10` if the free-tier quota is tight.
+
 ## Demo Flow
 
 1. Enter a display name.
