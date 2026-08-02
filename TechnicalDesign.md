@@ -204,6 +204,7 @@ AI Studio may generate API routes or server actions depending on the project str
 | `createSession` | `scenarioId`, `difficulty`, `userName` | session id |
 | `confirmConsent` | `sessionId`, `consent=true` | session status |
 | `sendMessage` | `sessionId`, `message` | AI reply + state |
+| `getMessages` | `sessionId` | masked chat transcript for refresh recovery |
 | `completeSession` | `sessionId` | final score |
 | `getDashboard` | `sessionId` | score, highlights, recommendations |
 
