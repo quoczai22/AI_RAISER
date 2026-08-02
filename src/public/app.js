@@ -7,6 +7,9 @@ const state = {
   messages: [],
   safetyNotices: [],
   isSending: false,
+  runtime: {
+    maxMessageLength: 1000,
+  },
   userName: localStorage.getItem("aisi_user_name") || "",
   history: JSON.parse(localStorage.getItem("aisi_history") || "[]"),
 };
@@ -42,8 +45,15 @@ function escapeHtml(value) {
 }
 
 async function loadScenarios() {
-  const payload = await api("/api/scenarios");
-  state.scenarios = payload.scenarios;
+  const [scenarioPayload, runtimePayload] = await Promise.all([
+    api("/api/scenarios"),
+    api("/api/runtime-status"),
+  ]);
+  state.scenarios = scenarioPayload.scenarios;
+  state.runtime = {
+    ...state.runtime,
+    ...runtimePayload,
+  };
   routeFromHash();
 }
 
@@ -229,7 +239,7 @@ function renderChatShell() {
         ${state.safetyNotices.map((notice) => `<div class="notice danger-note">${escapeHtml(notice)}</div>`).join("")}
       </div>
       <form class="chat-form" id="chat-form">
-        <textarea id="chat-input" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
+        <textarea id="chat-input" maxlength="${state.runtime.maxMessageLength}" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
         <button type="submit" ${state.isSending ? "disabled" : ""}>Gửi</button>
       </form>
     </section>
@@ -242,6 +252,11 @@ function renderChatShell() {
     const input = app.querySelector("#chat-input");
     const text = input.value.trim();
     if (!text) return;
+    if (text.length > state.runtime.maxMessageLength) {
+      state.safetyNotices.push(`Tin nhắn tối đa ${state.runtime.maxMessageLength} ký tự.`);
+      renderChatShell();
+      return;
+    }
     state.messages.push({ role: "user", content: text });
     state.isSending = true;
     input.value = "";
