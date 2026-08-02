@@ -66,6 +66,13 @@ flowchart LR
 | Dashboard Service | Aggregate score, missed red flags, highlights, next recommendation |
 | Session Store | Hold sessions, messages, red flag events, scores for demo |
 
+Runtime guardrail defaults:
+
+- `MAX_CHAT_TURNS=8`.
+- `MAX_MESSAGE_LENGTH=1000`.
+- `MAX_JSON_BODY_BYTES=65536`.
+- `GEMINI_TIMEOUT_MS=45000`.
+
 ## 3. Database
 
 ### 3.1. Storage Choice

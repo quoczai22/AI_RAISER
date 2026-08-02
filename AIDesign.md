@@ -299,6 +299,7 @@ Important note from Google docs: safety filters classify probability of unsafe c
 | Output validator | Block unsafe reply before showing UI |
 | Retry policy | Ask Gemini to repair unsafe/invalid output |
 | Fallback | End safely if model/API fails |
+| Size limits | Reject oversized JSON bodies and chat messages before they reach Gemini |
 
 ### 6.3. User-Facing Safety Copy
 
