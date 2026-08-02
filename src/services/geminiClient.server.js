@@ -5,6 +5,7 @@ loadEnvFile();
 export async function generateGeminiJson({ systemInstruction, prompt, schema }) {
   const defaultModel = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   const apiKey = process.env.GEMINI_API_KEY || "";
+  const timeoutMs = Number(process.env.GEMINI_TIMEOUT_MS || 45000);
 
   if (!apiKey) {
     const error = new Error("GEMINI_API_KEY is not configured.");
@@ -13,8 +14,11 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
   }
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${defaultModel}:generateContent`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const response = await fetch(endpoint, {
     method: "POST",
+    signal: controller.signal,
     headers: {
       "content-type": "application/json",
       "x-goog-api-key": apiKey,
@@ -32,7 +36,7 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
       generationConfig: {
         responseFormat: {
           text: {
-            mimeType: "application/json",
+            mimeType: "APPLICATION_JSON",
             schema,
           },
         },
@@ -56,7 +60,7 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
         },
       ],
     }),
-  });
+  }).finally(() => clearTimeout(timeout));
 
   const payload = await response.json();
   if (!response.ok) {

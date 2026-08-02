@@ -21,14 +21,32 @@ const sensitivePatterns = [
   },
 ];
 
-const blockedOutputPatterns = [
-  /https?:\/\/\S+/i,
-  /\b(?:www\.)\S+/i,
-  /\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/,
-  /\b(?:\d[ -]?){13,19}\b/,
-  /(cài|tải|install).{0,40}(app|ứng dụng|apk|remote|điều khiển)/i,
-  /(chuyển khoản|gửi tiền).{0,40}\b\d{6,}\b/i,
-  /(gửi|cung cấp|đọc).{0,30}(otp|mã xác minh|mật khẩu|password|cccd|số thẻ|số tài khoản)/i,
+const blockedOutputRules = [
+  {
+    key: "url",
+    pattern: /https?:\/\/\S+|\b(?:www\.)\S+/i,
+  },
+  {
+    key: "phone",
+    pattern: /\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/,
+  },
+  {
+    key: "card_or_account",
+    pattern: /\b(?:\d[ -]?){13,19}\b/,
+  },
+  {
+    key: "app_install",
+    pattern: /(cài|tải|install).{0,40}(app|ứng dụng|apk|remote|điều khiển)/i,
+  },
+  {
+    key: "real_money_transfer",
+    pattern: /(chuyển khoản|gửi tiền).{0,40}\b\d{6,}\b/i,
+  },
+  {
+    key: "real_sensitive_request",
+    pattern: /(gửi|cung cấp|đọc).{0,40}(otp|mã xác minh|mật khẩu|password|cccd|số thẻ|số tài khoản)/i,
+    allowIf: /(giả|mô phỏng|placeholder|\[.*\]|không\s+(gửi|cung cấp|đọc)|không bao giờ|từ chối)/i,
+  },
 ];
 
 export function maskSensitiveInput(input) {
@@ -54,9 +72,9 @@ export function maskSensitiveInput(input) {
 
 export function validateAiReply(reply) {
   const text = String(reply || "");
-  const reasons = blockedOutputPatterns
-    .filter((pattern) => pattern.test(text))
-    .map((pattern) => pattern.toString());
+  const reasons = blockedOutputRules
+    .filter((rule) => rule.pattern.test(text) && !(rule.allowIf && rule.allowIf.test(text)))
+    .map((rule) => rule.key);
 
   return {
     safe: reasons.length === 0,

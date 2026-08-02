@@ -95,12 +95,20 @@ export async function sendChatMessage(sessionId, input) {
   session.messages.push(participantMessage);
   session.turnCount += 1;
 
-  const modelResult = await generateModelReply({ session, scenario, participantMessage });
-  const aiValidation = validateAiReply(modelResult.reply);
+  let modelResult = await generateModelReply({ session, scenario, participantMessage });
+  let aiValidation = validateAiReply(modelResult.reply);
+  if (!isModelResultSafe(modelResult, aiValidation)) {
+    modelResult = await generateModelReply({
+      session,
+      scenario,
+      participantMessage,
+      repairReason: aiValidation.reasons.join(", ") || modelResult.safetyAssessment?.notes || "unsafe_output",
+    });
+    aiValidation = validateAiReply(modelResult.reply);
+    modelResult.retryUsed = true;
+  }
   const safeToShow =
-    aiValidation.safe &&
-    modelResult.safetyAssessment?.safeToShow !== false &&
-    modelResult.safetyAssessment?.containsRealWorldInstruction !== true;
+    isModelResultSafe(modelResult, aiValidation);
 
   const aiReply = safeToShow
     ? modelResult.reply
@@ -116,6 +124,7 @@ export async function sendChatMessage(sessionId, input) {
       aiOutputValidated: safeToShow,
       validationReasons: aiValidation.reasons,
       retryUsed: modelResult.retryUsed,
+      fallbackReason: modelResult.fallbackReason || "",
     },
     createdAt: now(),
   };
@@ -154,12 +163,13 @@ export async function sendChatMessage(sessionId, input) {
       aiOutputValidated: safeToShow,
       retryUsed: modelResult.retryUsed,
       provider: modelResult.provider,
+      fallbackReason: modelResult.fallbackReason || "",
     },
   };
 }
 
-async function generateModelReply({ session, scenario, participantMessage }) {
-  const prompt = buildPrompt({ session, scenario, participantMessage });
+async function generateModelReply({ session, scenario, participantMessage, repairReason = "" }) {
+  const prompt = buildPrompt({ session, scenario, participantMessage, repairReason });
   try {
     const result = await generateGeminiJson({
       systemInstruction,
@@ -170,14 +180,15 @@ async function generateModelReply({ session, scenario, participantMessage }) {
       ...result,
       provider: "gemini",
       modelUsed: process.env.GEMINI_MODEL || "gemini-3.6-flash",
-      retryUsed: false,
+      retryUsed: Boolean(repairReason),
     });
   } catch (error) {
-    return fallbackReply({ session, scenario, participantMessage, reason: error.code || error.message });
+    const reason = error.name === "AbortError" || error.code === 20 ? "GEMINI_TIMEOUT" : error.code || error.name || error.message;
+    return fallbackReply({ session, scenario, participantMessage, reason });
   }
 }
 
-function buildPrompt({ session, scenario, participantMessage }) {
+function buildPrompt({ session, scenario, participantMessage, repairReason }) {
   const history = session.messages.slice(-10).map((message) => ({
     role: message.role,
     content: message.content,
@@ -195,7 +206,18 @@ function buildPrompt({ session, scenario, participantMessage }) {
     },
     conversationHistory: history,
     currentParticipantMessage: participantMessage.content,
+    repairInstruction: repairReason
+      ? `Previous output was blocked because: ${repairReason}. Return a safer JSON reply. If the user recognized the scam or refused sensitive data, acknowledge that and move to wrap_up/completed without asking for OTP, phone, account, URL, transfer, app install, or real personal data.`
+      : "",
   });
+}
+
+function isModelResultSafe(modelResult, aiValidation) {
+  return (
+    aiValidation.safe &&
+    modelResult.safetyAssessment?.safeToShow !== false &&
+    modelResult.safetyAssessment?.containsRealWorldInstruction !== true
+  );
 }
 
 function validateGeminiShape(result) {
@@ -230,7 +252,10 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
   const shouldEnd = stop || recognized || session.turnCount >= maxTurns;
   const firstRedFlag = scenario.redFlags[session.turnCount % scenario.redFlags.length];
 
-  let reply = "Đây là phản hồi dự phòng an toàn vì Gemini chưa được cấu hình. Khi có GEMINI_API_KEY, phần này sẽ được thay bằng hội thoại AI động.";
+  const noKey = reason === "NO_GEMINI_API_KEY";
+  let reply = noKey
+    ? "Đây là phản hồi dự phòng an toàn vì Gemini chưa được cấu hình. Khi có GEMINI_API_KEY, phần này sẽ được thay bằng hội thoại AI động."
+    : "Mình tạm dùng phản hồi dự phòng an toàn vì Gemini đang phản hồi chậm hoặc gặp lỗi tạm thời. Mô phỏng vẫn tiếp tục trong giới hạn an toàn.";
   if (recognized) {
     reply = "Bạn đã làm đúng khi muốn xác minh lại qua kênh chính thức. Mình sẽ dừng mô phỏng để chuyển sang phần tổng kết dấu hiệu cảnh báo.";
   } else if (stop) {
@@ -260,6 +285,7 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
     provider: "safe_fallback",
     modelUsed: "none",
     retryUsed: false,
+    fallbackReason: reason,
   };
 }
 

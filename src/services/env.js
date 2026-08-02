@@ -18,7 +18,7 @@ export function loadEnvFile() {
     const separator = trimmed.indexOf("=");
     if (separator === -1) continue;
 
-    const key = trimmed.slice(0, separator).trim();
+    const key = trimmed.slice(0, separator).replace(/^\uFEFF/, "").trim();
     const value = trimmed.slice(separator + 1).trim().replace(/^["']|["']$/g, "");
     if (key && process.env[key] === undefined) {
       process.env[key] = value;

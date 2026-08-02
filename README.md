@@ -38,6 +38,7 @@ Create `.env` from `.env.example` or set environment variables. The app loads `.
 GEMINI_API_KEY=your_google_ai_studio_key
 GEMINI_MODEL=gemini-3.6-flash
 MAX_CHAT_TURNS=8
+GEMINI_TIMEOUT_MS=45000
 PORT=3000
 ```
 
