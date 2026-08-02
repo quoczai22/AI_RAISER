@@ -234,7 +234,7 @@ async function sendChatMessage(text) {
       state.safetyNotices.push("Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư.");
     }
     if (payload.safety?.provider === "safe_fallback") {
-      state.safetyNotices.push("Gemini API chưa được cấu hình; app đang dùng phản hồi dự phòng an toàn.");
+      state.safetyNotices.push(fallbackNotice(payload.safety?.fallbackReason));
     }
     state.messages.push({ role: "ai", content: payload.reply });
     if (payload.sessionStatus === "completed") {
@@ -246,6 +246,16 @@ async function sendChatMessage(text) {
     state.safetyNotices.push(error.message);
     renderChatShell();
   }
+}
+
+function fallbackNotice(reason) {
+  if (reason === "NO_GEMINI_API_KEY") {
+    return "Gemini API chưa được cấu hình; app đang dùng phản hồi dự phòng an toàn.";
+  }
+  if (reason === "GEMINI_TIMEOUT") {
+    return "Gemini phản hồi chậm; app tạm dùng phản hồi dự phòng an toàn để demo không bị gián đoạn.";
+  }
+  return "Gemini gặp lỗi tạm thời; app tạm dùng phản hồi dự phòng an toàn.";
 }
 
 async function renderDashboard() {

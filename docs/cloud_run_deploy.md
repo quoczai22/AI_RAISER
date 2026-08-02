@@ -6,6 +6,7 @@
 - Billing enabled.
 - `gcloud` CLI authenticated.
 - Gemini API key from Google AI Studio.
+- Secret Manager API enabled.
 
 ## Local Check
 
@@ -26,7 +27,24 @@ GEMINI_API_KEY=your-key
 GEMINI_MODEL=gemini-3.6-flash
 ```
 
-Deploy from source:
+Create or update the secret:
+
+```bash
+echo -n "$GEMINI_API_KEY" | gcloud secrets create gemini-api-key \
+  --project $PROJECT_ID \
+  --replication-policy=automatic \
+  --data-file=-
+```
+
+If the secret already exists, add a new version:
+
+```bash
+echo -n "$GEMINI_API_KEY" | gcloud secrets versions add gemini-api-key \
+  --project $PROJECT_ID \
+  --data-file=-
+```
+
+Deploy from source with Secret Manager:
 
 ```bash
 gcloud run deploy $SERVICE \
@@ -34,8 +52,8 @@ gcloud run deploy $SERVICE \
   --project $PROJECT_ID \
   --region $REGION \
   --allow-unauthenticated \
-  --set-env-vars GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8 \
-  --set-env-vars GEMINI_API_KEY=$GEMINI_API_KEY
+  --set-env-vars GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=45000 \
+  --set-secrets GEMINI_API_KEY=gemini-api-key:latest
 ```
 
 ## Windows PowerShell Variant
@@ -47,28 +65,28 @@ $SERVICE="ai-scam-inoculation"
 $GEMINI_API_KEY="your-key"
 $GEMINI_MODEL="gemini-3.6-flash"
 
+Set-Content -Path "$env:TEMP\gemini-key.txt" -Value $GEMINI_API_KEY -NoNewline
+gcloud secrets create gemini-api-key `
+  --project $PROJECT_ID `
+  --replication-policy automatic `
+  --data-file "$env:TEMP\gemini-key.txt"
+
 gcloud run deploy $SERVICE `
   --source . `
   --project $PROJECT_ID `
   --region $REGION `
   --allow-unauthenticated `
-  --set-env-vars "GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_API_KEY=$GEMINI_API_KEY"
+  --set-env-vars "GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=45000" `
+  --set-secrets "GEMINI_API_KEY=gemini-api-key:latest"
 ```
 
-## Safer Secret Option
+If the secret already exists, replace the create command with:
 
-For a real deployment, prefer Secret Manager instead of passing the key directly:
-
-```bash
-echo -n "$GEMINI_API_KEY" | gcloud secrets create gemini-api-key --data-file=-
-
-gcloud run deploy $SERVICE \
-  --source . \
-  --project $PROJECT_ID \
-  --region $REGION \
-  --allow-unauthenticated \
-  --set-env-vars GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8 \
-  --set-secrets GEMINI_API_KEY=gemini-api-key:latest
+```powershell
+Set-Content -Path "$env:TEMP\gemini-key.txt" -Value $GEMINI_API_KEY -NoNewline
+gcloud secrets versions add gemini-api-key `
+  --project $PROJECT_ID `
+  --data-file "$env:TEMP\gemini-key.txt"
 ```
 
 ## Post-Deploy Check
@@ -93,6 +111,7 @@ Scenario -> Consent -> Gemini Chat -> Dashboard
 
 ## Demo Risk Notes
 
-- If Gemini API key is missing, UI will show fallback notice. This is acceptable for development but not final AI Riser demo.
+- If Gemini API key is missing or Gemini times out, UI will show a fallback notice. This is acceptable for local development but not final AI Riser demo.
 - In-memory sessions reset when Cloud Run instance restarts.
 - Keep demo flow linear and avoid refreshing the page mid-session.
+- Send a warm-up request 5-10 minutes before judging to reduce cold-start risk.
