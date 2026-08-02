@@ -286,6 +286,26 @@ async function renderDashboard(options = {}) {
   }
 }
 
+async function renderChatFromRoute() {
+  try {
+    const sessionId = getSessionIdFromHash();
+    if (!sessionId) throw new Error("Session not found.");
+    const payload = await api(`/api/sessions/${sessionId}`);
+    state.session = payload.session;
+    state.selectedScenario = scenarioById(state.session.scenarioId);
+    state.messages = [];
+    state.safetyNotices = [];
+    state.isSending = false;
+    if (state.session.status === "completed") {
+      await renderDashboard({ readOnly: true });
+      return;
+    }
+    renderChatShell();
+  } catch (error) {
+    renderError(error.message);
+  }
+}
+
 function renderDashboardView(dashboard) {
   render(`
     <section class="panel stack">
@@ -403,7 +423,7 @@ function routeFromHash() {
     return;
   }
   if (location.hash.startsWith("#chat/")) {
-    renderChatShell();
+    renderChatFromRoute();
     return;
   }
   if (location.hash.startsWith("#dashboard/")) {
