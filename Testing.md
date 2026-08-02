@@ -70,11 +70,12 @@ Flow tested:
 2. `HEAD /`.
 3. Encoded static path traversal returns 404.
 4. `GET /api/scenarios`.
-5. `POST /api/sessions`.
-6. `POST /api/sessions/{id}/consent`.
-7. `POST /api/sessions/{id}/messages`.
-8. `POST /api/sessions/{id}/complete`.
-9. Verify score is computed.
+5. Wrong method on a known API route returns 405 with security headers.
+6. `POST /api/sessions`.
+7. `POST /api/sessions/{id}/consent`.
+8. `POST /api/sessions/{id}/messages`.
+9. `POST /api/sessions/{id}/complete`.
+10. Verify score is computed.
 
 ## 5. Prompt Evaluation
 

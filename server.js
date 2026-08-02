@@ -52,6 +52,10 @@ function sendText(res, status, message) {
   res.end(message);
 }
 
+function sendMethodNotAllowed(res) {
+  sendJson(res, 405, { error: "Method not allowed." });
+}
+
 async function readJsonBody(req) {
   const chunks = [];
   let totalBytes = 0;
@@ -117,69 +121,100 @@ async function handleApi(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const path = url.pathname;
 
-  if (req.method === "GET" && path === "/api/scenarios") {
-    sendJson(res, 200, { scenarios: listScenarios() });
+  if (path === "/api/scenarios") {
+    if (req.method === "GET") {
+      sendJson(res, 200, { scenarios: listScenarios() });
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 
-  if (req.method === "GET" && path === "/api/runtime-status") {
-    sendJson(res, 200, {
-      geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
-      geminiModel: process.env.GEMINI_MODEL || "gemini-3.6-flash",
-      maxChatTurns: getPositiveIntEnv("MAX_CHAT_TURNS", 8),
-      maxMessageLength: getPositiveIntEnv("MAX_MESSAGE_LENGTH", 1000),
-      maxJsonBodyBytes,
-    });
+  if (path === "/api/runtime-status") {
+    if (req.method === "GET") {
+      sendJson(res, 200, {
+        geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+        geminiModel: process.env.GEMINI_MODEL || "gemini-3.6-flash",
+        maxChatTurns: getPositiveIntEnv("MAX_CHAT_TURNS", 8),
+        maxMessageLength: getPositiveIntEnv("MAX_MESSAGE_LENGTH", 1000),
+        maxJsonBodyBytes,
+      });
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 
-  if (req.method === "POST" && path === "/api/sessions") {
-    const body = await readJsonBody(req);
-    const session = createSession(body);
-    sendJson(res, 201, { session });
+  if (path === "/api/sessions") {
+    if (req.method === "POST") {
+      const body = await readJsonBody(req);
+      const session = createSession(body);
+      sendJson(res, 201, { session });
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 
   const consentMatch = path.match(/^\/api\/sessions\/([^/]+)\/consent$/);
-  if (req.method === "POST" && consentMatch) {
-    const body = await readJsonBody(req);
-    const session = confirmConsent(consentMatch[1], body);
-    sendJson(res, 200, { session });
+  if (consentMatch) {
+    if (req.method === "POST") {
+      const body = await readJsonBody(req);
+      const session = confirmConsent(consentMatch[1], body);
+      sendJson(res, 200, { session });
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 
   const messageMatch = path.match(/^\/api\/sessions\/([^/]+)\/messages$/);
-  if (req.method === "GET" && messageMatch) {
-    const messages = getSessionMessages(messageMatch[1]);
-    sendJson(res, 200, { messages });
-    return;
-  }
-
-  if (req.method === "POST" && messageMatch) {
-    const body = await readJsonBody(req);
-    const result = await sendChatMessage(messageMatch[1], body);
-    sendJson(res, 200, result);
+  if (messageMatch) {
+    if (req.method === "GET") {
+      const messages = getSessionMessages(messageMatch[1]);
+      sendJson(res, 200, { messages });
+      return;
+    }
+    if (req.method === "POST") {
+      const body = await readJsonBody(req);
+      const result = await sendChatMessage(messageMatch[1], body);
+      sendJson(res, 200, result);
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 
   const sessionMatch = path.match(/^\/api\/sessions\/([^/]+)$/);
-  if (req.method === "GET" && sessionMatch) {
-    const session = getSession(sessionMatch[1]);
-    sendJson(res, 200, { session });
+  if (sessionMatch) {
+    if (req.method === "GET") {
+      const session = getSession(sessionMatch[1]);
+      sendJson(res, 200, { session });
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 
   const completeMatch = path.match(/^\/api\/sessions\/([^/]+)\/complete$/);
-  if (req.method === "POST" && completeMatch) {
-    const dashboard = completeSession(completeMatch[1]);
-    sendJson(res, 200, dashboard);
+  if (completeMatch) {
+    if (req.method === "POST") {
+      const dashboard = completeSession(completeMatch[1]);
+      sendJson(res, 200, dashboard);
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 
   const dashboardMatch = path.match(/^\/api\/sessions\/([^/]+)\/dashboard$/);
-  if (req.method === "GET" && dashboardMatch) {
-    const dashboard = getDashboard(dashboardMatch[1]);
-    sendJson(res, 200, dashboard);
+  if (dashboardMatch) {
+    if (req.method === "GET") {
+      const dashboard = getDashboard(dashboardMatch[1]);
+      sendJson(res, 200, dashboard);
+      return;
+    }
+    sendMethodNotAllowed(res);
     return;
   }
 

@@ -95,6 +95,19 @@ try {
   }
 
   try {
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions" -Method Get -UseBasicParsing | Out-Null
+    throw "Expected wrong API method to be rejected."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 405) {
+      throw "Expected wrong API method to return 405."
+    }
+    if (-not (Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Content-Security-Policy")) {
+      throw "Expected 405 to include security headers."
+    }
+  }
+
+  try {
     Invoke-RestMethod `
       -Uri "$baseUrl/api/sessions" `
       -Method Post `
