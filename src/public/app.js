@@ -190,6 +190,27 @@ async function confirmConsent() {
   }
 }
 
+async function renderConsentFromRoute() {
+  try {
+    const sessionId = getSessionIdFromHash();
+    if (!sessionId) throw new Error("Session not found.");
+    const payload = await api(`/api/sessions/${sessionId}`);
+    state.session = payload.session;
+    state.selectedScenario = scenarioById(state.session.scenarioId);
+    if (state.session.status === "active") {
+      renderChatShell();
+      return;
+    }
+    if (state.session.status === "completed") {
+      await renderDashboard({ readOnly: true });
+      return;
+    }
+    renderSimulationConsent();
+  } catch (error) {
+    renderError(error.message);
+  }
+}
+
 function renderChatShell() {
   const scenario = state.selectedScenario || scenarioById(state.session?.scenarioId);
   render(`
@@ -421,7 +442,7 @@ function routeFromHash() {
     return;
   }
   if (location.hash.startsWith("#consent/")) {
-    renderSimulationConsent();
+    renderConsentFromRoute();
     return;
   }
   if (location.hash.startsWith("#chat/")) {
