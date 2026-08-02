@@ -16,19 +16,18 @@ Mục tiêu:
 
 ### 2.1. Primary Model
 
-Use model available in Google AI Studio at implementation time, with this priority:
+Product runtime uses one Gemini model:
 
-| Priority | Model | Use |
-|---|---|---|
-| 1 | `gemini-3.6-flash` | Primary if available; current GA Flash model with strong latency/cost profile |
-| 2 | `gemini-3.5-flash` or `gemini-flash-latest` | Fallback if AI Studio project exposes it more easily |
-| 3 | `gemini-2.5-flash` | Last fallback only; deprecated replacement path points to `gemini-3.6-flash` |
+| Model | Use |
+|---|---|
+| `gemini-3.6-flash` | Primary and only AI model in the product flow |
 
 Reasoning:
 
 - The MVP needs low-latency multi-turn Vietnamese chat and structured JSON output.
 - Flash-class models are better for demo responsiveness than Pro-class models.
-- Use a stable explicit model when possible; avoid unstable experimental models for demo.
+- Use a stable explicit model for demo.
+- If Gemini is unavailable, the app uses deterministic safe fallback; it does not switch to another AI provider or hidden model.
 
 ### 2.2. API Surface
 
@@ -39,7 +38,7 @@ Primary:
 - Structured outputs using JSON Schema.
 - Safety settings kept at default or stricter for dangerous content.
 
-For REST `generateContent`, use `generationConfig.responseFormat.text.mimeType = "application/json"` and provide the JSON schema in `generationConfig.responseFormat.text.schema`.
+For REST `generateContent`, use `generationConfig.responseFormat.text.mimeType = "APPLICATION_JSON"` and provide the JSON schema in `generationConfig.responseFormat.text.schema`.
 
 Do not expose `GEMINI_API_KEY` on the client.
 
@@ -183,7 +182,7 @@ Replace with placeholders before storage and before Gemini call:
 
 ```text
 [MASKED_OTP]
-[MASKED_ID]
+[MASKED_CCCD]
 [MASKED_CARD]
 [MASKED_ACCOUNT]
 [MASKED_PASSWORD]
@@ -455,7 +454,7 @@ Prepare one local tested path:
 | Prompt too realistic and unsafe | High | Strong system frame, output validator, hard block list |
 | Gemini refuses all scam-like simulation | Medium | Emphasize educational consent-based simulation and safe fictional placeholders |
 | JSON schema failures | High | Structured output mode, retry once, fallback |
-| Model availability differs in AI Studio | Medium | Model priority list and fallback model |
+| Gemini quota/latency affects live demo | High | Warm up before judging, use `tests/live-gemini-probe.ps1`, show fallback reason, prepare quota/billing backup |
 | Sampling controls deprecated | Medium | Do not rely on temperature/top-p/top-k as safety controls |
 | Scoring over-relies on AI judgment | Medium | Use scenario red flag schema and deterministic final formula |
 
