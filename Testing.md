@@ -70,7 +70,7 @@ Flow tested:
 1. Start local server.
 2. `HEAD /`.
 3. Encoded static path traversal returns 404.
-4. Static responses include security headers and restrictive permissions policy.
+4. Static responses include `Cache-Control: no-store`, security headers and restrictive permissions policy.
 5. `GET /api/scenarios`.
 6. Wrong method on a known API route returns 405 with security headers.
 7. `POST /api/sessions`.

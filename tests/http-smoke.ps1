@@ -51,6 +51,10 @@ try {
     throw "Expected static security headers."
   }
 
+  if ((Get-HeaderValue -Headers $head.Headers -Name "Cache-Control") -ne "no-store") {
+    throw "Expected static cache-control header."
+  }
+
   $permissionsPolicy = Get-HeaderValue -Headers $head.Headers -Name "Permissions-Policy"
   if (-not $permissionsPolicy -or $permissionsPolicy -notmatch "camera=\(\)") {
     throw "Expected static permissions policy header."

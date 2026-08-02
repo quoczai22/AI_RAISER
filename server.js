@@ -110,6 +110,7 @@ async function serveStatic(req, res) {
     const file = await readFile(filePath);
     res.writeHead(200, {
       "content-type": contentType,
+      "cache-control": "no-store",
       ...securityHeaders,
     });
     res.end(req.method === "HEAD" ? undefined : file);
