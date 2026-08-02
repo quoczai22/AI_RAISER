@@ -570,7 +570,7 @@ Exit Criteria:
 | Gemini latency breaks demo rhythm | High | Limit turns, show typing state, retry once, prepare fallback |
 | Gemini returns invalid JSON | High | JSON schema validation, retry with repair prompt, fallback safe message |
 | API key exposure | High | Server-side Gemini calls only, use AI Studio secrets |
-| Session state lost on refresh | Medium | For demo, guide flow linearly; add Firestore only if needed |
+| Session state lost on server restart | Medium | Same-instance route/transcript recovery exists; keep demo linear and add Firestore only if persistence is required |
 | Scoring feels arbitrary | Medium | Use explicit red flag schema and visible formula |
 | UI too plain for judges | Medium | Prioritize clean chat, readable dashboard, clear highlight states |
 
@@ -597,6 +597,6 @@ Open decisions before Phase 4:
 2. Define exact JSON schema for Gemini chat output.
 3. Define prompt guardrails for fake bank scenario first.
 4. Define retry/fallback behavior in detail.
-5. Confirm whether session state is in-memory only or Firestore optional for demo.
+5. Confirm whether session state remains in-memory for MVP or Firestore becomes required for deployed persistence.
 
 **Status:** Phase 3 ready for review. Chỉ chuyển sang Phase 4 sau khi review xong.
