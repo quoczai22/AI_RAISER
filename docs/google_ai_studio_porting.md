@@ -16,8 +16,10 @@ Keep these modules conceptually the same:
 | `src/services/safetyValidator.js` | Shared validator, called before/after Gemini |
 | `src/services/scoringEngine.js` | Pure scoring function |
 | `src/services/dashboardService.js` | Dashboard aggregation |
-| `src/public/app.js` | React components/state |
+| `src/public/app.js` | UI flow/state to recreate as AI Studio React components if needed |
 | `src/public/app.css` | App styles |
+| `tests/live-gemini-probe.ps1` | Manual/live rehearsal checklist |
+| `tests/warmup.ps1` | Cloud Run warm-up checklist |
 
 ## Porting Steps
 
@@ -33,7 +35,9 @@ Keep these modules conceptually the same:
 5. Copy the prompt strategy from `AIDesign.md`.
 6. Use the same JSON schema from `src/services/chatOrchestrator.js`.
 7. Keep the safety validator before showing AI replies.
-8. Deploy/publish to Cloud Run from AI Studio.
+8. Preserve dashboard taxonomy labels and deterministic scoring formula.
+9. Deploy/publish to Cloud Run from AI Studio.
+10. Run the same pre-demo checks from `docs/demo_script.md`.
 
 ## Non-Negotiables
 
@@ -41,11 +45,13 @@ Keep these modules conceptually the same:
 - Do not turn chat into fixed if/else branches.
 - Do not remove consent screens.
 - Do not remove output validation.
-- Do not show raw OTP/password/CCCD/card/account input.
+- Do not show raw OTP/password/CCCD/card/account/phone input.
+- Do not send `temperature`, `top_p`, or `top_k` for `gemini-3.6-flash`.
+- Do not replace `GEMINI_HTTP_429`/timeout visibility with a silent fallback.
 
 ## Demo Recommendation
 
-Use the local repo for fast development and fallback demo. Use the AI Studio version for final AI Riser submission if required by the event workflow.
+Use the local repo for fast development and fallback demo. Use the AI Studio version for final AI Riser submission if required by the event workflow. If Gemini quota is tight, avoid repeated live probes and run one warm-up shortly before judging.
 
 Both versions should tell the same story:
 
