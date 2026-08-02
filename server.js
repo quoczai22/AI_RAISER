@@ -141,6 +141,7 @@ async function handleApi(req, res) {
         maxChatTurns: getPositiveIntEnv("MAX_CHAT_TURNS", 8),
         maxMessageLength: getPositiveIntEnv("MAX_MESSAGE_LENGTH", 1000),
         maxJsonBodyBytes,
+        maxSessions: getPositiveIntEnv("MAX_SESSIONS", 200),
       });
       return;
     }

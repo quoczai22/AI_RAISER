@@ -11,6 +11,7 @@ import { getDashboard } from "../src/services/dashboardService.js";
 import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
 import { looksLikeScamRecognition, maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
+import { sessions } from "../src/services/store.js";
 
 function expectThrows(fn, message) {
   try {
@@ -330,5 +331,20 @@ try {
   globalThis.fetch = originalFetch;
   process.env.GEMINI_API_KEY = "";
 }
+
+process.env.MAX_SESSIONS = "3";
+sessions.clear();
+const pruneA = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "A" });
+const pruneB = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "B" });
+const pruneC = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "C" });
+const pruneD = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "D" });
+assert.equal(getSession(pruneB.id).id, pruneB.id);
+assert.equal(getSession(pruneC.id).id, pruneC.id);
+assert.equal(getSession(pruneD.id).id, pruneD.id);
+expectThrows(
+  () => getSession(pruneA.id),
+  "Session not found",
+);
+delete process.env.MAX_SESSIONS;
 
 console.log("Implementation tests passed.");

@@ -102,6 +102,10 @@ try {
     throw "Expected runtime status to include default Gemini model."
   }
 
+  if ($runtime.maxSessions -ne 200) {
+    throw "Expected runtime status to include default max sessions."
+  }
+
   if ($runtimeResponse.Content -match "GEMINI_API_KEY") {
     throw "Runtime status must not expose secret names or values."
   }

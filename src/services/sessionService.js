@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { getPositiveIntEnv } from "./env.js";
 import { getScenario } from "./scenarioService.js";
 import { sessions } from "./store.js";
 
@@ -30,6 +31,7 @@ export function createSession(input) {
   };
 
   sessions.set(session.id, session);
+  pruneSessionStore({ keepSessionId: session.id });
   return summarizeSession(session);
 }
 
@@ -135,4 +137,23 @@ function normalizeUserName(value) {
     .trim();
   if (!name) return "Bạn";
   return name.slice(0, 40);
+}
+
+function pruneSessionStore({ keepSessionId }) {
+  const maxSessions = getPositiveIntEnv("MAX_SESSIONS", 200);
+  if (sessions.size <= maxSessions) return;
+
+  const oldestFirst = Array.from(sessions.values())
+    .filter((session) => session.id !== keepSessionId)
+    .sort((left, right) => String(left.createdAt).localeCompare(String(right.createdAt)));
+
+  const pruneOrder = [
+    ...oldestFirst.filter((session) => session.status !== "active"),
+    ...oldestFirst.filter((session) => session.status === "active"),
+  ];
+
+  for (const session of pruneOrder) {
+    if (sessions.size <= maxSessions) return;
+    sessions.delete(session.id);
+  }
 }
