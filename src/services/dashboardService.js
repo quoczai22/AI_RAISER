@@ -124,8 +124,8 @@ function techniqueFor(key) {
     },
   };
   return techniques[key] || {
-    key: "social engineering",
-    label: "social engineering - thao túng tâm lý",
+    key: "authority",
+    label: "authority - tín hiệu thao túng cần kiểm chứng",
   };
 }
 

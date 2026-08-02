@@ -157,6 +157,12 @@ assert.ok(dashboard.recognizedRedFlags[0].techniqueLabel.includes("authority"));
 assert.ok(dashboard.missedRedFlags.every((flag) => flag.techniqueLabel.length > 0));
 assert.ok(dashboard.missedRedFlags.every((flag) => flag.recommendation.startsWith("Pattern:")));
 assert.ok(dashboard.missedRedFlags.every((flag) => !flag.recommendation.includes("Bạn nên trả lời")));
+const allowedFeedbackTechniques = new Set(["urgency", "authority", "fear", "social proof/reciprocity", "scarcity"]);
+for (const flag of [...dashboard.recognizedRedFlags, ...dashboard.missedRedFlags]) {
+  for (const part of flag.technique.split("+").map((item) => item.trim())) {
+    assert.ok(allowedFeedbackTechniques.has(part), `Unexpected feedback technique: ${part}`);
+  }
+}
 
 expectThrows(
   () => confirmConsent(created.id, { consent: true }),

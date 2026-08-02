@@ -61,6 +61,7 @@ Current unit coverage:
 - Verifies duplicate Gemini red flag signals are deduplicated, preferring `recognized` over weaker statuses.
 - Computes dashboard score from recognized red flags.
 - Verifies dashboard feedback uses manipulation taxonomy pattern language.
+- Verifies dashboard technique keys stay within the approved feedback taxonomy.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.
 
 ## 4. Integration Test
