@@ -48,6 +48,7 @@ function sendJson(res, status, payload) {
 function sendText(res, status, message) {
   res.writeHead(status, {
     "content-type": "text/plain; charset=utf-8",
+    "cache-control": "no-store",
     ...securityHeaders,
   });
   res.end(message);

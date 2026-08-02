@@ -71,6 +71,9 @@ try {
     if (-not (Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Content-Security-Policy")) {
       throw "Expected 404 to include security headers."
     }
+    if ((Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Cache-Control") -ne "no-store") {
+      throw "Expected 404 to include cache-control header."
+    }
   }
 
   try {
