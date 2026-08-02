@@ -3,6 +3,35 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $port = Get-Random -Minimum 4100 -Maximum 4999
 $baseUrl = "http://localhost:$port"
+
+function Get-HeaderValue {
+  param(
+    [Parameter(Mandatory = $true)]$Headers,
+    [Parameter(Mandatory = $true)][string]$Name
+  )
+
+  foreach ($key in $Headers.Keys) {
+    if ([string]::Equals($key, $Name, [System.StringComparison]::OrdinalIgnoreCase)) {
+      return $Headers[$key]
+    }
+  }
+  return $null
+}
+
+function Wait-ForHealth {
+  for ($attempt = 1; $attempt -le 10; $attempt++) {
+    try {
+      $health = Invoke-RestMethod -Uri "$baseUrl/healthz"
+      if ($health.ok -eq $true) {
+        return
+      }
+    } catch {
+      Start-Sleep -Milliseconds 500
+    }
+  }
+  throw "Expected health check to pass."
+}
+
 $process = Start-Process `
   -FilePath powershell `
   -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "`$env:PORT='$port'; node server.js" `
@@ -11,19 +40,14 @@ $process = Start-Process `
   -WindowStyle Hidden
 
 try {
-  Start-Sleep -Seconds 2
-
-  $health = Invoke-RestMethod -Uri "$baseUrl/healthz"
-  if ($health.ok -ne $true) {
-    throw "Expected health check to pass."
-  }
+  Wait-ForHealth
 
   $head = Invoke-WebRequest -Uri "$baseUrl/" -Method Head -UseBasicParsing
   if ($head.StatusCode -ne 200) {
     throw "Expected static HEAD request to pass."
   }
 
-  if ($head.Headers["X-Content-Type-Options"] -ne "nosniff") {
+  if ((Get-HeaderValue -Headers $head.Headers -Name "X-Content-Type-Options") -ne "nosniff") {
     throw "Expected static security headers."
   }
 
@@ -35,7 +59,7 @@ try {
     if ($_.Exception.Response.StatusCode.value__ -ne 404) {
       throw "Expected encoded path traversal to return 404."
     }
-    if (-not $_.Exception.Response.Headers["Content-Security-Policy"]) {
+    if (-not (Get-HeaderValue -Headers $_.Exception.Response.Headers -Name "Content-Security-Policy")) {
       throw "Expected 404 to include security headers."
     }
   }
@@ -56,7 +80,7 @@ try {
   }
 
   $scenarioResponse = Invoke-WebRequest -Uri "$baseUrl/api/scenarios" -UseBasicParsing
-  if (-not $scenarioResponse.Headers["Content-Security-Policy"]) {
+  if (-not (Get-HeaderValue -Headers $scenarioResponse.Headers -Name "Content-Security-Policy")) {
     throw "Expected API security headers."
   }
 
