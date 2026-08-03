@@ -341,6 +341,14 @@ Loại bỏ tính năng nhập giọng nói khỏi MVP vì không ổn định t
 - Kiểm tra mobile không còn khoảng trống hoặc layout thừa do nút voice bị xóa.
 - Antigravity báo diff ngắn và commit riêng; không commit `.env`, `LOCAL_STATUS.md` hoặc `node_modules/`.
 
+### Review Kết Quả Commit 3c9abc1
+
+- **Đã xác minh:** đã xóa nút `Nói`, handler Web Speech API, hàm `startVietnameseSpeech` và các assertion voice khỏi source/test.
+- **Đã xác minh:** `rg` không còn dấu vết voice trong `src`, `tests`, `README.md` hoặc `docs`.
+- **Đã xác minh:** unit test và HTTP smoke test pass.
+- Commit `3c9abc1` đã được push.
+- **CHƯA XÁC MINH ĐƯỢC:** mobile visual layout sau khi xóa nút bằng screenshot/browser.
+
 ## Bắt Buộc: Review Bằng Chứng Trực Tiếp
 
 - Không tin hoặc dùng báo cáo tự khai của Antigravity làm bằng chứng.
