@@ -274,3 +274,11 @@ Ngày review: 2026-08-03.
 - Quyết định policy khi Firestore write fail: strict error hoặc fallback minh bạch; cập nhật runtime status/docs tương ứng.
 - Cập nhật `LOCAL_STATUS.md` sau khi Antigravity commit thật, không ghi trạng thái giả định trước commit.
 - Chỉ sau khi các điểm trên đạt acceptance criteria mới xem xét commit/đẩy phần Firestore.
+
+## Bắt Buộc: Review Bằng Chứng Trực Tiếp
+
+- Không tin hoặc dùng báo cáo tự khai của Antigravity làm bằng chứng.
+- Tự đọc `git diff`, nội dung system prompt, feedback taxonomy và implementation thực tế.
+- Đối chiếu từng kết luận với checklist trong `AGENTS.md`.
+- Nếu chưa kiểm chứng được bằng code, diff hoặc test có thể tái lập, phải ghi đúng: **CHƯA XÁC MINH ĐƯỢC**.
+- Không ghi “Đạt” dựa trên `LOCAL_STATUS.md`, commit message, README hoặc lời báo cáo nếu chưa đối chiếu với source thật.
