@@ -320,6 +320,27 @@ Ngày review: 2026-08-03.
 - **CHƯA XÁC MINH ĐƯỢC:** lock chống concurrent request giữa nhiều process/instance.
 - **CHƯA XÁC MINH ĐƯỢC:** accessibility mobile bằng screenshot/browser sau commit.
 
+## P1 - Remove Voice Input From MVP Demo
+
+### Mục Tiêu
+
+Loại bỏ tính năng nhập giọng nói khỏi MVP vì không ổn định trên môi trường demo. Giữ luồng nhập văn bản đơn giản làm luồng tương tác chính.
+
+### Phạm Vi Antigravity
+
+- Xóa nút `Nói` và toàn bộ event handler Web Speech API khỏi UI.
+- Xóa các test/assertion và wording chỉ dành cho voice input.
+- Không xóa hỗ trợ chữ to, tương phản cao, nút lớn, phản hồi khi bấm hoặc nút Stop.
+- Không đổi flow MVP, Gemini, safety validator, scoring hoặc taxonomy.
+
+### Acceptance Criteria
+
+- `rg` trên source không còn `SpeechRecognition`, `webkitSpeechRecognition`, `startVietnameseSpeech`, `voice-input` hoặc nhãn `Nói`.
+- Màn hình chat vẫn gửi được tin nhắn bằng textarea và nút `Gửi`.
+- Unit test và HTTP smoke test pass.
+- Kiểm tra mobile không còn khoảng trống hoặc layout thừa do nút voice bị xóa.
+- Antigravity báo diff ngắn và commit riêng; không commit `.env`, `LOCAL_STATUS.md` hoặc `node_modules/`.
+
 ## Bắt Buộc: Review Bằng Chứng Trực Tiếp
 
 - Không tin hoặc dùng báo cáo tự khai của Antigravity làm bằng chứng.
