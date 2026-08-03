@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/app.css">
   </head>
   <body>
+    <a class="skip-link" href="#app">Bỏ qua phần đầu trang</a>
     <main class="app-shell">
       <header class="app-header">
         <div>
@@ -17,7 +18,8 @@
         <span class="build-badge">Build with Google AI</span>
       </header>
 
-      <section id="app" aria-live="polite"></section>
+      <section id="app" tabindex="-1" aria-live="polite"></section>
+      <div id="status-region" class="sr-only" role="status" aria-live="polite"></div>
     </main>
     <script type="module" src="/app.js"></script>
   </body>

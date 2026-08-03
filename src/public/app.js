@@ -1,4 +1,5 @@
 const app = document.querySelector("#app");
+const statusRegion = document.querySelector("#status-region");
 
 const state = {
   scenarios: [],
@@ -108,6 +109,13 @@ function scenarioById(id) {
 function render(content) {
   applyAccessibilitySettings();
   app.innerHTML = content;
+  app.focus({ preventScroll: true });
+}
+
+function announceStatus(message) {
+  if (statusRegion) {
+    statusRegion.textContent = message;
+  }
 }
 
 function escapeHtml(value) {
@@ -186,11 +194,13 @@ function renderEntryDashboard() {
     state.accessibility.largeText = event.target.checked;
     saveAccessibilitySettings();
     applyAccessibilitySettings();
+    announceStatus(event.target.checked ? "Đã bật chữ to." : "Đã tắt chữ to.");
   });
   app.querySelector("#high-contrast-toggle").addEventListener("change", (event) => {
     state.accessibility.highContrast = event.target.checked;
     saveAccessibilitySettings();
     applyAccessibilitySettings();
+    announceStatus(event.target.checked ? "Đã bật tương phản cao." : "Đã tắt tương phản cao.");
   });
   app.querySelector("#start-training").addEventListener("click", () => {
     acknowledgeTap();
@@ -395,7 +405,9 @@ function startVoiceInput() {
   const input = app.querySelector("#chat-input");
   const voiceButton = app.querySelector("#voice-input");
   if (!SpeechRecognition || !input || !voiceButton) {
-    state.safetyNotices.push("Trình duyệt này chưa hỗ trợ nhập giọng nói.");
+    const message = "Trình duyệt này chưa hỗ trợ nhập giọng nói.";
+    state.safetyNotices.push(message);
+    announceStatus(message);
     renderChatShell();
     return;
   }
@@ -410,9 +422,12 @@ function startVoiceInput() {
     const transcript = event.results?.[0]?.[0]?.transcript || "";
     input.value = transcript.slice(0, state.runtime.maxMessageLength);
     input.focus();
+    announceStatus("Đã nhận giọng nói. Bạn có thể kiểm tra rồi bấm Gửi.");
   };
   recognition.onerror = () => {
-    state.safetyNotices.push("Không nghe được giọng nói. Bạn có thể nhập bằng bàn phím.");
+    const message = "Không nghe được giọng nói. Bạn có thể nhập bằng bàn phím.";
+    state.safetyNotices.push(message);
+    announceStatus(message);
     renderChatShell();
   };
   recognition.onend = () => {
@@ -432,10 +447,14 @@ async function sendChatMessage(text) {
       body: JSON.stringify({ message: text }),
     });
     if (payload.safety?.maskedSensitiveInput) {
-      state.safetyNotices.push("Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư.");
+      const message = "Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư.";
+      state.safetyNotices.push(message);
+      announceStatus(message);
     }
     if (payload.safety?.provider === "safe_fallback") {
-      state.safetyNotices.push(fallbackNotice(payload.safety?.fallbackReason));
+      const message = fallbackNotice(payload.safety?.fallbackReason);
+      state.safetyNotices.push(message);
+      announceStatus(message);
     }
     state.messages.push({ role: "ai", content: payload.reply });
     state.isSending = false;
@@ -447,6 +466,7 @@ async function sendChatMessage(text) {
   } catch (error) {
     state.isSending = false;
     state.safetyNotices.push(error.message);
+    announceStatus(error.message);
     renderChatShell();
   }
 }
@@ -564,8 +584,10 @@ async function copyShareSummary(dashboard) {
     acknowledgeTap();
     await navigator.clipboard.writeText(text);
     state.safetyNotices = ["Đã copy tóm tắt kết quả."];
+    announceStatus("Đã copy tóm tắt kết quả.");
   } catch {
     state.safetyNotices = ["Không copy tự động được. Bạn có thể chọn và copy thủ công."];
+    announceStatus("Không copy tự động được. Bạn có thể chọn và copy thủ công.");
   }
   renderDashboardView({
     ...dashboard,

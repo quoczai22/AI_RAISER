@@ -165,6 +165,7 @@ docs/google_ai_studio_porting.md
 - `Testing.md`: kế hoạch và coverage test.
 - `RiskReport.md`: rủi ro demo, quota, deploy.
 - `docs/ai_riser_checklist.md`: checklist trước khi nộp.
+- `docs/accessibility_compliance.md`: ghi chú áp dụng accessibility theo Thông tư 26/2020/TT-BTTTT và WCAG.
 
 ## Lưu Ý An Toàn
 

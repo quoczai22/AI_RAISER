@@ -65,6 +65,7 @@ Current unit coverage:
 - Verifies UI fallback technique text does not use out-of-taxonomy labels.
 - Verifies accessibility toggles for large text and high contrast remain present in the UI/CSS.
 - Verifies Vietnamese voice input support hook remains present for chat when the browser supports Web Speech API.
+- Verifies skip link and status live region are present for keyboard/screen-reader support.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.
 
 Accessibility notes:
@@ -73,6 +74,7 @@ Accessibility notes:
 - Default primary button color `#2563eb` with white text and danger button `#b91c1c` with white text meet basic WCAG AA contrast by inspection.
 - High-contrast mode uses darker text/borders and removes soft shadows for clearer separation.
 - Button press feedback uses visual active state and optional device vibration through `navigator.vibrate` when supported.
+- Compliance note: `docs/accessibility_compliance.md`.
 
 ## 4. Integration Test
 
