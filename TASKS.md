@@ -302,6 +302,24 @@ Ngày review: 2026-08-03.
 - `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: pass.
 - Hai test trên chưa đủ để kết luận Firestore, model lock hoặc accessibility visual là Đạt.
 
+## Review Loop - Commit aa105a8
+
+Ngày review: 2026-08-03.
+
+### Kết Luận Bằng Chứng
+
+- **Đã xác minh:** model bị khóa về `gemini-3.6-flash`; test có trường hợp đặt model cấm và bắt lỗi.
+- **Đã xác minh:** feedback key đã dùng `social proof/reciprocity` thay cho `reciprocity` độc lập; test tách key và đối chiếu với allow-list.
+- **Đã xác minh:** in-memory store copy-on-read và `sendChatMessage()` explicit persist có regression test.
+- **Đã xác minh:** unit test, HTTP smoke test và `git diff --check` pass trên commit.
+- Commit `aa105a8` đã được push sau review.
+
+### Trạng Thái Còn Lại
+
+- **CHƯA XÁC MINH ĐƯỢC:** Firestore thật sau restart hoặc emulator/Google Cloud.
+- **CHƯA XÁC MINH ĐƯỢC:** lock chống concurrent request giữa nhiều process/instance.
+- **CHƯA XÁC MINH ĐƯỢC:** accessibility mobile bằng screenshot/browser sau commit.
+
 ## Bắt Buộc: Review Bằng Chứng Trực Tiếp
 
 - Không tin hoặc dùng báo cáo tự khai của Antigravity làm bằng chứng.
