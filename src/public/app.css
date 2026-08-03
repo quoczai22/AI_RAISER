@@ -210,6 +210,12 @@ h3 {
   gap: 12px;
 }
 
+.entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .toggle-row {
   display: inline-flex;
   align-items: center;

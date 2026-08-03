@@ -21,9 +21,11 @@ AI Scam Inoculation không phải cổng dịch vụ công, nhưng MVP áp dụn
 | Tương phản | Toggle `Tương phản cao`, màu chữ/nút tương phản mạnh |
 | Nút dễ bấm | Nút chính tối thiểu 56px chiều cao |
 | Icon không thay thế chữ | Icon chỉ trang trí `aria-hidden`, luôn đi kèm chữ |
+| Thuần Việt, ít thuật ngữ | Màn hình chính dùng `Trang chính`, `Sao chép`, `Hủy bỏ / Quay lại`; lỗi Gemini quota được diễn giải là `Trợ lý AI đang bận` |
+| Giảm sợ bấm nhầm | Màn hình đầu ghi rõ không cần mật khẩu/OTP, không trừ tiền; bước đồng thuận có nút `Hủy bỏ / Quay lại` lớn |
 | Keyboard | Control dùng button/input/select/textarea chuẩn, có `focus-visible` rõ |
 | Không dùng gesture phức tạp | Luồng chỉ dùng click/tap và nhập text/voice |
-| Giọng nói tiếng Việt | Nút `Nói`, dùng Web Speech API `vi-VN` nếu trình duyệt hỗ trợ |
+| Giọng nói tiếng Việt | Nút `Nói tên của bạn` ở màn hình chính và nút `Nói` trong chat, dùng Web Speech API `vi-VN` nếu trình duyệt hỗ trợ |
 | Phản hồi thao tác | Button active state + rung nhẹ `navigator.vibrate` nếu thiết bị hỗ trợ |
 | Nội dung dễ hiểu | Feedback dashboard viết ngắn, tránh dạy câu trả lời mẫu |
 
@@ -31,6 +33,7 @@ AI Scam Inoculation không phải cổng dịch vụ công, nhưng MVP áp dụn
 
 - Chưa có audit WCAG tự động bằng Lighthouse/axe.
 - Web Speech API phụ thuộc trình duyệt; nếu không hỗ trợ, app hiển thị thông báo và cho nhập bàn phím.
+- MVP chưa có đăng nhập nên chưa cần FaceID/dấu vân tay; nếu sau này thêm tài khoản thật, ưu tiên passwordless thay vì mật khẩu/OTP.
 - Chưa kiểm thử với screen reader thực tế như NVDA/TalkBack/VoiceOver.
 - Chưa có phụ đề/audio vì MVP hiện là chat text, không có video/audio nội dung.
 
@@ -49,5 +52,6 @@ Kiểm tra tay:
 1. Bấm `Tab` thấy skip link và focus outline rõ.
 2. Bật `Chữ to`.
 3. Bật `Tương phản cao`.
-4. Vào chat, thử nút `Nói` trên trình duyệt hỗ trợ tiếng Việt.
-5. Dùng toàn bộ flow bằng click/tap, không cần gesture phức tạp.
+4. Ở màn hình chính, thử nút `Nói tên của bạn`.
+5. Vào chat, thử nút `Nói` trên trình duyệt hỗ trợ tiếng Việt.
+6. Dùng toàn bộ flow bằng click/tap, không cần gesture phức tạp.

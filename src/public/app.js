@@ -158,8 +158,11 @@ function renderEntryDashboard() {
   render(`
     <section class="panel stack">
       <div>
-        <h2>Dashboard cá nhân</h2>
-        <p class="subtitle">Bắt đầu nhanh, không cần tài khoản phức tạp.</p>
+        <h2>Trang chính của bạn</h2>
+        <p class="subtitle">Không cần mật khẩu, không cần OTP, không trừ tiền.</p>
+      </div>
+      <div class="notice">
+        Đây chỉ là buổi luyện tập. Bạn có thể bấm Hủy bỏ / Quay lại ở các bước sau nếu chưa yên tâm.
       </div>
       <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
         <label class="toggle-row">
@@ -175,7 +178,8 @@ function renderEntryDashboard() {
         <strong>Tên hiển thị</strong>
         <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
       </label>
-      <div>
+      <div class="entry-actions">
+        <button type="button" class="secondary" id="voice-name"><span aria-hidden="true">🎙</span> Nói tên của bạn</button>
         <button id="start-training"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
       </div>
       <h3>Lịch sử trong phiên này</h3>
@@ -190,6 +194,7 @@ function renderEntryDashboard() {
     </section>
   `);
 
+  app.querySelector("#voice-name").addEventListener("click", startNameVoiceInput);
   app.querySelector("#large-text-toggle").addEventListener("change", (event) => {
     state.accessibility.largeText = event.target.checked;
     saveAccessibilitySettings();
@@ -238,7 +243,7 @@ function renderScenarioPicker() {
           <option value="hard">Khó - ít gợi ý hơn</option>
         </select>
       </label>
-      <button class="secondary" id="back-dashboard"><span aria-hidden="true">⌂</span> Về dashboard</button>
+      <button class="secondary" id="back-dashboard"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
     </section>
   `);
 
@@ -291,7 +296,10 @@ function renderSimulationConsent() {
         <input id="simulation-consent" type="checkbox">
         <span>Tôi hiểu đây là mô phỏng luyện tập và tôi sẽ không nhập thông tin riêng tư thật.</span>
       </label>
-      <button id="start-chat" disabled><span aria-hidden="true">▶</span> Bắt đầu mô phỏng</button>
+      <div class="entry-actions">
+        <button class="secondary" id="cancel-consent"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
+        <button id="start-chat" disabled><span aria-hidden="true">▶</span> Bắt đầu mô phỏng</button>
+      </div>
     </section>
   `);
 
@@ -303,6 +311,11 @@ function renderSimulationConsent() {
   start.addEventListener("click", () => {
     acknowledgeTap();
     confirmConsent();
+  });
+  app.querySelector("#cancel-consent").addEventListener("click", () => {
+    acknowledgeTap();
+    location.hash = "scenarios";
+    renderScenarioPicker();
   });
 }
 
@@ -328,7 +341,7 @@ async function confirmConsent() {
 async function renderConsentFromRoute() {
   try {
     const sessionId = getSessionIdFromHash();
-    if (!sessionId) throw new Error("Session not found.");
+    if (!sessionId) throw new Error("Không tìm thấy buổi luyện.");
     const payload = await api(`/api/sessions/${sessionId}`);
     state.session = payload.session;
     state.selectedScenario = scenarioById(state.session.scenarioId);
@@ -353,14 +366,14 @@ function renderChatShell() {
       <div class="chat-topbar">
         <div>
           <h2>${escapeHtml(scenario?.title || "Tình huống mô phỏng")}</h2>
-          <p class="subtitle">Gemini phản hồi động theo lịch sử hội thoại. Cấp độ: ${escapeHtml(state.session?.difficulty || "easy")}</p>
+          <p class="subtitle">Trợ lý AI phản hồi theo cuộc trò chuyện. Cấp độ: ${escapeHtml(state.session?.difficulty || "easy")}</p>
         </div>
-        <button class="warning" id="stop-chat"><span aria-hidden="true">■</span> Dừng</button>
+        <button class="warning" id="stop-chat"><span aria-hidden="true">■</span> Dừng và xem kết quả</button>
       </div>
       <div class="chat-messages">
         ${state.messages.length === 0 ? '<div class="bubble ai">Chào cô/chú, đây là tình huống mô phỏng. Mình cần trao đổi nhanh về một vấn đề cần xác minh.</div>' : ""}
         ${state.messages.map((message) => `<div class="bubble ${message.role}">${escapeHtml(message.content)}</div>`).join("")}
-        ${state.isSending ? '<div class="bubble ai typing">Gemini đang phản hồi...</div>' : ""}
+        ${state.isSending ? '<div class="bubble ai typing">Trợ lý AI đang phản hồi...</div>' : ""}
         ${state.safetyNotices.map((notice) => `<div class="notice danger-note">${escapeHtml(notice)}</div>`).join("")}
       </div>
       <form class="chat-form" id="chat-form">
@@ -400,15 +413,63 @@ function renderChatShell() {
 }
 
 function startVoiceInput() {
+  const input = app.querySelector("#chat-input");
+  startVietnameseSpeech({
+    input,
+    button: app.querySelector("#voice-input"),
+    maxLength: state.runtime.maxMessageLength,
+    listeningLabel: "Đang nghe...",
+    restoredHtml: '<span aria-hidden="true">🎙</span> Nói',
+    successMessage: "Đã nhận giọng nói. Bạn có thể kiểm tra rồi bấm Gửi.",
+    errorMessage: "Không nghe được giọng nói. Bạn có thể nhập bằng bàn phím.",
+    onUnsupported: () => {
+      const message = "Trình duyệt này chưa hỗ trợ nhập giọng nói.";
+      state.safetyNotices.push(message);
+      announceStatus(message);
+      renderChatShell();
+    },
+    onError: (message) => {
+      state.safetyNotices.push(message);
+      announceStatus(message);
+      renderChatShell();
+    },
+  });
+}
+
+function startNameVoiceInput() {
+  const input = app.querySelector("#user-name");
+  startVietnameseSpeech({
+    input,
+    button: app.querySelector("#voice-name"),
+    maxLength: 40,
+    listeningLabel: "Đang nghe tên...",
+    restoredHtml: '<span aria-hidden="true">🎙</span> Nói tên của bạn',
+    successMessage: "Đã nhận tên bằng giọng nói.",
+    errorMessage: "Không nghe được giọng nói. Bạn có thể nhập tên bằng bàn phím.",
+    onUnsupported: () => {
+      announceStatus("Trình duyệt này chưa hỗ trợ nhập giọng nói.");
+    },
+    onError: (message) => {
+      announceStatus(message);
+    },
+  });
+}
+
+function startVietnameseSpeech({
+  input,
+  button,
+  maxLength,
+  listeningLabel,
+  restoredHtml,
+  successMessage,
+  errorMessage,
+  onUnsupported,
+  onError,
+}) {
   acknowledgeTap();
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const input = app.querySelector("#chat-input");
-  const voiceButton = app.querySelector("#voice-input");
-  if (!SpeechRecognition || !input || !voiceButton) {
-    const message = "Trình duyệt này chưa hỗ trợ nhập giọng nói.";
-    state.safetyNotices.push(message);
-    announceStatus(message);
-    renderChatShell();
+  if (!SpeechRecognition || !input || !button) {
+    onUnsupported();
     return;
   }
 
@@ -416,25 +477,22 @@ function startVoiceInput() {
   recognition.lang = "vi-VN";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  voiceButton.disabled = true;
-  voiceButton.textContent = "Đang nghe...";
+  button.disabled = true;
+  button.textContent = listeningLabel;
   recognition.onresult = (event) => {
     const transcript = event.results?.[0]?.[0]?.transcript || "";
-    input.value = transcript.slice(0, state.runtime.maxMessageLength);
+    input.value = transcript.slice(0, maxLength);
     input.focus();
-    announceStatus("Đã nhận giọng nói. Bạn có thể kiểm tra rồi bấm Gửi.");
+    announceStatus(successMessage);
   };
   recognition.onerror = () => {
-    const message = "Không nghe được giọng nói. Bạn có thể nhập bằng bàn phím.";
-    state.safetyNotices.push(message);
-    announceStatus(message);
-    renderChatShell();
+    onError(errorMessage);
   };
   recognition.onend = () => {
-    const currentButton = app.querySelector("#voice-input");
+    const currentButton = button.id ? app.querySelector(`#${button.id}`) : button;
     if (currentButton) {
       currentButton.disabled = false;
-      currentButton.innerHTML = '<span aria-hidden="true">🎙</span> Nói';
+      currentButton.innerHTML = restoredHtml;
     }
   };
   recognition.start();
@@ -473,21 +531,21 @@ async function sendChatMessage(text) {
 
 function fallbackNotice(reason) {
   if (reason === "NO_GEMINI_API_KEY") {
-    return "Gemini API chưa được cấu hình; app đang dùng phản hồi dự phòng an toàn.";
+    return "Trợ lý AI chưa sẵn sàng; app đang dùng phản hồi dự phòng an toàn.";
   }
   if (reason === "GEMINI_TIMEOUT") {
-    return "Gemini phản hồi chậm; app tạm dùng phản hồi dự phòng an toàn để demo không bị gián đoạn.";
+    return "Trợ lý AI phản hồi chậm; app tạm dùng phản hồi dự phòng an toàn để buổi luyện không bị gián đoạn.";
   }
   if (reason === "GEMINI_HTTP_429") {
-    return "Gemini đang bị giới hạn quota/rate limit; app tạm dùng phản hồi dự phòng an toàn.";
+    return "Trợ lý AI đang bận; app tạm dùng phản hồi dự phòng an toàn.";
   }
-  return "Gemini gặp lỗi tạm thời; app tạm dùng phản hồi dự phòng an toàn.";
+  return "Trợ lý AI gặp lỗi tạm thời; app tạm dùng phản hồi dự phòng an toàn.";
 }
 
 async function renderDashboard(options = {}) {
   try {
     const sessionId = state.session?.id || getSessionIdFromHash();
-    if (!sessionId) throw new Error("Session not found.");
+    if (!sessionId) throw new Error("Không tìm thấy buổi luyện.");
     state.session = state.session || { id: sessionId };
     const dashboard = options.readOnly
       ? await api(`/api/sessions/${sessionId}/dashboard`)
@@ -505,7 +563,7 @@ async function renderDashboard(options = {}) {
 async function renderChatFromRoute() {
   try {
     const sessionId = getSessionIdFromHash();
-    if (!sessionId) throw new Error("Session not found.");
+    if (!sessionId) throw new Error("Không tìm thấy buổi luyện.");
     const payload = await api(`/api/sessions/${sessionId}`);
     state.session = payload.session;
     state.selectedScenario = scenarioById(state.session.scenarioId);
@@ -540,7 +598,7 @@ function renderDashboardView(dashboard) {
       <ul class="flag-list">${renderFlags(dashboard.missedRedFlags, "", "Không còn dấu hiệu nào bị bỏ lỡ.")}</ul>
       <h3>Đoạn hội thoại cần chú ý</h3>
       <ul class="flag-list">
-        ${dashboard.highlights.length === 0 ? '<li class="flag-item">Chưa có highlight.</li>' : dashboard.highlights.map((item) => `
+        ${dashboard.highlights.length === 0 ? '<li class="flag-item">Chưa có đoạn cần chú ý.</li>' : dashboard.highlights.map((item) => `
           <li class="flag-item ${item.status === "recognized" ? "success" : ""}">
             <strong>${escapeHtml(item.label)}</strong><br>
             ${escapeHtml(item.evidenceText || "Không có trích đoạn.")}
@@ -553,9 +611,9 @@ function renderDashboardView(dashboard) {
         <textarea id="share-summary" readonly>${escapeHtml(dashboard.shareSummary)}</textarea>
       </label>
       <div>
-        <button id="copy-share"><span aria-hidden="true">⧉</span> Copy tóm tắt</button>
+        <button id="copy-share"><span aria-hidden="true">⧉</span> Sao chép tóm tắt</button>
         <button class="secondary" id="restart"><span aria-hidden="true">↻</span> Luyện tiếp</button>
-        <button class="secondary" id="home"><span aria-hidden="true">⌂</span> Dashboard</button>
+        <button class="secondary" id="home"><span aria-hidden="true">⌂</span> Trang chính</button>
       </div>
       ${state.safetyNotices.map((notice) => `<div class="notice">${escapeHtml(notice)}</div>`).join("")}
     </section>
@@ -583,11 +641,11 @@ async function copyShareSummary(dashboard) {
   try {
     acknowledgeTap();
     await navigator.clipboard.writeText(text);
-    state.safetyNotices = ["Đã copy tóm tắt kết quả."];
-    announceStatus("Đã copy tóm tắt kết quả.");
+    state.safetyNotices = ["Đã sao chép tóm tắt kết quả."];
+    announceStatus("Đã sao chép tóm tắt kết quả.");
   } catch {
-    state.safetyNotices = ["Không copy tự động được. Bạn có thể chọn và copy thủ công."];
-    announceStatus("Không copy tự động được. Bạn có thể chọn và copy thủ công.");
+    state.safetyNotices = ["Không sao chép tự động được. Bạn có thể chọn và sao chép thủ công."];
+    announceStatus("Không sao chép tự động được. Bạn có thể chọn và sao chép thủ công.");
   }
   renderDashboardView({
     ...dashboard,
@@ -630,7 +688,7 @@ function renderError(message) {
     <section class="panel stack">
       <h2>Không thể tiếp tục</h2>
       <div class="notice danger-note">${escapeHtml(message)}</div>
-      <button id="back-home"><span aria-hidden="true">⌂</span> Về dashboard</button>
+      <button id="back-home"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
     </section>
   `);
   app.querySelector("#back-home").addEventListener("click", () => {

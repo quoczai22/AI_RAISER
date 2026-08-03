@@ -64,7 +64,9 @@ Current unit coverage:
 - Verifies dashboard technique keys stay within the approved feedback taxonomy.
 - Verifies UI fallback technique text does not use out-of-taxonomy labels.
 - Verifies accessibility toggles for large text and high contrast remain present in the UI/CSS.
-- Verifies Vietnamese voice input support hook remains present for chat when the browser supports Web Speech API.
+- Verifies Vietnamese voice input support hook remains present on the main screen and in chat when the browser supports Web Speech API.
+- Verifies senior-friendly Vietnamese UI terms avoid visible `quota/rate limit`, `Dashboard`, and `Copy` wording in the public app.
+- Verifies large `Hủy bỏ / Quay lại` controls are present before risky-feeling steps.
 - Verifies skip link and status live region are present for keyboard/screen-reader support.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.
 
@@ -74,6 +76,7 @@ Accessibility notes:
 - Default primary button color `#2563eb` with white text and danger button `#b91c1c` with white text meet basic WCAG AA contrast by inspection.
 - High-contrast mode uses darker text/borders and removes soft shadows for clearer separation.
 - Button press feedback uses visual active state and optional device vibration through `navigator.vibrate` when supported.
+- Entry screen states the MVP does not require password/OTP and will not charge money.
 - Compliance note: `docs/accessibility_compliance.md`.
 
 ## 4. Integration Test

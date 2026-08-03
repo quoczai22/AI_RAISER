@@ -15,7 +15,8 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 - Score minh bạch: số red flags nhận diện đúng / tổng red flags của kịch bản.
 - Feedback chỉ dạy pattern thao túng: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
 - Safety validator mask/chặn OTP, CCCD, số tài khoản, số thẻ, số điện thoại, mật khẩu, link thật.
-- Có hỗ trợ accessibility nhẹ: chữ to, tương phản cao, nút lớn, phản hồi khi bấm và nhập giọng nói tiếng Việt nếu trình duyệt hỗ trợ.
+- Có hỗ trợ accessibility nhẹ: chữ to, tương phản cao, nút lớn, phản hồi khi bấm, nhập giọng nói tiếng Việt nếu trình duyệt hỗ trợ.
+- UI ưu tiên người lớn tuổi/người ít dùng công nghệ tại Việt Nam: nhãn thuần Việt, không yêu cầu mật khẩu/OTP, có nút `Hủy bỏ / Quay lại` rõ ràng.
 
 ## Stack
 
@@ -29,12 +30,12 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 
 ```text
 Nhập tên
-→ Dashboard cá nhân
+→ Trang chính cá nhân
 → Chọn loại scam + cấp độ
-→ Consent mô phỏng
+→ Đồng ý mô phỏng
 → Chat roleplay với Gemini
 → Kết thúc
-→ Dashboard điểm miễn dịch + red flags + share summary
+→ Trang kết quả điểm miễn dịch + dấu hiệu cảnh báo + tóm tắt chia sẻ
 ```
 
 ## Cách Chạy Local
