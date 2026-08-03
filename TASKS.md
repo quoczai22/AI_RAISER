@@ -257,3 +257,20 @@ Trước khi Antigravity commit phần Firestore, phải chọn 1 trong 2 hướ
 - Feedback taxonomy không đổi.
 - Safety validator không bị đụng.
 - Score engine pure function không bị đụng.
+
+## Review Loop - Antigravity Status Recheck
+
+Ngày review: 2026-08-03.
+
+### Kết Luận
+
+- Chưa chấp nhận các thay đổi đang nằm trong worktree.
+- P0 persist session sau mỗi chat turn chưa được sửa: `sendChatMessage()` vẫn mutate session nhưng không gọi `sessions.set(...)` trước khi trả kết quả.
+- `LOCAL_STATUS.md` không đồng bộ với Git: file ghi worktree sạch và commit `8b44996`, trong khi thực tế có 9 file source đã sửa và `package-lock.json` chưa tracked.
+
+### Cần Sửa Tiếp
+
+- Sửa và test explicit persistence sau mỗi chat turn với store trả object copy, không dựa vào object reference của `Map`.
+- Quyết định policy khi Firestore write fail: strict error hoặc fallback minh bạch; cập nhật runtime status/docs tương ứng.
+- Cập nhật `LOCAL_STATUS.md` sau khi Antigravity commit thật, không ghi trạng thái giả định trước commit.
+- Chỉ sau khi các điểm trên đạt acceptance criteria mới xem xét commit/đẩy phần Firestore.
