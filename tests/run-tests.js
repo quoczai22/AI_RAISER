@@ -15,14 +15,6 @@ import { generateGeminiJson } from "../src/services/geminiClient.server.js";
 import { looksLikeScamRecognition, maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
 import { sessions } from "../src/services/store.js";
 
-function expectThrows(fn, message) {
-  try {
-    fn();
-    assert.fail(`Expected error: ${message}`);
-  } catch (error) {
-    assert.ok(error.message.includes(message), `Expected "${message}", got "${error.message}"`);
-  }
-}
 
 const scenarios = listScenarios();
 loadEnvFile();
@@ -78,40 +70,45 @@ assert.equal(
   false,
 );
 
-expectThrows(
+await assert.rejects(
   () => confirmConsent("missing", { consent: true }),
-  "Session not found",
+  /Session not found/
 );
 
-const created = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+const created = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
 assert.equal(created.status, "created");
 assert.equal(created.scenarioId, "fake_bank");
 assert.equal(created.consentAt, null);
 assert.equal(created.difficulty, "medium");
 
-expectThrows(
+await assert.rejects(
   () => confirmConsent(created.id, { consent: false }),
-  "Simulation consent is required",
+  /Simulation consent is required/
 );
 
-const active = confirmConsent(created.id, { consent: true });
+const active = await confirmConsent(created.id, { consent: true });
 assert.equal(active.status, "active");
 assert.ok(active.consentAt);
 
-const loaded = getSession(created.id);
+const loaded = await getSession(created.id);
 assert.equal(loaded.id, created.id);
 assert.equal(loaded.status, "active");
 
-const processingSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-confirmConsent(processingSession.id, { consent: true });
-requireStoredSession(processingSession.id).isProcessing = true;
+const processingSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+await confirmConsent(processingSession.id, { consent: true });
+const s = await requireStoredSession(processingSession.id);
+s.isProcessing = true;
+s.updatedAt = new Date().toISOString();
+await sessions.set(s.id, s);
 await assert.rejects(
   () => sendChatMessage(processingSession.id, { message: "Xin chào." }),
   /already being processed/,
 );
-requireStoredSession(processingSession.id).isProcessing = false;
+const s2 = await requireStoredSession(processingSession.id);
+s2.isProcessing = false;
+await sessions.set(s2.id, s2);
 
-const weirdNameSession = createSession({
+const weirdNameSession = await createSession({
   scenarioId: "fake_bank",
   difficulty: "medium",
   userName: "  Cô\nLan\t<script>  ",
@@ -178,12 +175,12 @@ assert.equal(chat.safety.provider, "safe_fallback");
 assert.equal(chat.safety.fallbackReason, "NO_GEMINI_API_KEY");
 assert.equal(chat.sessionStatus, "completed");
 
-const transcript = getSessionMessages(created.id);
+const transcript = await getSessionMessages(created.id);
 assert.equal(transcript.length, 2);
 assert.equal(transcript[0].role, "user");
 assert.equal(transcript[1].role, "ai");
 
-const dashboard = getDashboard(created.id);
+const dashboard = await getDashboard(created.id);
 assert.equal(dashboard.immunityScore, 25);
 assert.equal(dashboard.recognizedCount, 1);
 assert.equal(dashboard.totalCount, 4);
@@ -201,40 +198,40 @@ for (const flag of [...dashboard.recognizedRedFlags, ...dashboard.missedRedFlags
   }
 }
 
-expectThrows(
+await assert.rejects(
   () => confirmConsent(created.id, { consent: true }),
-  "Session is already completed",
+  /Session is already completed/
 );
 await assert.rejects(
   () => sendChatMessage(created.id, { message: "Tôi muốn nhắn tiếp." }),
   /Session is already completed/,
 );
 
-const noConsentSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-expectThrows(
+const noConsentSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+await assert.rejects(
   () => getDashboard(noConsentSession.id),
-  "Simulation consent is required before viewing results",
+  /Simulation consent is required before viewing results/
 );
-expectThrows(
+await assert.rejects(
   () => getSessionMessages(noConsentSession.id),
-  "Simulation consent is required before viewing results",
+  /Simulation consent is required before viewing results/
 );
 
-const activeDashboardSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-confirmConsent(activeDashboardSession.id, { consent: true });
-expectThrows(
+const activeDashboardSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+await confirmConsent(activeDashboardSession.id, { consent: true });
+await assert.rejects(
   () => getDashboard(activeDashboardSession.id),
-  "Session must be completed before viewing results",
+  /Session must be completed before viewing results/
 );
 
-const otpSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-confirmConsent(otpSession.id, { consent: true });
+const otpSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+await confirmConsent(otpSession.id, { consent: true });
 await sendChatMessage(otpSession.id, { message: "Tôi không cung cấp OTP qua chat." });
-const otpDashboard = getDashboard(otpSession.id);
+const otpDashboard = await getDashboard(otpSession.id);
 assert.equal(otpDashboard.recognizedRedFlags[0].key, "request_for_sensitive_info");
 
-const leakedOtpSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-confirmConsent(leakedOtpSession.id, { consent: true });
+const leakedOtpSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+await confirmConsent(leakedOtpSession.id, { consent: true });
 const leakedOtpChat = await sendChatMessage(leakedOtpSession.id, { message: "Mã của tôi là 123456" });
 assert.equal(leakedOtpChat.safety.maskedSensitiveInput, true);
 assert.equal(leakedOtpChat.sessionStatus, "active");
@@ -311,8 +308,8 @@ try {
     );
   };
 
-  const repairSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-  confirmConsent(repairSession.id, { consent: true });
+  const repairSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  await confirmConsent(repairSession.id, { consent: true });
   const repairChat = await sendChatMessage(repairSession.id, { message: "Xin chào." });
   assert.equal(repairChat.safety.provider, "gemini");
   assert.equal(repairChat.safety.retryUsed, true);
@@ -356,8 +353,8 @@ try {
       { status: 200, headers: { "content-type": "application/json" } },
     );
 
-  const badShapeSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-  confirmConsent(badShapeSession.id, { consent: true });
+  const badShapeSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  await confirmConsent(badShapeSession.id, { consent: true });
   const badShapeChat = await sendChatMessage(badShapeSession.id, { message: "Xin chào." });
   assert.equal(badShapeChat.sessionStatus, "active");
   assert.equal(badShapeChat.detectedEvents[0].status, "triggered");
@@ -405,8 +402,8 @@ try {
       { status: 200, headers: { "content-type": "application/json" } },
     );
 
-  const duplicateSignalSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-  confirmConsent(duplicateSignalSession.id, { consent: true });
+  const duplicateSignalSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  await confirmConsent(duplicateSignalSession.id, { consent: true });
   const duplicateSignalChat = await sendChatMessage(duplicateSignalSession.id, { message: "Tôi nghi là giả mạo." });
   assert.equal(duplicateSignalChat.detectedEvents.length, 1);
   assert.equal(duplicateSignalChat.detectedEvents[0].key, "authority_pressure");
@@ -451,13 +448,13 @@ try {
       { status: 200, headers: { "content-type": "application/json" } },
     );
 
-  const geminiSession = createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
-  confirmConsent(geminiSession.id, { consent: true });
+  const geminiSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
+  await confirmConsent(geminiSession.id, { consent: true });
   const geminiChat = await sendChatMessage(geminiSession.id, {
     message: "Tôi sẽ gọi hotline chính thức để kiểm tra lại.",
   });
   assert.equal(geminiChat.safety.provider, "gemini");
-  const geminiDashboard = getDashboard(geminiSession.id);
+  const geminiDashboard = await getDashboard(geminiSession.id);
   assert.equal(geminiDashboard.recognizedRedFlags[0].key, "unofficial_channel");
 } finally {
   globalThis.fetch = originalFetch;
@@ -465,18 +462,43 @@ try {
 }
 
 process.env.MAX_SESSIONS = "3";
-sessions.clear();
-const pruneA = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "A" });
-const pruneB = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "B" });
-const pruneC = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "C" });
-const pruneD = createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "D" });
-assert.equal(getSession(pruneB.id).id, pruneB.id);
-assert.equal(getSession(pruneC.id).id, pruneC.id);
-assert.equal(getSession(pruneD.id).id, pruneD.id);
-expectThrows(
+await sessions.clear();
+const pruneA = await createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "A" });
+const pruneB = await createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "B" });
+const pruneC = await createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "C" });
+const pruneD = await createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "D" });
+assert.equal((await getSession(pruneB.id)).id, pruneB.id);
+assert.equal((await getSession(pruneC.id)).id, pruneC.id);
+assert.equal((await getSession(pruneD.id)).id, pruneD.id);
+await assert.rejects(
   () => getSession(pruneA.id),
-  "Session not found",
+  /Session not found/
 );
 delete process.env.MAX_SESSIONS;
+
+// Regression test for copy-on-read behavior
+const regressionSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "CopyTest" });
+const retrievedSession1 = await sessions.get(regressionSession.id);
+retrievedSession1.userName = "MutatedNameDirectly";
+const retrievedSession2 = await sessions.get(regressionSession.id);
+assert.notEqual(retrievedSession2.userName, "MutatedNameDirectly", "Mutating a retrieved session must not mutate the stored session");
+
+// Verify that sendChatMessage explicitly persists the session
+const chatSession = await createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "PersistTest" });
+await confirmConsent(chatSession.id, { consent: true });
+const initialData = await sessions.get(chatSession.id);
+assert.equal(initialData.messages.length, 0);
+
+await sendChatMessage(chatSession.id, { message: "Hello." });
+const afterChatData = await sessions.get(chatSession.id);
+assert.equal(afterChatData.messages.length, 2, "sendChatMessage must explicitly persist the session updates");
+
+// Verify model lock
+process.env.GEMINI_MODEL = "forbidden-model-name";
+await assert.rejects(
+  () => generateGeminiJson({ systemInstruction: "", prompt: "", schema: {} }),
+  /Forbidden model/
+);
+process.env.GEMINI_MODEL = "gemini-3.6-flash";
 
 console.log("Implementation tests passed.");

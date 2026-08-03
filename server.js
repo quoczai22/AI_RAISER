@@ -16,6 +16,9 @@ import { completeSession, getDashboard } from "./src/services/dashboardService.j
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const publicDir = resolve(rootDir, "src", "public");
 loadEnvFile();
+if (process.env.GEMINI_MODEL && process.env.GEMINI_MODEL !== "gemini-3.6-flash") {
+  throw new Error(`Forbidden GEMINI_MODEL: "${process.env.GEMINI_MODEL}". AGENTS.md forces the use of "gemini-3.6-flash" only.`);
+}
 const port = getPositiveIntEnv("PORT", 3000);
 
 const jsonHeaders = {
@@ -142,7 +145,7 @@ async function handleApi(req, res) {
     if (req.method === "GET") {
       sendJson(res, 200, {
         geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
-        geminiModel: process.env.GEMINI_MODEL || "gemini-3.6-flash",
+        geminiModel: "gemini-3.6-flash",
         maxChatTurns: getPositiveIntEnv("MAX_CHAT_TURNS", 8),
         maxMessageLength: getPositiveIntEnv("MAX_MESSAGE_LENGTH", 1000),
         maxJsonBodyBytes,
@@ -157,7 +160,7 @@ async function handleApi(req, res) {
   if (path === "/api/sessions") {
     if (req.method === "POST") {
       const body = await readJsonBody(req);
-      const session = createSession(body);
+      const session = await createSession(body);
       sendJson(res, 201, { session });
       return;
     }
@@ -169,7 +172,7 @@ async function handleApi(req, res) {
   if (consentMatch) {
     if (req.method === "POST") {
       const body = await readJsonBody(req);
-      const session = confirmConsent(consentMatch[1], body);
+      const session = await confirmConsent(consentMatch[1], body);
       sendJson(res, 200, { session });
       return;
     }
@@ -180,7 +183,7 @@ async function handleApi(req, res) {
   const messageMatch = path.match(/^\/api\/sessions\/([^/]+)\/messages$/);
   if (messageMatch) {
     if (req.method === "GET") {
-      const messages = getSessionMessages(messageMatch[1]);
+      const messages = await getSessionMessages(messageMatch[1]);
       sendJson(res, 200, { messages });
       return;
     }
@@ -197,7 +200,7 @@ async function handleApi(req, res) {
   const sessionMatch = path.match(/^\/api\/sessions\/([^/]+)$/);
   if (sessionMatch) {
     if (req.method === "GET") {
-      const session = getSession(sessionMatch[1]);
+      const session = await getSession(sessionMatch[1]);
       sendJson(res, 200, { session });
       return;
     }
@@ -208,7 +211,7 @@ async function handleApi(req, res) {
   const completeMatch = path.match(/^\/api\/sessions\/([^/]+)\/complete$/);
   if (completeMatch) {
     if (req.method === "POST") {
-      const dashboard = completeSession(completeMatch[1]);
+      const dashboard = await completeSession(completeMatch[1]);
       sendJson(res, 200, dashboard);
       return;
     }
@@ -219,7 +222,7 @@ async function handleApi(req, res) {
   const dashboardMatch = path.match(/^\/api\/sessions\/([^/]+)\/dashboard$/);
   if (dashboardMatch) {
     if (req.method === "GET") {
-      const dashboard = getDashboard(dashboardMatch[1]);
+      const dashboard = await getDashboard(dashboardMatch[1]);
       sendJson(res, 200, dashboard);
       return;
     }

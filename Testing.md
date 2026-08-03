@@ -225,7 +225,7 @@ Expected:
 
 | Limitation | Impact | Plan |
 |---|---|---|
-| Session storage is in-memory | Server restart or Cloud Run instance restart loses sessions; same-instance refresh can recover routes/transcript | Accept for MVP; add Firestore if needed |
+| Session storage uses Firestore | None (persistent). Falls back to in-memory Map only if project config is missing | Completed. Configured via `FIRESTORE_PROJECT_ID` |
 | Deployed environment may miss Gemini key | Deployed demo falls back and cannot prove AI-native alone | Configure Secret Manager before final demo |
 | Gemini free-tier quota can return `GEMINI_HTTP_429` | Live probe may fall back even when key is valid | Wait for quota reset, increase delay, use billing-enabled project; probe stops early by default after first 429 |
 | UI is static JS, not AI Studio-generated React | Repo runs locally and Cloud Run-ready, but not native AI Studio export | Can port module boundaries into AI Studio if required |
@@ -239,7 +239,7 @@ Expected:
 | Demo hits Gemini quota/rate limit | High | `RiskReport.md`, live probe delay, early-stop live probe, billing/quota backup, warm-up once only |
 | Gemini output fails schema | High | Validator and fallback path |
 | Judge interprets fallback as main chat | High | Demo script must configure key and explain fallback only if needed |
-| In-memory storage loses result on restart | Medium | Keep demo flow linear; avoid server restart during presentation |
+| Firestore write fails | Medium | Throws strict 5xx error in production so issues are not silenced; fallback in local runs |
 
 ## 9. Phase 7 Deliverables
 

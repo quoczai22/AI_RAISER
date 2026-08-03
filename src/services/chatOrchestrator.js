@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { getPositiveIntEnv } from "./env.js";
 import { getScenario } from "./scenarioService.js";
 import { requireActiveSession } from "./sessionService.js";
+import { sessions } from "./store.js";
 import { generateGeminiJson } from "./geminiClient.server.js";
 import {
   isStopRequest,
@@ -86,109 +87,123 @@ export async function sendChatMessage(sessionId, input) {
     throw error;
   }
 
-  const session = requireActiveSession(sessionId);
+  const session = await requireActiveSession(sessionId);
   const scenario = getScenario(session.scenarioId);
   if (session.isProcessing) {
-    const error = new Error("A chat message is already being processed.");
-    error.status = 409;
-    throw error;
+    const lastUpdate = session.updatedAt || session.createdAt;
+    const lockAgeMs = new Date() - new Date(lastUpdate);
+    if (lockAgeMs > 30000) {
+      console.warn(`Lock expired for session ${sessionId} (${lockAgeMs}ms old). Releasing lock.`);
+      session.isProcessing = false;
+    } else {
+      const error = new Error("A chat message is already being processed.");
+      error.status = 409;
+      throw error;
+    }
   }
   session.isProcessing = true;
+  session.updatedAt = new Date().toISOString();
+  await sessions.set(session.id, session);
 
   try {
-  const masked = maskSensitiveInput(input.message.trim());
-
-  const participantMessage = {
-    id: randomUUID(),
-    role: "participant",
-    content: masked.masked,
-    metadata: {
-      maskedSensitiveInput: masked.changed,
-      detectedSensitiveTypes: masked.detected,
-    },
-    createdAt: now(),
-  };
-  session.messages.push(participantMessage);
-  session.turnCount += 1;
-
-  let modelResult = await generateModelReply({ session, scenario, participantMessage });
-  let aiValidation = validateAiReply(modelResult.reply);
-  if (!isModelResultSafe(modelResult, aiValidation)) {
-    modelResult = await generateModelReply({
-      session,
-      scenario,
-      participantMessage,
-      repairReason: aiValidation.reasons.join(", ") || modelResult.safetyAssessment?.notes || "unsafe_output",
-    });
-    aiValidation = validateAiReply(modelResult.reply);
-    modelResult.retryUsed = true;
-  }
-  const safeToShow =
-    isModelResultSafe(modelResult, aiValidation);
-
-  const aiReply = safeToShow
-    ? modelResult.reply
-    : "Mình tạm dừng mô phỏng tại đây để đảm bảo an toàn. Bây giờ chúng ta sẽ chuyển sang phần nhận diện dấu hiệu cảnh báo.";
-
-  const aiMessage = {
-    id: randomUUID(),
-    role: "ai",
-    content: aiReply,
-    metadata: {
-      provider: modelResult.provider,
-      modelUsed: modelResult.modelUsed,
-      aiOutputValidated: safeToShow,
-      validationReasons: aiValidation.reasons,
-      retryUsed: modelResult.retryUsed,
-      fallbackReason: modelResult.fallbackReason || "",
-    },
-    createdAt: now(),
-  };
-  session.messages.push(aiMessage);
-
-  const redFlagSignals = applyParticipantRecognition({
-    signals: normalizeRedFlagSignals(modelResult.redFlagSignals, scenario),
-    scenario,
-    session,
-    participantMessage,
-  });
-  session.redFlagEvents.push(
-    ...redFlagSignals.map((event) => ({
+    const masked = maskSensitiveInput(input.message.trim());
+    const participantMessage = {
       id: randomUUID(),
-      messageId: aiMessage.id,
-      redFlagKey: event.key,
-      status: event.status,
-      evidenceText: event.evidence,
+      role: "participant",
+      content: masked.masked,
+      metadata: {
+        maskedSensitiveInput: masked.changed,
+        detectedSensitiveTypes: masked.detected,
+      },
       createdAt: now(),
-    })),
-  );
+    };
+    session.messages.push(participantMessage);
+    session.turnCount += 1;
+    session.updatedAt = new Date().toISOString();
+    await sessions.set(session.id, session);
 
-  if (
-    !safeToShow ||
-    modelResult.simulationState?.shouldEnd ||
-    session.turnCount >= maxTurns ||
-    isStopRequest(masked.masked)
-  ) {
-    session.status = "completed";
-    session.completedAt = now();
-  }
+    let modelResult = await generateModelReply({ session, scenario, participantMessage });
+    let aiValidation = validateAiReply(modelResult.reply);
+    if (!isModelResultSafe(modelResult, aiValidation)) {
+      modelResult = await generateModelReply({
+        session,
+        scenario,
+        participantMessage,
+        repairReason: aiValidation.reasons.join(", ") || modelResult.safetyAssessment?.notes || "unsafe_output",
+      });
+      aiValidation = validateAiReply(modelResult.reply);
+      modelResult.retryUsed = true;
+    }
+    const safeToShow = isModelResultSafe(modelResult, aiValidation);
 
-  return {
-    messageId: aiMessage.id,
-    reply: aiReply,
-    sessionStatus: session.status,
-    turnCount: session.turnCount,
-    detectedEvents: redFlagSignals,
-    safety: {
-      maskedSensitiveInput: masked.changed,
-      aiOutputValidated: safeToShow,
-      retryUsed: modelResult.retryUsed,
-      provider: modelResult.provider,
-      fallbackReason: modelResult.fallbackReason || "",
-    },
-  };
+    const aiReply = safeToShow
+      ? modelResult.reply
+      : "Mình tạm dừng mô phỏng tại đây để đảm bảo an toàn. Bây giờ chúng ta sẽ chuyển sang phần nhận diện dấu hiệu cảnh báo.";
+
+    const aiMessage = {
+      id: randomUUID(),
+      role: "ai",
+      content: aiReply,
+      metadata: {
+        provider: modelResult.provider,
+        modelUsed: modelResult.modelUsed,
+        aiOutputValidated: safeToShow,
+        validationReasons: aiValidation.reasons,
+        retryUsed: modelResult.retryUsed,
+        fallbackReason: modelResult.fallbackReason || "",
+      },
+      createdAt: now(),
+    };
+    session.messages.push(aiMessage);
+
+    const redFlagSignals = applyParticipantRecognition({
+      signals: normalizeRedFlagSignals(modelResult.redFlagSignals, scenario),
+      scenario,
+      session,
+      participantMessage,
+    });
+    session.redFlagEvents.push(
+      ...redFlagSignals.map((event) => ({
+        id: randomUUID(),
+        messageId: aiMessage.id,
+        redFlagKey: event.key,
+        status: event.status,
+        evidenceText: event.evidence,
+        createdAt: now(),
+      })),
+    );
+
+    if (
+      !safeToShow ||
+      modelResult.simulationState?.shouldEnd ||
+      session.turnCount >= maxTurns ||
+      isStopRequest(masked.masked)
+    ) {
+      session.status = "completed";
+      session.completedAt = now();
+    }
+
+    session.updatedAt = new Date().toISOString();
+    await sessions.set(session.id, session);
+
+    return {
+      messageId: aiMessage.id,
+      reply: aiReply,
+      sessionStatus: session.status,
+      turnCount: session.turnCount,
+      detectedEvents: redFlagSignals,
+      safety: {
+        maskedSensitiveInput: masked.changed,
+        aiOutputValidated: safeToShow,
+        retryUsed: modelResult.retryUsed,
+        provider: modelResult.provider,
+        fallbackReason: modelResult.fallbackReason || "",
+      },
+    };
   } finally {
     session.isProcessing = false;
+    session.updatedAt = new Date().toISOString();
+    await sessions.set(session.id, session);
   }
 }
 
@@ -203,7 +218,7 @@ async function generateModelReply({ session, scenario, participantMessage, repai
     return validateGeminiShape({
       ...result,
       provider: "gemini",
-      modelUsed: process.env.GEMINI_MODEL || "gemini-3.6-flash",
+      modelUsed: "gemini-3.6-flash",
       retryUsed: Boolean(repairReason),
     });
   } catch (error) {

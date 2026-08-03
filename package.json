@@ -7,6 +7,9 @@
     "start": "node server.js",
     "test": "node tests/run-tests.js"
   },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.10.0"
+  },
   "engines": {
     "node": ">=20"
   }

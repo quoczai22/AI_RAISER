@@ -3,20 +3,20 @@ import { requireCompletedSession, requireConsentedSession } from "./sessionServi
 import { calculateScore } from "./scoringEngine.js";
 import { sessions } from "./store.js";
 
-export function completeSession(sessionId) {
-  const session = requireConsentedSession(sessionId);
+export async function completeSession(sessionId) {
+  const session = await requireConsentedSession(sessionId);
   const scenario = getScenario(session.scenarioId);
   if (!session.score) {
     session.score = calculateScore({ session, scenario });
   }
   session.status = "completed";
   session.completedAt = session.completedAt || new Date().toISOString();
-  sessions.set(session.id, session);
+  await sessions.set(session.id, session);
   return buildDashboard({ session, scenario });
 }
 
-export function getDashboard(sessionId) {
-  const session = requireCompletedSession(sessionId);
+export async function getDashboard(sessionId) {
+  const session = await requireCompletedSession(sessionId);
   const scenario = getScenario(session.scenarioId);
   if (!session.score) {
     session.score = calculateScore({ session, scenario });
@@ -85,9 +85,9 @@ function recommendationFor(key) {
     identity_mismatch:
       "Pattern: social proof/reciprocity. Họ lợi dụng lòng tin với người quen. Hãy xác minh danh tính bằng cách khác.",
     request_to_transfer_money:
-      "Pattern: urgency + reciprocity. Họ dùng chuyện gấp hoặc tình cảm để xin tiền. Hãy gọi xác minh trước.",
+      "Pattern: urgency + social proof/reciprocity. Họ dùng chuyện gấp hoặc tình cảm để xin tiền. Hãy gọi xác minh trước.",
     request_to_keep_secret:
-      "Pattern: fear + reciprocity. Họ bảo giữ bí mật để bạn không hỏi người khác. Đây là dấu hiệu nguy hiểm.",
+      "Pattern: fear + social proof/reciprocity. Họ bảo giữ bí mật để bạn không hỏi người khác. Đây là dấu hiệu nguy hiểm.",
     fake_company_authority:
       "Pattern: authority. Tên công ty lớn có thể bị mạo danh. Hãy kiểm tra tin tuyển dụng ở kênh chính thức.",
     urgency_scarcity_fee:
@@ -121,12 +121,12 @@ function techniqueFor(key) {
       label: "social proof/reciprocity - lợi dụng lòng tin quan hệ",
     },
     request_to_transfer_money: {
-      key: "urgency + reciprocity",
-      label: "urgency + reciprocity - việc gấp cộng quan hệ thân quen",
+      key: "urgency + social proof/reciprocity",
+      label: "urgency + social proof/reciprocity - việc gấp cộng quan hệ thân quen",
     },
     request_to_keep_secret: {
-      key: "fear + reciprocity",
-      label: "fear + reciprocity - cô lập nạn nhân bằng bí mật và cảm xúc",
+      key: "fear + social proof/reciprocity",
+      label: "fear + social proof/reciprocity - cô lập nạn nhân bằng bí mật và cảm xúc",
     },
     fake_company_authority: {
       key: "authority",

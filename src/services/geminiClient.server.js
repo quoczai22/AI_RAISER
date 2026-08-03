@@ -3,7 +3,10 @@ import { getPositiveIntEnv, loadEnvFile } from "./env.js";
 loadEnvFile();
 
 export async function generateGeminiJson({ systemInstruction, prompt, schema }) {
-  const defaultModel = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+  if (process.env.GEMINI_MODEL && process.env.GEMINI_MODEL !== "gemini-3.6-flash") {
+    throw new Error(`Forbidden model: ${process.env.GEMINI_MODEL}. AGENTS.md forces the use of gemini-3.6-flash only.`);
+  }
+  const defaultModel = "gemini-3.6-flash";
   const apiKey = process.env.GEMINI_API_KEY || "";
   const timeoutMs = getPositiveIntEnv("GEMINI_TIMEOUT_MS", 45000);
 

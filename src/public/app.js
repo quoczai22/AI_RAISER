@@ -163,7 +163,7 @@ function renderEntryDashboard() {
         <p class="subtitle">Không cần mật khẩu, không cần OTP, không trừ tiền.</p>
       </div>
       <div class="notice">
-        Đây chỉ là buổi luyện tập. Bạn có thể bấm Hủy bỏ / Quay lại ở các bước sau nếu chưa yên tâm.
+        Đây là phần tự luyện tập. Bạn có thể nhấn "Quay lại" bất cứ lúc nào.
       </div>
       <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
         <label class="toggle-row">
@@ -183,7 +183,7 @@ function renderEntryDashboard() {
         <button type="button" class="secondary" id="voice-name"><span aria-hidden="true">🎙</span> Nói tên của bạn</button>
         <button id="start-training"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
       </div>
-      <h3>Lịch sử trong phiên này</h3>
+      <h3>Lịch sử luyện tập</h3>
       <ul class="flag-list">
         ${state.history.length === 0 ? '<li class="flag-item">Chưa có buổi luyện nào.</li>' : state.history.map((item) => `
           <li class="flag-item success">
@@ -223,7 +223,7 @@ function renderScenarioPicker() {
     <section class="panel stack">
       <div>
         <h2>Chọn tình huống và cấp độ</h2>
-        <p class="subtitle">Mỗi tình huống kéo dài khoảng 3 phút và có phần giải thích dấu hiệu cảnh báo sau buổi luyện.</p>
+        <p class="subtitle">Mỗi buổi luyện khoảng 3 phút. Sau đó sẽ có phần giải thích dấu hiệu cảnh báo.</p>
       </div>
       <div class="scenario-grid">
         ${state.scenarios.map((scenario) => `
@@ -288,14 +288,14 @@ function renderSimulationConsent() {
         <p class="subtitle">Tình huống: ${escapeHtml(state.selectedScenario?.title || scenarioById(state.session?.scenarioId)?.title || "")}</p>
       </div>
       <div class="notice">
-        Đây là mô phỏng giáo dục, không phải tình huống thật. Bạn có thể dừng bất kỳ lúc nào.
+        Đây là tình huống mô phỏng. Bạn có thể dừng bất cứ lúc nào.
       </div>
       <div class="notice danger-note">
-        Không nhập OTP, mật khẩu, CCCD, số thẻ hoặc số tài khoản thật.
+        Không nhập mã OTP, mật khẩu, CCCD hoặc tài khoản thật.
       </div>
       <label class="consent-row">
         <input id="simulation-consent" type="checkbox">
-        <span>Tôi hiểu đây là mô phỏng luyện tập và tôi sẽ không nhập thông tin riêng tư thật.</span>
+        <span>Tôi hiểu đây là mô phỏng và sẽ không nhập thông tin thật.</span>
       </label>
       <div class="entry-actions">
         <button class="secondary" id="cancel-consent"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
@@ -589,6 +589,16 @@ function renderDashboardView(dashboard) {
         <h2>Kết quả buổi luyện tập</h2>
         <p class="subtitle">${escapeHtml(dashboard.scenarioTitle)} - Cấp độ ${escapeHtml(dashboard.difficulty)}</p>
       </div>
+      <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
+        <label class="toggle-row">
+          <input id="large-text-toggle" type="checkbox" ${state.accessibility.largeText ? "checked" : ""}>
+          <span>Chữ to</span>
+        </label>
+        <label class="toggle-row">
+          <input id="high-contrast-toggle" type="checkbox" ${state.accessibility.highContrast ? "checked" : ""}>
+          <span>Tương phản cao</span>
+        </label>
+      </div>
       <div class="score-card">
         <span class="score-number">${dashboard.immunityScore} / 100</span>
         <span>Nhận diện ${dashboard.recognizedCount} / ${dashboard.totalCount} dấu hiệu cảnh báo.</span>
@@ -619,6 +629,19 @@ function renderDashboardView(dashboard) {
       ${state.safetyNotices.map((notice) => `<div class="notice">${escapeHtml(notice)}</div>`).join("")}
     </section>
   `);
+
+  app.querySelector("#large-text-toggle").addEventListener("change", (event) => {
+    state.accessibility.largeText = event.target.checked;
+    saveAccessibilitySettings();
+    applyAccessibilitySettings();
+    announceStatus(event.target.checked ? "Đã bật chữ to." : "Đã tắt chữ to.");
+  });
+  app.querySelector("#high-contrast-toggle").addEventListener("change", (event) => {
+    state.accessibility.highContrast = event.target.checked;
+    saveAccessibilitySettings();
+    applyAccessibilitySettings();
+    announceStatus(event.target.checked ? "Đã bật tương phản cao." : "Đã tắt tương phản cao.");
+  });
 
   app.querySelector("#copy-share").addEventListener("click", () => copyShareSummary(dashboard));
   app.querySelector("#restart").addEventListener("click", () => {

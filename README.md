@@ -23,7 +23,7 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 - Node.js server, không cần framework nặng.
 - Static web UI.
 - Gemini API server-side.
-- In-memory session storage cho MVP demo.
+- Persistent session storage trên Firestore (tự động fallback về Map in-memory nếu thiếu cấu hình).
 - Dockerfile sẵn sàng cho Cloud Run nếu cần public backup URL.
 
 ## Luồng Demo
@@ -69,7 +69,7 @@ Runtime status, không lộ secret:
 http://localhost:3000/api/runtime-status
 ```
 
-## Cấu Hình Gemini
+## Cấu Hình Môi Trường
 
 Tạo file `.env` từ `.env.example` hoặc set biến môi trường:
 
@@ -82,9 +82,11 @@ MAX_MESSAGE_LENGTH=1000
 MAX_JSON_BODY_BYTES=65536
 MAX_SESSIONS=200
 PORT=3000
+FIRESTORE_PROJECT_ID=your_gcp_project_id
 ```
 
-Nếu chưa có `GEMINI_API_KEY`, app vẫn chạy bằng fallback an toàn để demo luồng sản phẩm. Tuy nhiên demo cuối cho AI Riser cần cấu hình Gemini thật để chứng minh tính AI-native.
+- **Firestore (Lưu trữ lâu dài)**: Nếu cấu hình `FIRESTORE_PROJECT_ID` hoặc `GOOGLE_CLOUD_PROJECT`, ứng dụng sẽ tự động lưu trữ các buổi luyện tập (sessions) lên Firestore để giữ trạng thái khi server khởi động lại. Nếu thiếu, ứng dụng tự động fallback về Map in-memory.
+- **Gemini AI**: Nếu chưa có `GEMINI_API_KEY`, app vẫn chạy bằng fallback an toàn để demo luồng sản phẩm. Tuy nhiên demo cuối cho AI Riser cần cấu hình Gemini thật để chứng minh tính AI-native.
 
 ## Cách Test
 

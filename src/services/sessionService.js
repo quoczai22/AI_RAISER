@@ -7,7 +7,7 @@ function now() {
   return new Date().toISOString();
 }
 
-export function createSession(input) {
+export async function createSession(input) {
   if (!input || typeof input !== "object") {
     const error = new Error("Request body is required.");
     error.status = 400;
@@ -30,13 +30,13 @@ export function createSession(input) {
     createdAt: now(),
   };
 
-  sessions.set(session.id, session);
-  pruneSessionStore({ keepSessionId: session.id });
+  await sessions.set(session.id, session);
+  await pruneSessionStore({ keepSessionId: session.id });
   return summarizeSession(session);
 }
 
-export function confirmConsent(sessionId, input) {
-  const session = requireSession(sessionId);
+export async function confirmConsent(sessionId, input) {
+  const session = await requireSession(sessionId);
   if (!input || input.consent !== true) {
     const error = new Error("Simulation consent is required before chat starts.");
     error.status = 400;
@@ -52,16 +52,16 @@ export function confirmConsent(sessionId, input) {
   session.consentAt = session.consentAt || now();
   session.status = "active";
   session.startedAt = session.startedAt || now();
-  sessions.set(session.id, session);
+  await sessions.set(session.id, session);
   return summarizeSession(session);
 }
 
-export function getSession(sessionId) {
-  return summarizeSession(requireSession(sessionId));
+export async function getSession(sessionId) {
+  return summarizeSession(await requireSession(sessionId));
 }
 
-export function getSessionMessages(sessionId) {
-  const session = requireConsentedSession(sessionId);
+export async function getSessionMessages(sessionId) {
+  const session = await requireConsentedSession(sessionId);
   return session.messages.map((message) => ({
     id: message.id,
     role: message.role === "participant" ? "user" : message.role,
@@ -70,8 +70,8 @@ export function getSessionMessages(sessionId) {
   }));
 }
 
-export function requireActiveSession(sessionId) {
-  const session = requireSession(sessionId);
+export async function requireActiveSession(sessionId) {
+  const session = await requireSession(sessionId);
   if (session.status === "completed") {
     const error = new Error("Session is already completed.");
     error.status = 409;
@@ -85,12 +85,12 @@ export function requireActiveSession(sessionId) {
   return session;
 }
 
-export function requireStoredSession(sessionId) {
-  return requireSession(sessionId);
+export async function requireStoredSession(sessionId) {
+  return await requireSession(sessionId);
 }
 
-export function requireConsentedSession(sessionId) {
-  const session = requireSession(sessionId);
+export async function requireConsentedSession(sessionId) {
+  const session = await requireSession(sessionId);
   if (!session.consentAt) {
     const error = new Error("Simulation consent is required before viewing results.");
     error.status = 403;
@@ -99,8 +99,8 @@ export function requireConsentedSession(sessionId) {
   return session;
 }
 
-export function requireCompletedSession(sessionId) {
-  const session = requireConsentedSession(sessionId);
+export async function requireCompletedSession(sessionId) {
+  const session = await requireConsentedSession(sessionId);
   if (session.status !== "completed") {
     const error = new Error("Session must be completed before viewing results.");
     error.status = 409;
@@ -109,8 +109,8 @@ export function requireCompletedSession(sessionId) {
   return session;
 }
 
-function requireSession(sessionId) {
-  const session = sessions.get(sessionId);
+async function requireSession(sessionId) {
+  const session = await sessions.get(sessionId);
   if (!session) {
     const error = new Error("Session not found.");
     error.status = 404;
@@ -154,11 +154,12 @@ function normalizeUserName(value) {
   return name.slice(0, 40);
 }
 
-function pruneSessionStore({ keepSessionId }) {
+async function pruneSessionStore({ keepSessionId }) {
   const maxSessions = getPositiveIntEnv("MAX_SESSIONS", 200);
-  if (sessions.size <= maxSessions) return;
+  const currentSize = await sessions.size();
+  if (currentSize <= maxSessions) return;
 
-  const oldestFirst = Array.from(sessions.values())
+  const oldestFirst = (await sessions.values())
     .filter((session) => session.id !== keepSessionId)
     .sort((left, right) => String(left.createdAt).localeCompare(String(right.createdAt)));
 
@@ -168,7 +169,8 @@ function pruneSessionStore({ keepSessionId }) {
   ];
 
   for (const session of pruneOrder) {
-    if (sessions.size <= maxSessions) return;
-    sessions.delete(session.id);
+    const freshSize = await sessions.size();
+    if (freshSize <= maxSessions) return;
+    await sessions.delete(session.id);
   }
 }
