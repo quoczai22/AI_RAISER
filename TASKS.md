@@ -156,3 +156,73 @@ P1.
 - Codex không tự sửa code tính năng trong mode này.
 - Nếu Antigravity commit lệch `AGENTS.md`, Codex ghi "Cần sửa: ..." vào file này thay vì tự vá code.
 - Mọi thay đổi lớn về kiến trúc phải chờ người dùng xác nhận.
+
+## Review Log - Antigravity Firestore/Accessibility Changes
+
+Ngày review: 2026-08-03.
+
+### Đã Kiểm Tra
+
+- Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `git log --oneline -12`.
+- Kiểm tra worktree: có thay đổi chưa commit ở `package.json`, `server.js`, `src/public/app.css`, `src/public/app.js`, `src/services/chatOrchestrator.js`, `src/services/dashboardService.js`, `src/services/sessionService.js`, `src/services/store.js`, `tests/run-tests.js`; có `package-lock.json` mới; `node_modules/` ignored.
+- Chạy `node tests/run-tests.js`: pass.
+- Chạy `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: pass.
+
+### Kết Luận Manager
+
+- Accessibility/UI changes nhỏ nhìn chung phù hợp: toggle chữ to/tương phản cao đã xuất hiện thêm ở màn kết quả, màu muted/primary/warning tăng contrast.
+- Firestore persistence là thay đổi kiến trúc lớn hơn P0 Import-from-GitHub spike. Không reject tuyệt đối vì `TechnicalDesign.md` từng ghi Firestore optional, nhưng cần sửa trước khi commit/chấp nhận.
+
+### Cần Sửa: Persist Session Sau Mỗi Chat Turn
+
+Mức độ: P0.
+
+Vấn đề:
+
+- `sendChatMessage()` trong `src/services/chatOrchestrator.js` mutate `session.messages`, `session.turnCount`, `session.redFlagEvents`, `session.status`, `session.completedAt`, `session.isProcessing`.
+- Sau khi chuyển store sang Firestore async, function không gọi `await sessions.set(session.id, session)` trước khi return/finally.
+- Test pass vì in-memory path trả object reference, nhưng Firestore path trả plain object từ `doc.data()`; mutate object đó không tự persist.
+
+Acceptance criteria:
+
+- Sau mỗi chat turn, transcript, red flags, turnCount, status/completedAt phải persist được qua `getSessionMessages()` và `getDashboard()` khi Firestore bật.
+- `isProcessing` lock phải được lưu/clear đúng nếu mục tiêu là chống concurrent cross-request; nếu chỉ in-process lock thì ghi rõ giới hạn.
+- Thêm test cover store không trả object reference hoặc mock async store để bắt lỗi missing persist.
+
+### Cần Sửa: Không Nuốt Lỗi Firestore Set/Delete Quan Trọng
+
+Mức độ: P1.
+
+Vấn đề:
+
+- `src/services/store.js` đang `console.error(...)` rồi tiếp tục trả success khi Firestore `set/delete` lỗi.
+- API có thể báo tạo session/chat thành công nhưng dữ liệu chỉ nằm in-memory trong instance hiện tại, trái kỳ vọng persistence.
+
+Acceptance criteria:
+
+- Quyết định rõ chế độ: strict Firestore khi đã cấu hình project, hoặc fallback minh bạch.
+- Nếu strict: throw lỗi 5xx khi Firestore write fail.
+- Nếu fallback: response/runtime status/docs phải nói rõ đang fallback in-memory do Firestore unavailable.
+
+### Cần Sửa: Cập Nhật Docs/Test Theo Firestore Hoặc Hoãn Firestore Sau P0
+
+Mức độ: P1.
+
+Vấn đề:
+
+- `Testing.md` vẫn ghi limitation: "Session storage is in-memory".
+- `README.md` chưa nói biến môi trường Firestore hoặc cách chạy/deploy với Firestore.
+- P0 hiện là test Import from GitHub vào AI Studio; thêm dependency Firestore có thể làm import surface phức tạp hơn trước khi biết AI Studio xử lý custom Node server ra sao.
+
+Acceptance criteria:
+
+- Nếu giữ Firestore: cập nhật README/Testing/RiskReport/runtime docs và đảm bảo package-lock được commit.
+- Nếu chưa cần persistence cho P0: revert/hoãn Firestore, giữ repo đơn giản để test AI Studio Import trước.
+
+### Chấp Nhận Được Nếu Sửa Xong
+
+- Vẫn giữ training/inoculation, không detection.
+- Gemini vẫn server-side và không thêm AI khác.
+- Feedback taxonomy không đổi.
+- Safety validator không bị đụng.
+- Score engine pure function không bị đụng.
