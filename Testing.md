@@ -64,13 +64,15 @@ Current unit coverage:
 - Verifies dashboard technique keys stay within the approved feedback taxonomy.
 - Verifies UI fallback technique text does not use out-of-taxonomy labels.
 - Verifies accessibility toggles for large text and high contrast remain present in the UI/CSS.
+- Verifies Vietnamese voice input support hook remains present for chat when the browser supports Web Speech API.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.
 
 Accessibility notes:
 
-- Main buttons use at least `48px` min-height, above the ~44px mobile target baseline.
+- Main buttons use at least `56px` min-height, above the ~44px mobile target baseline.
 - Default primary button color `#2563eb` with white text and danger button `#b91c1c` with white text meet basic WCAG AA contrast by inspection.
 - High-contrast mode uses darker text/borders and removes soft shadows for clearer separation.
+- Button press feedback uses visual active state and optional device vibration through `navigator.vibrate` when supported.
 
 ## 4. Integration Test
 

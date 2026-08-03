@@ -21,12 +21,12 @@ body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-text);
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.5;
 }
 
 body.large-text {
-  font-size: 20px;
+  font-size: 24px;
 }
 
 body.high-contrast {
@@ -62,10 +62,10 @@ textarea {
 }
 
 button {
-  min-height: 48px;
+  min-height: 56px;
   border: 0;
   border-radius: 8px;
-  padding: 10px 18px;
+  padding: 12px 20px;
   background: var(--color-primary);
   color: white;
   cursor: pointer;
@@ -80,6 +80,19 @@ button.secondary {
 
 button.warning {
   background: var(--color-danger);
+}
+
+button:active {
+  filter: brightness(0.88);
+  transform: translateY(1px);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
 }
 
 button:disabled {
@@ -118,19 +131,19 @@ p {
 
 h1 {
   margin: 0;
-  font-size: 30px;
+  font-size: 34px;
   letter-spacing: 0;
 }
 
 h2 {
   margin: 0 0 16px;
-  font-size: 26px;
+  font-size: 30px;
   letter-spacing: 0;
 }
 
 h3 {
   margin: 0 0 8px;
-  font-size: 21px;
+  font-size: 24px;
   letter-spacing: 0;
 }
 
@@ -311,6 +324,11 @@ h3 {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 12px;
+}
+
+.chat-actions {
+  display: grid;
+  gap: 10px;
 }
 
 .score-card {

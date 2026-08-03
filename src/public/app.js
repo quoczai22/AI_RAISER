@@ -76,6 +76,12 @@ function applyAccessibilitySettings() {
   document.body.classList.toggle("high-contrast", state.accessibility.highContrast);
 }
 
+function acknowledgeTap() {
+  if (navigator.vibrate) {
+    navigator.vibrate(20);
+  }
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
@@ -162,7 +168,7 @@ function renderEntryDashboard() {
         <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
       </label>
       <div>
-        <button id="start-training">Bắt đầu luyện tập</button>
+        <button id="start-training"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
       </div>
       <h3>Lịch sử trong phiên này</h3>
       <ul class="flag-list">
@@ -187,6 +193,7 @@ function renderEntryDashboard() {
     applyAccessibilitySettings();
   });
   app.querySelector("#start-training").addEventListener("click", () => {
+    acknowledgeTap();
     const name = app.querySelector("#user-name").value.trim();
     state.userName = name || "Bạn";
     safeStorageSet("aisi_user_name", state.userName);
@@ -209,7 +216,7 @@ function renderScenarioPicker() {
               <h3>${escapeHtml(scenario.title)}</h3>
               <p>${escapeHtml(scenario.description)}</p>
             </div>
-            <button data-scenario-id="${escapeHtml(scenario.id)}">Chọn</button>
+            <button data-scenario-id="${escapeHtml(scenario.id)}"><span aria-hidden="true">✓</span> Chọn</button>
           </article>
         `).join("")}
       </div>
@@ -221,17 +228,19 @@ function renderScenarioPicker() {
           <option value="hard">Khó - ít gợi ý hơn</option>
         </select>
       </label>
-      <button class="secondary" id="back-dashboard">Về dashboard</button>
+      <button class="secondary" id="back-dashboard"><span aria-hidden="true">⌂</span> Về dashboard</button>
     </section>
   `);
 
   app.querySelectorAll("[data-scenario-id]").forEach((button) => {
     button.addEventListener("click", async () => {
+      acknowledgeTap();
       state.selectedScenario = scenarioById(button.dataset.scenarioId);
       await createTrainingSession(app.querySelector("#difficulty").value);
     });
   });
   app.querySelector("#back-dashboard").addEventListener("click", () => {
+    acknowledgeTap();
     location.hash = "";
     renderEntryDashboard();
   });
@@ -272,7 +281,7 @@ function renderSimulationConsent() {
         <input id="simulation-consent" type="checkbox">
         <span>Tôi hiểu đây là mô phỏng luyện tập và tôi sẽ không nhập thông tin riêng tư thật.</span>
       </label>
-      <button id="start-chat" disabled>Bắt đầu mô phỏng</button>
+      <button id="start-chat" disabled><span aria-hidden="true">▶</span> Bắt đầu mô phỏng</button>
     </section>
   `);
 
@@ -281,7 +290,10 @@ function renderSimulationConsent() {
   checkbox.addEventListener("change", () => {
     start.disabled = !checkbox.checked;
   });
-  start.addEventListener("click", confirmConsent);
+  start.addEventListener("click", () => {
+    acknowledgeTap();
+    confirmConsent();
+  });
 }
 
 async function confirmConsent() {
@@ -333,7 +345,7 @@ function renderChatShell() {
           <h2>${escapeHtml(scenario?.title || "Tình huống mô phỏng")}</h2>
           <p class="subtitle">Gemini phản hồi động theo lịch sử hội thoại. Cấp độ: ${escapeHtml(state.session?.difficulty || "easy")}</p>
         </div>
-        <button class="warning" id="stop-chat">Dừng</button>
+        <button class="warning" id="stop-chat"><span aria-hidden="true">■</span> Dừng</button>
       </div>
       <div class="chat-messages">
         ${state.messages.length === 0 ? '<div class="bubble ai">Chào cô/chú, đây là tình huống mô phỏng. Mình cần trao đổi nhanh về một vấn đề cần xác minh.</div>' : ""}
@@ -343,14 +355,22 @@ function renderChatShell() {
       </div>
       <form class="chat-form" id="chat-form">
         <textarea id="chat-input" maxlength="${state.runtime.maxMessageLength}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
-        <button type="submit" ${state.isSending ? "disabled" : ""}>Gửi</button>
+        <div class="chat-actions">
+          <button type="button" class="secondary" id="voice-input" ${state.isSending ? "disabled" : ""}><span aria-hidden="true">🎙</span> Nói</button>
+          <button type="submit" ${state.isSending ? "disabled" : ""}><span aria-hidden="true">➤</span> Gửi</button>
+        </div>
       </form>
     </section>
   `);
 
-  app.querySelector("#stop-chat").addEventListener("click", renderDashboard);
+  app.querySelector("#stop-chat").addEventListener("click", () => {
+    acknowledgeTap();
+    renderDashboard();
+  });
+  app.querySelector("#voice-input").addEventListener("click", startVoiceInput);
   app.querySelector("#chat-form").addEventListener("submit", async (event) => {
     event.preventDefault();
+    acknowledgeTap();
     if (state.isSending) return;
     const input = app.querySelector("#chat-input");
     const text = input.value.trim();
@@ -367,6 +387,42 @@ function renderChatShell() {
     renderChatShell();
     await sendChatMessage(text);
   });
+}
+
+function startVoiceInput() {
+  acknowledgeTap();
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const input = app.querySelector("#chat-input");
+  const voiceButton = app.querySelector("#voice-input");
+  if (!SpeechRecognition || !input || !voiceButton) {
+    state.safetyNotices.push("Trình duyệt này chưa hỗ trợ nhập giọng nói.");
+    renderChatShell();
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "vi-VN";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  voiceButton.disabled = true;
+  voiceButton.textContent = "Đang nghe...";
+  recognition.onresult = (event) => {
+    const transcript = event.results?.[0]?.[0]?.transcript || "";
+    input.value = transcript.slice(0, state.runtime.maxMessageLength);
+    input.focus();
+  };
+  recognition.onerror = () => {
+    state.safetyNotices.push("Không nghe được giọng nói. Bạn có thể nhập bằng bàn phím.");
+    renderChatShell();
+  };
+  recognition.onend = () => {
+    const currentButton = app.querySelector("#voice-input");
+    if (currentButton) {
+      currentButton.disabled = false;
+      currentButton.innerHTML = '<span aria-hidden="true">🎙</span> Nói';
+    }
+  };
+  recognition.start();
 }
 
 async function sendChatMessage(text) {
@@ -477,9 +533,9 @@ function renderDashboardView(dashboard) {
         <textarea id="share-summary" readonly>${escapeHtml(dashboard.shareSummary)}</textarea>
       </label>
       <div>
-        <button id="copy-share">Copy tóm tắt</button>
-        <button class="secondary" id="restart">Luyện tiếp</button>
-        <button class="secondary" id="home">Dashboard</button>
+        <button id="copy-share"><span aria-hidden="true">⧉</span> Copy tóm tắt</button>
+        <button class="secondary" id="restart"><span aria-hidden="true">↻</span> Luyện tiếp</button>
+        <button class="secondary" id="home"><span aria-hidden="true">⌂</span> Dashboard</button>
       </div>
       ${state.safetyNotices.map((notice) => `<div class="notice">${escapeHtml(notice)}</div>`).join("")}
     </section>
@@ -487,6 +543,7 @@ function renderDashboardView(dashboard) {
 
   app.querySelector("#copy-share").addEventListener("click", () => copyShareSummary(dashboard));
   app.querySelector("#restart").addEventListener("click", () => {
+    acknowledgeTap();
     location.hash = "scenarios";
     state.session = null;
     state.messages = [];
@@ -495,6 +552,7 @@ function renderDashboardView(dashboard) {
     renderScenarioPicker();
   });
   app.querySelector("#home").addEventListener("click", () => {
+    acknowledgeTap();
     location.hash = "";
     renderEntryDashboard();
   });
@@ -503,6 +561,7 @@ function renderDashboardView(dashboard) {
 async function copyShareSummary(dashboard) {
   const text = app.querySelector("#share-summary").value;
   try {
+    acknowledgeTap();
     await navigator.clipboard.writeText(text);
     state.safetyNotices = ["Đã copy tóm tắt kết quả."];
   } catch {
@@ -549,10 +608,11 @@ function renderError(message) {
     <section class="panel stack">
       <h2>Không thể tiếp tục</h2>
       <div class="notice danger-note">${escapeHtml(message)}</div>
-      <button id="back-home">Về dashboard</button>
+      <button id="back-home"><span aria-hidden="true">⌂</span> Về dashboard</button>
     </section>
   `);
   app.querySelector("#back-home").addEventListener("click", () => {
+    acknowledgeTap();
     state.session = null;
     state.messages = [];
     state.safetyNotices = [];
