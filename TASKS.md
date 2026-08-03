@@ -275,6 +275,33 @@ Ngày review: 2026-08-03.
 - Cập nhật `LOCAL_STATUS.md` sau khi Antigravity commit thật, không ghi trạng thái giả định trước commit.
 - Chỉ sau khi các điểm trên đạt acceptance criteria mới xem xét commit/đẩy phần Firestore.
 
+## Review Loop - Strict Source Verification
+
+Ngày review: 2026-08-03.
+
+### Bằng Chứng Đã Xác Minh Từ Source
+
+- **Đã xác minh:** `geminiClient.server.js` gọi Gemini server-side và không gửi `temperature`, `top_p`, `top_k` trong `generationConfig`.
+- **Đã xác minh:** `chatOrchestrator.js` dùng system prompt cho roleplay động và có validator output trước khi hiển thị.
+- **Đã xác minh:** `scoringEngine.js` là hàm tính điểm riêng, dùng `recognized / total`.
+- **Đã xác minh:** nút Stop gọi flow `POST /api/sessions/{id}/complete` thông qua `renderDashboard()`.
+- **Đã xác minh:** `safetyValidator.js` có mask input và chặn output cho OTP, CCCD, phone, account/card, password và link.
+- **Đã xác minh:** chat turn hiện có các lệnh `sessions.set(...)` trước, trong và sau xử lý; đây mới chỉ là kiểm tra code tĩnh.
+
+### Chưa Đạt / Chưa Xác Minh Được
+
+- **Cần sửa - taxonomy:** `dashboardService.js` phát sinh key/label `urgency + reciprocity` và `fear + reciprocity`. Checklist `AGENTS.md` chỉ cho phép các nhóm `Urgency`, `Authority`, `Fear`, `Social Proof/Reciprocity`, `Scarcity`; không được phát sinh `reciprocity` như một nhóm độc lập trong biểu thức kỹ thuật.
+- **Cần sửa - model lock:** `geminiClient.server.js` và `chatOrchestrator.js` dùng `process.env.GEMINI_MODEL`, nên source cho phép chạy model khác `gemini-3.6-flash`. Chưa có guard ép model đúng yêu cầu `AGENTS.md`.
+- **CHƯA XÁC MINH ĐƯỢC:** Firestore persistence thật sau restart hoặc với Firestore emulator/Google Cloud. Unit test hiện không bật Firestore và chưa có fake store trả object copy để chứng minh toàn bộ lifecycle.
+- **CHƯA XÁC MINH ĐƯỢC:** concurrency lock chống hai request đồng thời trên nhiều process; TTL 30 giây chỉ được thấy trong code, chưa có integration test.
+- **CHƯA XÁC MINH ĐƯỢC:** Accessibility mobile bằng screenshot/browser sau diff mới; source có CSS/controls nhưng chưa phải bằng chứng visual.
+
+### Test Đã Chạy Trong Vòng Này
+
+- `node tests/run-tests.js`: pass.
+- `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: pass.
+- Hai test trên chưa đủ để kết luận Firestore, model lock hoặc accessibility visual là Đạt.
+
 ## Bắt Buộc: Review Bằng Chứng Trực Tiếp
 
 - Không tin hoặc dùng báo cáo tự khai của Antigravity làm bằng chứng.
