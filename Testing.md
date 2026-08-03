@@ -64,7 +64,6 @@ Current unit coverage:
 - Verifies dashboard technique keys stay within the approved feedback taxonomy.
 - Verifies UI fallback technique text does not use out-of-taxonomy labels.
 - Verifies accessibility toggles for large text and high contrast remain present in the UI/CSS.
-- Verifies Vietnamese voice input support hook remains present on the main screen and in chat when the browser supports Web Speech API.
 - Verifies senior-friendly Vietnamese UI terms avoid visible `quota/rate limit`, `Dashboard`, and `Copy` wording in the public app.
 - Verifies large `Hủy bỏ / Quay lại` controls are present before risky-feeling steps.
 - Verifies the phone breakpoint keeps primary actions large, stacked and tap-friendly.

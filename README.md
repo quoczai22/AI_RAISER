@@ -15,7 +15,7 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 - Score minh bạch: số red flags nhận diện đúng / tổng red flags của kịch bản.
 - Feedback chỉ dạy pattern thao túng: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
 - Safety validator mask/chặn OTP, CCCD, số tài khoản, số thẻ, số điện thoại, mật khẩu, link thật.
-- Có hỗ trợ accessibility nhẹ: chữ to, tương phản cao, nút lớn, phản hồi khi bấm, nhập giọng nói tiếng Việt nếu trình duyệt hỗ trợ.
+- Có hỗ trợ accessibility nhẹ: chữ to, tương phản cao, nút lớn, phản hồi khi bấm.
 - UI ưu tiên người lớn tuổi/người ít dùng công nghệ tại Việt Nam trên điện thoại: nhãn thuần Việt, không yêu cầu mật khẩu/OTP, nút to, có nút `Hủy bỏ / Quay lại` rõ ràng.
 
 ## Stack
@@ -147,7 +147,6 @@ Tôi sẽ gọi hotline chính thức để kiểm tra lại.
 
 8. Xem dashboard điểm miễn dịch, red flags và copy tóm tắt chia sẻ.
 
-Trong chat, có thể bấm `🎙 Nói` để đọc tin nhắn bằng tiếng Việt nếu trình duyệt hỗ trợ Web Speech API.
 
 ## Nộp Bài
 

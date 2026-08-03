@@ -180,7 +180,6 @@ function renderEntryDashboard() {
         <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
       </label>
       <div class="entry-actions">
-        <button type="button" class="secondary" id="voice-name"><span aria-hidden="true">🎙</span> Nói tên của bạn</button>
         <button id="start-training"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
       </div>
       <h3>Lịch sử luyện tập</h3>
@@ -195,7 +194,7 @@ function renderEntryDashboard() {
     </section>
   `);
 
-  app.querySelector("#voice-name").addEventListener("click", startNameVoiceInput);
+
   app.querySelector("#large-text-toggle").addEventListener("change", (event) => {
     state.accessibility.largeText = event.target.checked;
     saveAccessibilitySettings();
@@ -380,7 +379,6 @@ function renderChatShell() {
       <form class="chat-form" id="chat-form">
         <textarea id="chat-input" maxlength="${state.runtime.maxMessageLength}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
         <div class="chat-actions">
-          <button type="button" class="secondary" id="voice-input" ${state.isSending ? "disabled" : ""}><span aria-hidden="true">🎙</span> Nói</button>
           <button type="submit" ${state.isSending ? "disabled" : ""}><span aria-hidden="true">➤</span> Gửi</button>
         </div>
       </form>
@@ -391,7 +389,7 @@ function renderChatShell() {
     acknowledgeTap();
     renderDashboard();
   });
-  app.querySelector("#voice-input").addEventListener("click", startVoiceInput);
+
   app.querySelector("#chat-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     acknowledgeTap();
@@ -413,91 +411,6 @@ function renderChatShell() {
   });
 }
 
-function startVoiceInput() {
-  const input = app.querySelector("#chat-input");
-  startVietnameseSpeech({
-    input,
-    button: app.querySelector("#voice-input"),
-    maxLength: state.runtime.maxMessageLength,
-    listeningLabel: "Đang nghe...",
-    restoredHtml: '<span aria-hidden="true">🎙</span> Nói',
-    successMessage: "Đã nhận giọng nói. Bạn có thể kiểm tra rồi bấm Gửi.",
-    errorMessage: "Không nghe được giọng nói. Bạn có thể nhập bằng bàn phím.",
-    onUnsupported: () => {
-      const message = "Trình duyệt này chưa hỗ trợ nhập giọng nói.";
-      state.safetyNotices.push(message);
-      announceStatus(message);
-      renderChatShell();
-    },
-    onError: (message) => {
-      state.safetyNotices.push(message);
-      announceStatus(message);
-      renderChatShell();
-    },
-  });
-}
-
-function startNameVoiceInput() {
-  const input = app.querySelector("#user-name");
-  startVietnameseSpeech({
-    input,
-    button: app.querySelector("#voice-name"),
-    maxLength: 40,
-    listeningLabel: "Đang nghe tên...",
-    restoredHtml: '<span aria-hidden="true">🎙</span> Nói tên của bạn',
-    successMessage: "Đã nhận tên bằng giọng nói.",
-    errorMessage: "Không nghe được giọng nói. Bạn có thể nhập tên bằng bàn phím.",
-    onUnsupported: () => {
-      announceStatus("Trình duyệt này chưa hỗ trợ nhập giọng nói.");
-    },
-    onError: (message) => {
-      announceStatus(message);
-    },
-  });
-}
-
-function startVietnameseSpeech({
-  input,
-  button,
-  maxLength,
-  listeningLabel,
-  restoredHtml,
-  successMessage,
-  errorMessage,
-  onUnsupported,
-  onError,
-}) {
-  acknowledgeTap();
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition || !input || !button) {
-    onUnsupported();
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "vi-VN";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  button.disabled = true;
-  button.textContent = listeningLabel;
-  recognition.onresult = (event) => {
-    const transcript = event.results?.[0]?.[0]?.transcript || "";
-    input.value = transcript.slice(0, maxLength);
-    input.focus();
-    announceStatus(successMessage);
-  };
-  recognition.onerror = () => {
-    onError(errorMessage);
-  };
-  recognition.onend = () => {
-    const currentButton = button.id ? app.querySelector(`#${button.id}`) : button;
-    if (currentButton) {
-      currentButton.disabled = false;
-      currentButton.innerHTML = restoredHtml;
-    }
-  };
-  recognition.start();
-}
 
 async function sendChatMessage(text) {
   try {
