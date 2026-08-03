@@ -219,6 +219,37 @@ Acceptance criteria:
 - Nếu giữ Firestore: cập nhật README/Testing/RiskReport/runtime docs và đảm bảo package-lock được commit.
 - Nếu chưa cần persistence cho P0: revert/hoãn Firestore, giữ repo đơn giản để test AI Studio Import trước.
 
+### Cần Sửa: Dọn Test Async Và Làm Rõ Store Contract
+
+Mức độ: P2.
+
+Vấn đề:
+
+- `tests/run-tests.js` đã chuyển phần lớn sang `await assert.rejects(...)`, nhưng helper sync `expectThrows()` vẫn còn tồn tại dù không còn usage.
+- Test hiện vẫn chủ yếu verify in-memory object-reference behavior; chưa mô phỏng store trả object copy như Firestore.
+
+Acceptance criteria:
+
+- Xóa helper `expectThrows()` nếu không dùng nữa.
+- Thêm test regression cho store không trả reference, hoặc tách store adapter để unit test `sendChatMessage()` buộc persist explicit.
+- Test phải fail nếu `sendChatMessage()` quên lưu session sau khi mutate.
+
+### Manager Gate Trước Khi Commit Code Antigravity
+
+Trước khi Antigravity commit phần Firestore, phải chọn 1 trong 2 hướng:
+
+1. **Hoãn Firestore đến sau AI Studio Import P0**:
+   - Revert các thay đổi Firestore/package async không cần thiết.
+   - Giữ accessibility/result toggle nếu muốn vì scope nhỏ.
+   - Ưu tiên repo đơn giản để người dùng test Import from GitHub.
+
+2. **Giữ Firestore ngay bây giờ**:
+   - Sửa P0 persist chat turn.
+   - Sửa/ghi rõ policy khi Firestore write fail.
+   - Cập nhật README/Testing/RiskReport/env docs.
+   - Commit `package-lock.json`, không commit `node_modules/`.
+   - Chạy lại unit + HTTP smoke.
+
 ### Chấp Nhận Được Nếu Sửa Xong
 
 - Vẫn giữ training/inoculation, không detection.
