@@ -16,7 +16,7 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 - Feedback chỉ dạy pattern thao túng: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
 - Safety validator mask/chặn OTP, CCCD, số tài khoản, số thẻ, số điện thoại, mật khẩu, link thật.
 - Có hỗ trợ accessibility nhẹ: chữ to, tương phản cao, nút lớn, phản hồi khi bấm, nhập giọng nói tiếng Việt nếu trình duyệt hỗ trợ.
-- UI ưu tiên người lớn tuổi/người ít dùng công nghệ tại Việt Nam: nhãn thuần Việt, không yêu cầu mật khẩu/OTP, có nút `Hủy bỏ / Quay lại` rõ ràng.
+- UI ưu tiên người lớn tuổi/người ít dùng công nghệ tại Việt Nam trên điện thoại: nhãn thuần Việt, không yêu cầu mật khẩu/OTP, nút to, có nút `Hủy bỏ / Quay lại` rõ ràng.
 
 ## Stack
 

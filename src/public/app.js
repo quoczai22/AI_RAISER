@@ -106,8 +106,9 @@ function scenarioById(id) {
   return state.scenarios.find((scenario) => scenario.id === id);
 }
 
-function render(content) {
+function render(content, options = {}) {
   applyAccessibilitySettings();
+  document.body.classList.toggle("chat-screen", options.chatScreen === true);
   app.innerHTML = content;
   app.focus({ preventScroll: true });
 }
@@ -384,7 +385,7 @@ function renderChatShell() {
         </div>
       </form>
     </section>
-  `);
+  `, { chatScreen: true });
 
   app.querySelector("#stop-chat").addEventListener("click", () => {
     acknowledgeTap();
@@ -610,7 +611,7 @@ function renderDashboardView(dashboard) {
         <strong>Tóm tắt chia sẻ cho người thân</strong>
         <textarea id="share-summary" readonly>${escapeHtml(dashboard.shareSummary)}</textarea>
       </label>
-      <div>
+      <div class="result-actions">
         <button id="copy-share"><span aria-hidden="true">⧉</span> Sao chép tóm tắt</button>
         <button class="secondary" id="restart"><span aria-hidden="true">↻</span> Luyện tiếp</button>
         <button class="secondary" id="home"><span aria-hidden="true">⌂</span> Trang chính</button>

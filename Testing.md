@@ -67,6 +67,7 @@ Current unit coverage:
 - Verifies Vietnamese voice input support hook remains present on the main screen and in chat when the browser supports Web Speech API.
 - Verifies senior-friendly Vietnamese UI terms avoid visible `quota/rate limit`, `Dashboard`, and `Copy` wording in the public app.
 - Verifies large `Hủy bỏ / Quay lại` controls are present before risky-feeling steps.
+- Verifies the phone breakpoint keeps primary actions large, stacked and tap-friendly.
 - Verifies skip link and status live region are present for keyboard/screen-reader support.
 - Verifies participant safety patterns can upgrade Gemini `triggered` signals to deterministic `recognized` scoring.
 
@@ -77,6 +78,7 @@ Accessibility notes:
 - High-contrast mode uses darker text/borders and removes soft shadows for clearer separation.
 - Button press feedback uses visual active state and optional device vibration through `navigator.vibrate` when supported.
 - Entry screen states the MVP does not require password/OTP and will not charge money.
+- Phone layout uses a dedicated `520px` breakpoint with 64px buttons, stacked action groups and full-screen chat mode.
 - Compliance note: `docs/accessibility_compliance.md`.
 
 ## 4. Integration Test

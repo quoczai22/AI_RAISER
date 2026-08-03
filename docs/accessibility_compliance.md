@@ -20,6 +20,7 @@ AI Scam Inoculation không phải cổng dịch vụ công, nhưng MVP áp dụn
 | Chữ lớn | Font mặc định 20px, toggle `Chữ to` 24px |
 | Tương phản | Toggle `Tương phản cao`, màu chữ/nút tương phản mạnh |
 | Nút dễ bấm | Nút chính tối thiểu 56px chiều cao |
+| Điện thoại | Breakpoint 520px tăng nút lên 64px, nhóm nút xếp dọc, chat chạy full-screen để ô nhập không bị tụt khỏi màn hình |
 | Icon không thay thế chữ | Icon chỉ trang trí `aria-hidden`, luôn đi kèm chữ |
 | Thuần Việt, ít thuật ngữ | Màn hình chính dùng `Trang chính`, `Sao chép`, `Hủy bỏ / Quay lại`; lỗi Gemini quota được diễn giải là `Trợ lý AI đang bận` |
 | Giảm sợ bấm nhầm | Màn hình đầu ghi rõ không cần mật khẩu/OTP, không trừ tiền; bước đồng thuận có nút `Hủy bỏ / Quay lại` lớn |

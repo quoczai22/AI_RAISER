@@ -87,6 +87,10 @@ textarea {
   color: var(--color-text);
 }
 
+input[type="checkbox"] {
+  min-height: 0;
+}
+
 button {
   min-height: 56px;
   border: 0;
@@ -216,6 +220,12 @@ h3 {
   gap: 12px;
 }
 
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .toggle-row {
   display: inline-flex;
   align-items: center;
@@ -229,8 +239,8 @@ h3 {
 }
 
 .toggle-row input {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
 }
 
 .scenario-grid {
@@ -266,8 +276,8 @@ h3 {
 }
 
 .consent-row input {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   margin-top: 2px;
 }
 
@@ -439,5 +449,114 @@ body.high-contrast .bubble.ai {
 
   .bubble {
     max-width: 92%;
+  }
+}
+
+@media (max-width: 520px) {
+  body {
+    font-size: 20px;
+  }
+
+  body.large-text {
+    font-size: 22px;
+  }
+
+  .app-shell {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .app-header {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: 30px;
+  }
+
+  h2 {
+    font-size: 27px;
+  }
+
+  h3 {
+    font-size: 23px;
+  }
+
+  .panel {
+    padding: 16px;
+    box-shadow: none;
+  }
+
+  button {
+    width: 100%;
+    min-height: 64px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 56px;
+    padding: 14px;
+  }
+
+  .accessibility-panel,
+  .entry-actions,
+  .result-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .toggle-row {
+    min-height: 60px;
+  }
+
+  .scenario-card {
+    min-height: unset;
+    padding: 16px;
+  }
+
+  .chat-layout {
+    height: calc(100dvh - 115px);
+    min-height: 0;
+    grid-template-rows: auto minmax(260px, 1fr) auto;
+  }
+
+  .chat-screen .app-shell {
+    padding: 0;
+  }
+
+  .chat-screen .app-header {
+    display: none;
+  }
+
+  .chat-screen .chat-layout {
+    height: 100dvh;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+
+  .chat-topbar {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .chat-messages {
+    padding: 12px;
+  }
+
+  .bubble {
+    max-width: 100%;
+  }
+
+  .chat-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .score-number {
+    font-size: 40px;
   }
 }
