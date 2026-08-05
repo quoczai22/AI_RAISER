@@ -313,6 +313,52 @@ Làm sạch diff đang pending để chỉ giữ phần phù hợp với MVP và
 - **Đã xác minh:** browser QA tại viewport `390x844`: `documentWidth=375`, `horizontalOverflow=false`, tab `Luyện tập` và `Số điện thoại xác minh` hiển thị, Resource Hub render 4 mục, không có text du lịch/gym.
 - **CHƯA XÁC MINH ĐƯỢC:** Firestore thật sau restart và concurrency nhiều process; không thuộc scope TASK-007.
 
+## TASK-008 - Cleanup Rejected Local Diff After TASK-006
+
+### Trạng Thái
+
+todo - ưu tiên ngay lập tức trước mọi feature/demo/deploy tiếp theo.
+
+### Mục Tiêu
+
+Dọn sạch các thay đổi local đã bị Codex reject sau commit `5469dd5`, để repo trở lại trạng thái reviewable và không lẫn thay đổi ngoài scope TASK-006.
+
+### Scope Cho Antigravity
+
+- Chỉ xử lý các file local đang dirty:
+  - `README.md`
+  - `RiskReport.md`
+  - `Testing.md`
+  - `src/public/app.css`
+  - `src/public/app.js`
+  - `src/services/store.js`
+  - `tests/run-tests.js`
+- Không sửa thêm file khác.
+- Không thay đổi `src/data/scenarios.json`, `dashboardService.js`, Gemini, safety validator, scoring engine hoặc architecture.
+
+### Nguồn Cho Phép
+
+- `TASKS.md` review TASK-006, phần `Pending Local Diff Sau Commit 5469dd5`.
+- `AGENTS.md`.
+- Git HEAD đã được chấp nhận: `f522555`.
+
+### Acceptance Criteria
+
+- Revert hoặc tách bỏ toàn bộ thay đổi local ngoài scope TASK-006.
+- Sau khi làm xong, `git status --short --branch` phải sạch, hoặc chỉ còn `TASKS.md` nếu Antigravity cần ghi trạng thái `done-pending-review`.
+- `src/services/store.js` phải trở lại đúng trạng thái đã được chấp nhận tại HEAD; không có `sessions_local.db`, `writeFileSync`, `readFileSync`, `existsSync`, local file DB, hoặc test local DB mới.
+- Không commit `sessions_local.db`; nếu file local này tồn tại, đảm bảo vẫn ignored/local-only và không stage.
+- Không đổi copy UI rộng trong `src/public/app.js` nếu chưa có task riêng.
+- Chạy:
+  - `node tests/run-tests.js`
+  - `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`
+- Sau khi hoàn tất, đổi trạng thái task thành `done-pending-review`, ghi diff ngắn và test đã chạy. Không tự push trước khi Codex review.
+
+### Ghi Chú Thực Thi
+
+- Đây là task cleanup, không phải feature.
+- Nếu Antigravity muốn giữ local file persistence hoặc rewrite copy UI cho người lớn tuổi, phải tạo task riêng với nguồn, scope, risk và acceptance criteria trước; không làm trong TASK-008.
+
 ## Review Log - Antigravity Firestore/Accessibility Changes
 
 Ngày review: 2026-08-03.
