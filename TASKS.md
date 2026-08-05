@@ -74,3 +74,11 @@ Sau khi xong: cập nhật trạng thái `done-pending-review`, ghi diff/test/br
 ## Quy Trình Bàn Giao
 
 Sau mỗi task hoặc rework: cập nhật task, ghi prompt copy được ngay bên dưới, chạy test, ghi diff ngắn, chuyển `done-pending-review`, không tự push. Codex review trước khi accept và commit source.
+
+## Quy Tắc Rút Gọn Context
+
+- Sau khi Codex accept task, phải rút gọn mục task đó trong `TASKS.md` thành: trạng thái, mục tiêu tiếp theo, thay đổi đã accept, bằng chứng test/browser, giới hạn `CHƯA XÁC MINH ĐƯỢC` và prompt/task kế tiếp.
+- Review log dài, diff lặp lại và prompt cũ chuyển sang `TASKS_ARCHIVE.md` hoặc giữ trong git history.
+- Không xóa quyết định kiến trúc, lỗi còn mở, giới hạn an toàn hoặc bằng chứng cần cho audit.
+- Antigravity chỉ báo cáo phần thay đổi của task hiện tại; không copy lại các task đã hoàn thành.
+- Quy tắc này áp dụng cho cả Codex và Antigravity để giảm token/context nhưng vẫn giữ khả năng truy vết.
