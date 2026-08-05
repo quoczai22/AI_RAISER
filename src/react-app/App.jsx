@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import AppShell from './components/AppShell';
 import EntryForm from './components/EntryForm';
 import Dashboard from './components/Dashboard';
+import ScenarioPicker from './components/ScenarioPicker';
+import SimulationConsent from './components/SimulationConsent';
 import './app.css';
 
 export default function App() {
@@ -73,7 +75,32 @@ export default function App() {
     window.location.hash = '';
   };
 
-  // Simple skeleton router
+  const handleStartTraining = (scenarioId, difficulty) => {
+    fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        scenarioId,
+        difficulty,
+        userName: userName || 'Bạn',
+      })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Không thể khởi tạo phiên luyện tập.');
+        return res.json();
+      })
+      .then(data => {
+        window.location.hash = `consent/${data.session.id}`;
+      })
+      .catch(err => {
+        alert(err.message);
+      });
+  };
+
+  const handleConsentConfirmed = (session) => {
+    window.location.hash = `chat/${session.id}`;
+  };
+
   const renderContent = () => {
     if (!userName) {
       return <EntryForm onSaveName={handleSaveName} />;
@@ -81,29 +108,26 @@ export default function App() {
 
     if (route.startsWith('#scenarios')) {
       return (
-        <div className="panel ui-card stack">
-          <h2>Chọn tình huống luyện tập</h2>
-          <p className="subtitle">Sprint 2 Migration: Kịch bản và độ khó sẽ hiển thị ở đây.</p>
-          <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
-        </div>
+        <ScenarioPicker
+          userName={userName}
+          onStartTraining={handleStartTraining}
+        />
       );
     }
 
     if (route.startsWith('#consent')) {
       return (
-        <div className="panel ui-card stack">
-          <h2>Xác nhận trước khi bắt đầu</h2>
-          <p class="subtitle">Sprint 2 Migration: Consent cam kết an toàn sẽ hiển thị ở đây.</p>
-          <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
-        </div>
+        <SimulationConsent
+          onConsentConfirmed={handleConsentConfirmed}
+        />
       );
     }
 
     if (route.startsWith('#chat')) {
       return (
-        <div className="panel ui-card stack">
-          <h2>Phòng chat giả lập lừa đảo</h2>
-          <p class="subtitle">Sprint 2 Migration: Luyện chat Gemini động sẽ hiển thị ở đây.</p>
+        <div className="panel ui-card stack" style={{ padding: '24px' }}>
+          <h2 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 900, fontSize: '1.4rem', margin: 0 }}>Phòng chat giả lập lừa đảo</h2>
+          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Sprint 2 Migration: Chat room lừa đảo với AI sẽ sớm có ở đây.</p>
           <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
         </div>
       );
@@ -111,9 +135,9 @@ export default function App() {
 
     if (route.startsWith('#dashboard/')) {
       return (
-        <div className="panel ui-card stack">
-          <h2>Kết quả phân tích chi tiết</h2>
-          <p class="subtitle">Sprint 2 Migration: Scorecard và share card sẽ hiển thị ở đây.</p>
+        <div className="panel ui-card stack" style={{ padding: '24px' }}>
+          <h2 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 900, fontSize: '1.4rem', margin: 0 }}>Kết quả phân tích chi tiết</h2>
+          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Sprint 2 Migration: Scorecard và share card sẽ sớm có ở đây.</p>
           <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
         </div>
       );
@@ -121,9 +145,9 @@ export default function App() {
 
     if (route.startsWith('#hotlines')) {
       return (
-        <div className="panel ui-card stack">
-          <h2>Đường dây nóng xác minh chính thức</h2>
-          <p class="subtitle">Sprint 2 Migration: Danh bạ khẩn cấp và NCSC link sẽ hiển thị ở đây.</p>
+        <div className="panel ui-card stack" style={{ padding: '24px' }}>
+          <h2 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 900, fontSize: '1.4rem', margin: 0 }}>Đường dây nóng xác minh chính thức</h2>
+          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Sprint 2 Migration: Danh bạ khẩn cấp và NCSC link sẽ sớm có ở đây.</p>
           <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
         </div>
       );

@@ -1,117 +1,81 @@
 # TASKS - AI Scam Inoculation
 
-File này chỉ giữ context và task đang hoạt động. Lịch sử review cũ của static UI được lưu tại `TASKS_ARCHIVE.md`; không cần đọc lại cho task mới trừ khi cần audit.
+File này chỉ giữ context và task đang hoạt động. Lịch sử review cũ của static UI nằm tại `TASKS_ARCHIVE.md`.
 
 ## Context Hiện Tại
 
 - Sản phẩm: AI Scam Inoculation, training/inoculation, không phải scam detection.
-- Backend hiện tại: Node.js, Gemini server-side, safety validator, scoring engine và session API đã có.
+- Backend: Node.js, Gemini server-side, safety validator, scoring engine và session API.
 - Frontend mới: React + Vite trong `src/react-app/`.
-- Static frontend cũ: `src/public/`, chỉ giữ làm fallback trong giai đoạn migration.
-- React production build: `npm.cmd run frontend:build`.
-- React qua Node: `USE_REACT=true` rồi chạy `node server.js`.
-- Static fallback: chạy `node server.js` không đặt `USE_REACT=true`.
+- Static frontend cũ: `src/public/`, chỉ là fallback trong migration.
+- Build React: `npm.cmd run frontend:build`.
+- Chạy React qua Node: `USE_REACT=true` rồi chạy `node server.js`.
 - Submission chính: Google AI Studio public project link.
 
 ## Luật Review
 
-- Không đổi scope MVP, không biến sản phẩm thành detection.
-- Gemini sản phẩm cuối chỉ dùng `gemini-3.6-flash`, server-side; không temperature/top_p/top_k.
-- Chat dynamic, không decision tree cố định.
-- Taxonomy chỉ gồm Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
-- Không lưu hoặc yêu cầu OTP, CCCD, mật khẩu, số tài khoản, link thật.
-- Nút `Dừng luyện tập` luôn có trong chat.
-- Score là pure function: red flags đúng / tổng red flags.
-- Không chấp nhận báo cáo tự khai; Codex phải đọc diff/source/test/browser thật.
-- Phần chưa kiểm chứng phải ghi đúng `CHƯA XÁC MINH ĐƯỢC`.
+- Không đổi scope MVP hoặc biến sản phẩm thành detection.
+- Gemini chỉ dùng `gemini-3.6-flash`, server-side; không temperature/top_p/top_k.
+- Chat dynamic; taxonomy chỉ gồm Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
+- Không lưu/yêu cầu OTP, CCCD, mật khẩu, số tài khoản hoặc link thật.
+- Nút `Dừng luyện tập` luôn có; score là pure function.
+- Không tin báo cáo tự khai; đọc diff/source/test/browser thật.
+- Chưa kiểm chứng phải ghi `CHƯA XÁC MINH ĐƯỢC`.
 
 ## TASK-009 / TASK-010 - Static UI Legacy
 
-Trạng thái: `rejected-needs-rework` và không còn là đường triển khai chính. Các thay đổi static UI hiện còn dirty trong local chưa được commit/push. Không tiếp tục vá static UI nếu không mở task riêng.
-
-Chi tiết lịch sử: `TASKS_ARCHIVE.md`.
+Trạng thái: `rejected-needs-rework`; không còn là đường triển khai chính. Static UI dirty local chưa commit/push. Chi tiết ở `TASKS_ARCHIVE.md`.
 
 ## TASK-011 - React Frontend Migration, Sprint 1
 
-### Trạng Thái
+Trạng thái: `done`.
 
-`done`
+Đã accept: React/Vite skeleton, EntryForm, AppShell, Dashboard, accessibility toggle, Node serve React build và static fallback. Build, unit test, HTTP smoke và browser dashboard QA đã pass.
 
-### Đã Chấp Nhận
-
-- React/Vite skeleton trong `src/react-app/`.
-- EntryForm, AppShell và Dashboard render được dữ liệu thật cơ bản.
-- `Chữ to` và `Tương phản cao` hoạt động.
-- Node có thể serve React build khi `USE_REACT=true`.
-- Static fallback vẫn giữ nguyên.
-- `npm.cmd run frontend:build`: pass khi chạy với quyền filesystem phù hợp.
-- `node tests/run-tests.js`: pass.
-- `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: pass.
-- Browser đã xác minh React boot, nhập tên, dashboard và accessibility toggle tại port riêng.
-
-### Giới Hạn Còn Lại
-
-- React route scenario, consent, chat, result và hotline hiện vẫn là stub.
-- Full React flow và Gemini integration trong React: `CHƯA XÁC MINH ĐƯỢC`.
-- Chưa được coi là hoàn tất migration frontend.
+Giới hạn: scenario, consent, chat, result, hotline chưa migrate ở Sprint 1.
 
 ## TASK-012 - React Scenario Picker And Consent
 
 ### Trạng Thái
 
-`ready-for-execution`
+`done`
 
-### Mục Tiêu
+### Đã Accept
 
-Migrate màn chọn tình huống và xác nhận consent từ static UI sang React, dùng API/session hiện tại. Chưa migrate chat, result hoặc hotline.
+- ScenarioPicker lấy dữ liệu thật từ `/api/scenarios`, chọn scenario và cấp độ bằng UI React.
+- Tiếp tục tạo session thật qua `/api/sessions`.
+- SimulationConsent đọc session/scenario, hiển thị cảnh báo an toàn và yêu cầu checkbox trước khi xác nhận consent.
+- Nút `Hủy bỏ/Quay lại` hoạt động; sau consent chuyển đúng sang chat stub của Sprint 2.
+- Browser mobile `390x844`: không horizontal overflow, accessibility controls vẫn hoạt động.
+- `npm.cmd run frontend:build`: pass với quyền filesystem phù hợp.
+- `node tests/run-tests.js`: pass.
+- `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: pass.
 
-### Phạm Vi
+Giới hạn: chat, result và hotline React vẫn chưa migrate; Gemini flow đầy đủ: `CHƯA XÁC MINH ĐƯỢC`.
 
-- Được sửa `src/react-app/*`, `README.md`, `TASKS.md`.
-- Được sửa `server.js` chỉ khi cần tối thiểu cho React/API.
-- Dùng dữ liệu thật từ `/api/scenarios`, `/api/sessions` và consent API hiện tại.
-- Giữ `Chữ to`, `Tương phản cao`, tiếng Việt dễ hiểu, nút `Quay lại/Hủy bỏ` và cảnh báo không nhập thông tin thật.
+## TASK-013 - React Chat Flow
 
-### Không Được Làm
-
-- Không sửa `src/services/*`, Gemini, safety, scoring hoặc database contract.
-- Không thêm scenario/feature ngoài MVP.
-- Không migrate chat/result trong task này.
-- Không xóa static fallback.
-
-### Acceptance Criteria
-
-- React scenario picker render danh sách từ `/api/scenarios`, chọn được scenario và cấp độ.
-- Consent tạo/đọc session bằng API thật, checkbox consent bắt buộc trước khi bắt đầu.
-- Nút Quay lại/Hủy bỏ hoạt động và không làm mất state ngoài ý muốn.
-- Mobile `390x844` và desktop `1440x900` không horizontal overflow.
-- Accessibility toggle vẫn hoạt động trên các view mới.
-- `node tests/run-tests.js`, HTTP smoke và browser QA pass.
+Trạng thái: `ready-for-execution`.
 
 ### Prompt Cho Antigravity
 
 ```text
-Đọc `AGENTS.md` và `TASKS.md`, thực hiện TASK-012 - React Scenario Picker And Consent.
+Đọc `AGENTS.md` và `TASKS.md`, thực hiện TASK-013 - React Chat Flow.
 
-Được sửa: `src/react-app/*`, `README.md`, `TASKS.md`; server/API chỉ sửa nếu cần tối thiểu. Không sửa `src/services/*`, Gemini, safety, scoring, database contract. Không xóa static fallback và không thêm feature/scenario ngoài MVP.
+Migrate chat roleplay từ static UI sang React, dùng session/chat API hiện tại và giữ Gemini server-side. Được sửa `src/react-app/*`, `README.md`, `TASKS.md`; server chỉ sửa tối thiểu nếu cần. Không sửa service Gemini, safety, scoring, database contract; không xóa static fallback; không thêm feature/scenario.
 
 Acceptance criteria:
-- React route chọn tình huống lấy dữ liệu từ `/api/scenarios`.
-- Consent dùng session API hiện tại, giữ cảnh báo không nhập thông tin thật và nút Hủy bỏ/Quay lại.
-- Giữ `Chữ to`, `Tương phản cao`, tiếng Việt dễ hiểu và không horizontal overflow ở mobile 390x844.
-- Unit test, HTTP smoke test và browser QA pass.
+- React chat đọc đúng session, hiển thị lịch sử và gửi tin nhắn qua API thật.
+- Giữ dynamic roleplay, safety warning, nút `Dừng luyện tập`, textarea và `Gửi`.
+- Không hiển thị/lưu OTP, CCCD, mật khẩu, số tài khoản hoặc link thật.
+- Mobile 390x844 và desktop 1440x900 không tràn ngang; `Chữ to` + `Tương phản cao` không cắt safety control.
+- Unit test, HTTP smoke test và browser QA pass; Gemini fallback phải hiển thị minh bạch nếu xảy ra.
 
-Sau khi xong: cập nhật TASK-012 thành `done-pending-review`, ghi diff/test/browser evidence thật, không tự commit hoặc push. Nếu chưa kiểm chứng được, ghi `CHƯA XÁC MINH ĐƯỢC`.
+Sau khi xong: cập nhật TASK-013 thành `done-pending-review`, ghi diff/test/browser evidence thật, không tự commit/push. Chưa kiểm chứng được thì ghi `CHƯA XÁC MINH ĐƯỢC`.
 ```
 
 ## Quy Trình Bàn Giao
 
-Sau mỗi task hoặc rework: cập nhật task, ghi prompt copy được ngay bên dưới, chạy test, ghi diff ngắn, chuyển `done-pending-review`, không tự push. Codex review trước khi accept và commit source.
+Sau mỗi task/rework: ghi diff ngắn, test/browser evidence, prompt copy được ngay bên dưới, chuyển `done-pending-review`, không tự push. Codex review trước khi accept và commit source.
 
-## Quy Tắc Rút Gọn Context
-
-- Sau khi Codex accept task, phải rút gọn mục task đó trong `TASKS.md` thành: trạng thái, mục tiêu tiếp theo, thay đổi đã accept, bằng chứng test/browser, giới hạn `CHƯA XÁC MINH ĐƯỢC` và prompt/task kế tiếp.
-- Review log dài, diff lặp lại và prompt cũ chuyển sang `TASKS_ARCHIVE.md` hoặc giữ trong git history.
-- Không xóa quyết định kiến trúc, lỗi còn mở, giới hạn an toàn hoặc bằng chứng cần cho audit.
-- Antigravity chỉ báo cáo phần thay đổi của task hiện tại; không copy lại các task đã hoàn thành.
-- Quy tắc này áp dụng cho cả Codex và Antigravity để giảm token/context nhưng vẫn giữ khả năng truy vết.
+Sau khi accept: rút gọn task, giữ quyết định/lỗi/giới hạn quan trọng; chuyển log dài sang `TASKS_ARCHIVE.md`.
