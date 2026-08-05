@@ -318,7 +318,7 @@ Ngày review: 2026-08-03.
 
 - **CHƯA XÁC MINH ĐƯỢC:** Firestore thật sau restart hoặc emulator/Google Cloud.
 - **CHƯA XÁC MINH ĐƯỢC:** lock chống concurrent request giữa nhiều process/instance.
-- **CHƯA XÁC MINH ĐƯỢC:** accessibility mobile bằng screenshot/browser sau commit.
+- **Đã xác minh:** accessibility/mobile visual QA bằng browser tại viewport 390x844; không tràn ngang, không còn voice button, nút `Dừng` và `Gửi` hiển thị, flow chọn tình huống → consent → chat chạy được.
 
 ## P1 - Remove Voice Input From MVP Demo
 
@@ -356,6 +356,14 @@ Loại bỏ tính năng nhập giọng nói khỏi MVP vì không ổn định t
 - Kết quả source response: `provider=gemini`, `fallbackReason=""`, `aiOutputValidated=true`.
 - Kết luận: Gemini hiện hoạt động trong local demo; lỗi fallback `GEMINI_HTTP_429` trước đó là trạng thái quota/rate limit tại thời điểm cũ.
 - **CHƯA XÁC MINH ĐƯỢC:** độ ổn định qua nhiều lượt chat, Firestore thật sau restart, concurrency nhiều process và mobile visual QA.
+
+## Mobile Browser Verification - 2026-08-05
+
+- Đã kiểm tra trực tiếp local app bằng browser ở viewport `390x844`.
+- **Đã xác minh:** không có horizontal overflow; sau khi bỏ voice, DOM không còn `#voice-input`/`#voice-name`.
+- **Đã xác minh:** nút `Dừng và xem kết quả` và nút `Gửi` hiển thị rõ trên màn hình chat.
+- **Đã xác minh:** flow chọn tình huống → consent → chat mở được ở mobile viewport.
+- Kết luận cập nhật: mobile visual QA cơ bản đã xác minh; Firestore thật sau restart và concurrency nhiều process vẫn **CHƯA XÁC MINH ĐƯỢC**.
 
 ## Bắt Buộc: Review Bằng Chứng Trực Tiếp
 
