@@ -150,12 +150,112 @@ P1.
 
 - Chưa quyết định port sang React/Next.js/AI Studio native vì cần kết quả Import from GitHub trước.
 - Chưa deploy Cloud Run vì nộp chính là AI Studio public link; Cloud Run chỉ backup nếu còn thời gian.
+- Chưa chấp nhận các thay đổi source pending về `travel_sales`, `gym_sales`, tab hotline và Firestore auto-detect credentials. Các diff này phải được review/sửa theo task bên dưới trước khi commit.
 
 ## Manager Notes
 
 - Codex không tự sửa code tính năng trong mode này.
 - Nếu Antigravity commit lệch `AGENTS.md`, Codex ghi "Cần sửa: ..." vào file này thay vì tự vá code.
 - Mọi thay đổi lớn về kiến trúc phải chờ người dùng xác nhận.
+
+## TASK-006 - Branch B: Scenario Tuyển Dụng "Việc Nhẹ Lương Cao"
+
+### Trạng Thái
+
+todo - đã có báo cáo Nhánh B đủ cấu trúc để giao Antigravity. Codex không tự sửa code sản phẩm.
+
+### Mục Tiêu
+
+Cập nhật hoặc thay thế scenario tuyển dụng hiện có thành một scenario huấn luyện nhận diện bẫy "việc nhẹ lương cao" có nguy cơ dẫn tới mua bán người/lao động cưỡng bức ở nước ngoài. Chỉ mô phỏng giai đoạn tuyển dụng ban đầu; không mô phỏng giai đoạn giam giữ, cưỡng bức, vượt biên hoặc vận hành đường dây.
+
+### Scope Cho Antigravity
+
+- Được sửa:
+  - `src/data/scenarios.json`
+  - `src/services/dashboardService.js` nếu cần thêm recommendation cho red flag mới
+  - `tests/run-tests.js`
+  - `tests/http-smoke.ps1`
+  - tài liệu liên quan nếu cần ghi rõ giới hạn nguồn
+- Không được sửa:
+  - `geminiClient.server.js`
+  - `chatOrchestrator.js` system/model settings
+  - `safetyValidator.js`
+  - `scoringEngine.js`
+  - kiến trúc backend/deploy/Firestore
+- Không thêm scenario ngoài chủ đề tuyển dụng "việc nhẹ lương cao" trong task này.
+
+### Nguồn Cho Phép
+
+- File nghiên cứu người dùng cung cấp: `Nghien-Cuu-Tuyen-Dung-Viec-Nhe-Luong-Cao.md`.
+- Luật Phòng, chống mua bán người 2024, Luật số 53/2024/QH15, hiệu lực 01/07/2025.
+- Nghị định 162/2025/NĐ-CP, Điều 4 và Điều 5 về Tổng đài điện thoại quốc gia phòng, chống mua bán người 111.
+- Cổng TTĐT Bộ Công an: cảnh báo thủ đoạn "việc nhẹ, lương cao" dụ xuất cảnh trái phép.
+- Báo Chính phủ/Nhân Dân về Tổng đài 111 phòng, chống mua bán người.
+- Luật Người lao động Việt Nam đi làm việc ở nước ngoài theo hợp đồng 2020, Luật số 69/2020/QH14.
+
+### Acceptance Criteria
+
+- Scenario chỉ ở giai đoạn tuyển dụng: tin nhắn mời chào, phỏng vấn ảo, hứa thu nhập cao, yêu cầu quyết định nhanh, yêu cầu giấy tờ để "làm thủ tục".
+- Không mô phỏng: giam giữ, đánh đập, cưỡng bức lao động chi tiết, hướng dẫn vượt biên, đường tiểu ngạch, cách vận hành cơ sở lừa đảo.
+- Red flags bắt buộc gồm:
+  - mô tả công việc mơ hồ/không nêu công ty cụ thể
+  - tuyển qua mạng xã hội cá nhân hoặc người quen thay vì kênh chính thức
+  - hối thúc quyết định/xuất cảnh gấp
+  - không có hợp đồng lao động rõ ràng hoặc từ chối cho xem hợp đồng trước
+  - đề nghị đi bằng kênh không chính ngạch hoặc nói "không cần visa/giấy tờ"
+- Taxonomy chỉ dùng 5 nhóm đã khóa: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
+- Feedback không đưa câu trả lời mẫu; chỉ dạy pattern và khuyên xác minh doanh nghiệp đưa lao động đi nước ngoài hợp pháp.
+- Resource Hub/chỉ dẫn được phép dùng số `111` cho phòng, chống mua bán người; không tự thêm hotline cấp tỉnh hoặc số doanh nghiệp nếu báo cáo ghi chưa có nguồn chính thống dùng chung toàn quốc.
+- Không copy nguyên văn báo chí quá 1 câu ngắn; nội dung phải paraphrase.
+- Unit test và HTTP smoke test pass.
+
+### Ghi Chú Thực Thi
+
+- Nếu dùng id mới, đề xuất `job_offer_scam`; nếu giữ id hiện có `fake_job`, phải bảo đảm README/test/demo không bị lệch.
+- Do chủ đề có yếu tố buôn người/lao động cưỡng bức, lời thoại Gemini cần có tông mô phỏng vừa đủ, không tăng nặng mô tả tổn hại.
+- Mọi claim về số liệu tổng quy mô nạn nhân toàn quốc phải ghi **CHƯA XÁC MINH ĐƯỢC** hoặc không đưa vào sản phẩm.
+
+## TASK-007 - Review/Sửa Pending Diff Resource Hub & Scenario Scope
+
+### Trạng Thái
+
+todo - pending diff hiện tại chưa được Codex chấp nhận.
+
+### Mục Tiêu
+
+Làm sạch diff đang pending để chỉ giữ phần phù hợp với MVP và nguồn đã xác minh, trước khi commit source.
+
+### Scope Cho Antigravity
+
+- Rà soát các file đang pending:
+  - `src/data/scenarios.json`
+  - `src/public/app.js`
+  - `src/public/app.css`
+  - `src/services/dashboardService.js`
+  - `src/services/store.js`
+  - `tests/run-tests.js`
+  - `tests/http-smoke.ps1`
+- Tách hoặc loại bỏ thay đổi ngoài task nếu không có nguồn cho phép.
+
+### Nguồn Cho Phép
+
+- `AGENTS.md`.
+- `Nghien-Cuu-Tuyen-Dung-Viec-Nhe-Luong-Cao.md`.
+- Nguồn official đã nêu ở TASK-006 cho 111/phòng chống mua bán người.
+- Với `113` và `canhbao.khonggianmang.vn`, chỉ dùng nếu có nguồn nhà nước/chính thức đã đối chiếu; nếu chưa đối chiếu trực tiếp thì wording phải là hướng dẫn chung, không ghi "đã xác minh".
+
+### Acceptance Criteria
+
+- Nếu giữ `travel_sales` và `gym_sales`, phải có task/nghiên cứu riêng với nguồn cho phép riêng. Nếu chưa có, loại khỏi diff trước commit.
+- Tab "Số điện thoại xác minh" không được hiển thị placeholder hoặc số tự đoán. Được phép hướng dẫn người dùng gọi kênh chính thức của tổ chức liên quan.
+- Không thêm hotline cụ thể ngoài `111` cho nhánh tuyển dụng/mua bán người nếu chưa có nguồn chính thống.
+- Không sửa Firestore/store credential detection chung trong cùng commit scenario/hotline; nếu cần Firestore thì tạo task riêng.
+- Mobile QA phải được kiểm tra lại sau khi tab Resource Hub thay đổi. Nếu chưa ép được viewport điện thoại thật, ghi **CHƯA XÁC MINH ĐƯỢC**.
+- Unit test và HTTP smoke test pass.
+
+### Ghi Chú Thực Thi
+
+- Diff hiện tại có thay đổi `src/services/store.js` tự bật Firestore khi có `GOOGLE_APPLICATION_CREDENTIALS` hoặc `FIRESTORE_EMULATOR_HOST`. Đây là thay đổi hạ tầng, không thuộc scope scenario/resource hub; cần tách task hoặc revert khỏi commit này.
 
 ## Review Log - Antigravity Firestore/Accessibility Changes
 
