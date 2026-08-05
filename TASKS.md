@@ -372,3 +372,40 @@ Loại bỏ tính năng nhập giọng nói khỏi MVP vì không ổn định t
 - Đối chiếu từng kết luận với checklist trong `AGENTS.md`.
 - Nếu chưa kiểm chứng được bằng code, diff hoặc test có thể tái lập, phải ghi đúng: **CHƯA XÁC MINH ĐƯỢC**.
 - Không ghi “Đạt” dựa trên `LOCAL_STATUS.md`, commit message, README hoặc lời báo cáo nếu chưa đối chiếu với source thật.
+
+## Review Loop - Pending Diff After Status Refresh
+
+Ngày review: 2026-08-05.
+
+### Phạm Vi Diff Đã Đọc Trực Tiếp
+
+- `src/data/scenarios.json`
+- `src/public/app.js`
+- `src/public/app.css`
+- `src/services/dashboardService.js`
+- `tests/run-tests.js`
+- `tests/http-smoke.ps1`
+
+### Bằng Chứng Đã Xác Minh
+
+- **Đã xác minh:** unit/implementation test pass với `node tests/run-tests.js`.
+- **Đã xác minh:** HTTP smoke test pass với `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`.
+- **Đã xác minh:** diff không đổi model Gemini, không thêm `temperature`, `top_p`, `top_k`, không đụng `geminiClient.server.js`.
+- **Đã xác minh:** diff không đụng `safetyValidator.js` hoặc `scoringEngine.js`.
+- **Đã xác minh:** dashboard thêm tab `Luyện tập` và `Số điện thoại xác minh`; tab hotline hiện các hướng dẫn xác minh thay vì placeholder số điện thoại giả.
+- **Đã xác minh:** `fake_police` đã được tách thành các red flag mới `police_authority`, `police_fear`, `police_urgency`; `dashboardService.js` có recommendation tương ứng.
+- **Đã xác minh:** browser mở được app ở `http://127.0.0.1:3000/`; tab hotline render được 6 mục và không báo horizontal overflow trong viewport thực tế của browser hiện tại.
+
+### Findings / Rủi Ro Cần Quyết Trước Commit
+
+- **P1 - Scope MVP:** diff thêm 2 scenario mới `travel_sales` và `gym_sales`. Đây có thể là mở rộng ngoài MVP nếu PRD/demo hiện đang chỉ cần các tình huống scam chính. Cần PM quyết định giữ vì phù hợp "Social Engineering ngoài ngân hàng" hoặc bỏ để demo gọn.
+- **P1 - Mobile QA chưa đủ:** browser capability chưa ép được viewport `390x844`; trang vẫn báo viewport thực tế `1280x720`. Vì vậy mobile QA sau diff mới vẫn **CHƯA XÁC MINH ĐƯỢC**, dù desktop/in-app render không tràn ngang.
+- **P1 - Official contact data:** hotline connector không có dữ liệu scam/Công an/NCSC. Web search tìm được nguồn Chính phủ cho `113` và nguồn MIC/NCSC cho `canhbao.khonggianmang.vn`, nhưng danh sách ngân hàng/tuyển dụng/du lịch/gym chỉ là hướng dẫn chung. Không được ghi các mục này là hotline chính thức cụ thể.
+- **P2 - Legal wording risk:** các câu "Công an không bao giờ..." trong `dashboardService.js` là wording mạnh. Có lợi cho demo chống lừa đảo, nhưng nên đảm bảo bám nguồn/pháp lý hoặc đổi thành "không yêu cầu qua chat/cuộc gọi chuyển tiền, OTP, cài app lạ" để tránh tuyệt đối hóa quá rộng.
+- **P2 - Scenario safety:** `fake_police` mới mô phỏng đe dọa nặng hơn. Source có safety constraint dừng sau yêu cầu chuyển tiền/cài app và cấm coercion cực đoan, nhưng chưa có live Gemini test riêng cho scenario này.
+
+### Trạng Thái
+
+- Chưa commit/push diff này.
+- Có thể commit sau khi xử lý quyết định MVP + mobile QA, hoặc rollback/thu gọn các phần vượt scope.
+- Firestore restart thật và concurrency nhiều process vẫn **CHƯA XÁC MINH ĐƯỢC**.
