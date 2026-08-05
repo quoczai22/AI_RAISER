@@ -393,6 +393,81 @@ Dọn sạch các thay đổi local đã bị Codex reject sau commit `5469dd5`,
 - Vẫn còn dấu hiệu bị reject: `sessions_local.db`, `writeFileSync`, `existsSync`, local file DB persistence, và test local DB mới.
 - Lệnh giao việc cập nhật: Antigravity phải dọn sạch toàn bộ 8 dirty files nêu trên về trạng thái đã được chấp nhận, chạy lại unit + HTTP smoke, rồi đổi TASK-008 sang `done-pending-review`. Không tự push trước khi Codex review.
 
+## TASK-009 - Port Figma UI Direction Into Current MVP
+
+### Trạng Thái
+
+todo
+
+### Mục Tiêu
+
+Tích hợp hướng visual mới từ thư mục tham khảo `UI Redesign for Scam Training App/` vào app hiện tại mà không đổi architecture, không thêm feature ngoài MVP, và vẫn giữ trải nghiệm cực kỳ dễ hiểu cho người cao tuổi/người ít hiểu công nghệ tại Việt Nam.
+
+### Bối Cảnh
+
+- Folder `UI Redesign for Scam Training App/` là artifact Figma/React/Vite tham khảo, hiện đang untracked.
+- App chính hiện tại là Node + static web trong `src/public/`; không được chuyển sang React/Vite trong task này.
+- UI mới có nhiều điểm tốt: chữ lớn, nút lớn, tiếng Việt rõ, màu tin cậy, mobile-first, có share card phù hợp mạng xã hội.
+- UI mới cũng có điểm cần lọc trước khi port:
+  - Không đưa screen `Design System` vào sản phẩm thật.
+  - Không đưa bottom nav/screen switcher kiểu prototype vào sản phẩm thật.
+  - Không thêm taxonomy ngoài AGENTS.md. Ví dụ `Yêu cầu thông tin nhạy cảm` không được thành nhóm feedback chính; chỉ được nhắc như safety warning.
+  - Không dùng nhiều emoji nếu làm UI thiếu nghiêm túc; ưu tiên icon rõ nghĩa + nhãn tiếng Việt nếu app hiện tại có pattern phù hợp.
+
+### Scope Cho Antigravity
+
+- Được sửa:
+  - `src/public/app.css`
+  - `src/public/app.js`
+  - `src/public/index.html` nếu cần rất nhỏ cho font/meta/accessibility
+  - `README.md`, `UI.md`, `Testing.md` chỉ khi cần ghi lại thay đổi UI và test đã chạy
+  - `TASKS.md` chỉ để cập nhật trạng thái `done-pending-review`
+- Không được sửa:
+  - `src/services/*`
+  - `src/data/scenarios.json`
+  - `server.js`
+  - `package.json`
+  - `package-lock.json`
+  - Gemini/model/prompt/scoring/safety logic
+- Không được commit nguyên thư mục `UI Redesign for Scam Training App/` nếu chưa có task riêng quyết định lưu artifact thiết kế.
+
+### Nguồn Cho Phép
+
+- `AGENTS.md`
+- `PRD.md`
+- `UI.md`
+- `TechnicalDesign.md`
+- `docs/accessibility_compliance.md`
+- `UI Redesign for Scam Training App/src/App.tsx`
+- `UI Redesign for Scam Training App/src/index.css`
+
+### Acceptance Criteria
+
+- Giữ đúng MVP flow: name -> dashboard -> scenario+level -> consent -> roleplay chat -> analysis/score -> dashboard/history -> optional share.
+- Giữ đúng taxonomy feedback chỉ gồm: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
+- Toàn bộ UI hiển thị tiếng Việt thuần, không có `Dashboard`, `Settings`, `Cancel`, `OK`, `Login`, `Share` trong text người dùng thấy.
+- Mobile-first rõ ràng ở viewport 390x844:
+  - Không horizontal overflow.
+  - Nút chính cao tối thiểu 48px.
+  - Text chính dễ đọc, không bị overlap.
+  - Luôn thấy hoặc dễ truy cập `Dừng luyện tập` trong chat.
+  - Có `Quay lại`/`Hủy bỏ` rõ ở bước chọn tình huống và xác nhận.
+- Desktop 1440px nhìn gọn, không biến thành landing page marketing.
+- Có share card/khối chia sẻ nhẹ phù hợp Facebook/Zalo/TikTok screenshot, nhưng không biến app thành mạng xã hội.
+- Không thêm voice UI.
+- Không thêm local persistence, dependency mới, framework mới, hoặc API mới.
+- Chạy test:
+  - `node tests/run-tests.js`
+  - `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`
+- Browser QA bắt buộc:
+  - Mobile viewport 390x844: kiểm tra dashboard, chọn tình huống, chat, kết quả, resource hub.
+  - Desktop viewport 1440x900: kiểm tra dashboard, chat, kết quả.
+  - Ghi rõ mọi mục không tự xác minh được là **CHƯA XÁC MINH ĐƯỢC**.
+
+### Lệnh Giao Việc Cho Antigravity
+
+Port visual style từ `UI Redesign for Scam Training App/` sang app static hiện tại. Chỉ lấy layout/copy/style phù hợp, không copy prototype navigation, không đổi tech stack, không thêm feature. Sau khi xong, đổi TASK-009 sang `done-pending-review`, ghi diff ngắn, test đã chạy, browser QA đã chạy, và không tự push trước khi Codex review.
+
 ## Review Log - Antigravity Firestore/Accessibility Changes
 
 Ngày review: 2026-08-03.
