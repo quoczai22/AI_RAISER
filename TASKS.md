@@ -55,10 +55,43 @@ Chi tiết lịch sử: `TASKS_ARCHIVE.md`.
 - Full React flow và Gemini integration trong React: `CHƯA XÁC MINH ĐƯỢC`.
 - Chưa được coi là hoàn tất migration frontend.
 
-### Prompt Sprint Tiếp Theo
+## TASK-012 - React Scenario Picker And Consent
+
+### Trạng Thái
+
+`ready-for-execution`
+
+### Mục Tiêu
+
+Migrate màn chọn tình huống và xác nhận consent từ static UI sang React, dùng API/session hiện tại. Chưa migrate chat, result hoặc hotline.
+
+### Phạm Vi
+
+- Được sửa `src/react-app/*`, `README.md`, `TASKS.md`.
+- Được sửa `server.js` chỉ khi cần tối thiểu cho React/API.
+- Dùng dữ liệu thật từ `/api/scenarios`, `/api/sessions` và consent API hiện tại.
+- Giữ `Chữ to`, `Tương phản cao`, tiếng Việt dễ hiểu, nút `Quay lại/Hủy bỏ` và cảnh báo không nhập thông tin thật.
+
+### Không Được Làm
+
+- Không sửa `src/services/*`, Gemini, safety, scoring hoặc database contract.
+- Không thêm scenario/feature ngoài MVP.
+- Không migrate chat/result trong task này.
+- Không xóa static fallback.
+
+### Acceptance Criteria
+
+- React scenario picker render danh sách từ `/api/scenarios`, chọn được scenario và cấp độ.
+- Consent tạo/đọc session bằng API thật, checkbox consent bắt buộc trước khi bắt đầu.
+- Nút Quay lại/Hủy bỏ hoạt động và không làm mất state ngoài ý muốn.
+- Mobile `390x844` và desktop `1440x900` không horizontal overflow.
+- Accessibility toggle vẫn hoạt động trên các view mới.
+- `node tests/run-tests.js`, HTTP smoke và browser QA pass.
+
+### Prompt Cho Antigravity
 
 ```text
-Đọc `AGENTS.md`, `TASKS.md` và `TASKS_ARCHIVE.md` chỉ khi cần đối chiếu lịch sử. Tiếp tục migration React từ TASK-011, chỉ triển khai Sprint 2: Scenario Picker và Consent.
+Đọc `AGENTS.md` và `TASKS.md`, thực hiện TASK-012 - React Scenario Picker And Consent.
 
 Được sửa: `src/react-app/*`, `README.md`, `TASKS.md`; server/API chỉ sửa nếu cần tối thiểu. Không sửa `src/services/*`, Gemini, safety, scoring, database contract. Không xóa static fallback và không thêm feature/scenario ngoài MVP.
 
@@ -68,7 +101,7 @@ Acceptance criteria:
 - Giữ `Chữ to`, `Tương phản cao`, tiếng Việt dễ hiểu và không horizontal overflow ở mobile 390x844.
 - Unit test, HTTP smoke test và browser QA pass.
 
-Sau khi xong: cập nhật trạng thái `done-pending-review`, ghi diff/test/browser evidence thật, không tự commit hoặc push. Nếu chưa kiểm chứng được, ghi `CHƯA XÁC MINH ĐƯỢC`.
+Sau khi xong: cập nhật TASK-012 thành `done-pending-review`, ghi diff/test/browser evidence thật, không tự commit hoặc push. Nếu chưa kiểm chứng được, ghi `CHƯA XÁC MINH ĐƯỢC`.
 ```
 
 ## Quy Trình Bàn Giao
