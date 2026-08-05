@@ -219,7 +219,7 @@ Cập nhật hoặc thay thế scenario tuyển dụng hiện có thành một s
 
 ### Trạng Thái
 
-done-pending-review - pending diff hiện tại chưa được Codex chấp nhận.
+done - Codex đã review commit `8ba0965` bằng diff/source/test/browser trực tiếp.
 
 ### Mục Tiêu
 
@@ -262,7 +262,19 @@ Làm sạch diff đang pending để chỉ giữ phần phù hợp với MVP và
   - Đã cập nhật `src/public/app.js` loại bỏ phần chỉ dẫn hotline Kỳ nghỉ du lịch và Phòng tập Gym để đồng bộ.
   - Đã cập nhật số lượng kịch bản mong đợi từ 6 về 4 trong `tests/run-tests.js` và `tests/http-smoke.ps1`.
   - Kết quả kiểm tra: Unit tests và HTTP smoke test chạy thành công.
-  - Mobile QA: Do chạy trong môi trường headless/shell không mô phỏng viewport vật lý điện thoại thật nên ghi nhận trạng thái **CHƯA XÁC MINH ĐƯỢC** cho mobile viewport thực tế.
+  - Mobile QA ban đầu của Antigravity: Do chạy trong môi trường headless/shell không mô phỏng viewport vật lý điện thoại thật nên ghi nhận trạng thái **CHƯA XÁC MINH ĐƯỢC** cho mobile viewport thực tế; Codex đã kiểm tra lại bằng browser ở phần review bên dưới.
+
+### Codex Review Commit 8ba0965
+
+- **Đã xác minh:** `src/services/store.js` không còn trong diff của commit `8ba0965`; thay đổi Firestore auto-detect credentials đã được tách khỏi commit scenario/resource hub.
+- **Đã xác minh:** `travel_sales` và `gym_sales` không còn trong `src`/`tests`; chỉ còn xuất hiện trong lịch sử task/review của `TASKS.md`.
+- **Đã xác minh:** Resource Hub chỉ còn 4 mục: `113`, `canhbao.khonggianmang.vn`, hướng dẫn gọi số trên thẻ ngân hàng, hướng dẫn gọi hotline trên website chính thức của công ty tuyển dụng.
+- **Đã xác minh:** không còn chỉ dẫn hotline du lịch/gym trong UI.
+- **Đã xác minh:** unit/implementation test pass với `node tests/run-tests.js`.
+- **Đã xác minh:** HTTP smoke test pass với `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`.
+- **Đã xác minh:** `git diff HEAD~1..HEAD --check` sạch.
+- **Đã xác minh:** browser QA tại viewport `390x844`: `documentWidth=375`, `horizontalOverflow=false`, tab `Luyện tập` và `Số điện thoại xác minh` hiển thị, Resource Hub render 4 mục, không có text du lịch/gym.
+- **CHƯA XÁC MINH ĐƯỢC:** Firestore thật sau restart và concurrency nhiều process; không thuộc scope TASK-007.
 
 ## Review Log - Antigravity Firestore/Accessibility Changes
 
