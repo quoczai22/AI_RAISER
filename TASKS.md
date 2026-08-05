@@ -359,6 +359,14 @@ Dọn sạch các thay đổi local đã bị Codex reject sau commit `5469dd5`,
 - Đây là task cleanup, không phải feature.
 - Nếu Antigravity muốn giữ local file persistence hoặc rewrite copy UI cho người lớn tuổi, phải tạo task riêng với nguồn, scope, risk và acceptance criteria trước; không làm trong TASK-008.
 
+### Manager Follow-up 2026-08-05
+
+- Codex đã kiểm tra lại worktree thật sau khi task được ghi: TASK-008 **chưa hoàn tất**.
+- Dirty diff hiện có 8 file: `README.md`, `RiskReport.md`, `Testing.md`, `src/public/app.css`, `src/public/app.js`, `src/services/chatOrchestrator.js`, `src/services/store.js`, `tests/run-tests.js`.
+- `src/services/chatOrchestrator.js` là drift mới ngoài Scope Cho Antigravity của TASK-008; phải revert/tách bỏ cùng nhóm cleanup này, trừ khi Antigravity mở task riêng và được manager duyệt trước.
+- Vẫn còn dấu hiệu bị reject: `sessions_local.db`, `writeFileSync`, `existsSync`, local file DB persistence, và test local DB mới.
+- Lệnh giao việc cập nhật: Antigravity phải dọn sạch toàn bộ 8 dirty files nêu trên về trạng thái đã được chấp nhận, chạy lại unit + HTTP smoke, rồi đổi TASK-008 sang `done-pending-review`. Không tự push trước khi Codex review.
+
 ## Review Log - Antigravity Firestore/Accessibility Changes
 
 Ngày review: 2026-08-03.
