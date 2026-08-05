@@ -576,7 +576,7 @@ done-pending-review
 
 ### Codex Direct Fix 2026-08-06
 
-- **Trạng thái:** `rejected-needs-rework` sau kiểm tra lại bằng browser.
+- **Trạng thái:** `done-pending-review` sau kiểm tra lại bằng browser.
 - **Diff ngắn:**
   - `src/public/app.css`: đổi mobile chat topbar thành bố cục 1 cột/2 hàng ở viewport nhỏ; nút `Dừng luyện tập` full-width, tự xuống dòng, không khóa height; thêm override riêng khi `body.large-text` để nút dừng, tiêu đề, mức độ, warning strip vẫn lớn nhưng không cắt.
   - Dọn trailing whitespace trong `src/public/app.css`, `src/public/app.js`, `src/public/index.html`; không đổi Gemini, safety, scoring hoặc backend.
@@ -633,6 +633,22 @@ Acceptance criteria:
 - Không horizontal overflow ở `390x844`.
 
 Kiểm thử bắt buộc: `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, browser QA ở mobile `390x844` với hai chế độ bật cùng lúc; chụp/đọc DOM sau khi gửi một tin nhắn. Sau khi xong, cập nhật TASK-009 thành `done-pending-review`, ghi bằng chứng thật, không tự commit/push.
+
+### Codex Direct Visual Normalization 2026-08-06
+
+- **Trạng thái:** `done-pending-review`.
+- **Diff ngắn:** tiếp tục chuẩn hóa `src/public/app.css` theo visual language Figma: bán kính card dùng token 8px, radio cấp độ giữ đúng semantics radio thay vì bị áp kiểu switch, share card dùng màu phẳng tối giản, share card và badge tự xếp lại trên mobile; `src/public/index.html` đổi nhãn thành `Tương phản cao` đúng acceptance criteria. Không sửa logic Gemini, safety, scoring, backend hoặc dependency.
+- **Đã kiểm tra:** dashboard, chọn tình huống, consent, chat và result ở mobile `390x844`; mobile bật đồng thời `Chữ to` + `Tương phản cao`; desktop `1440x900` cho chat và result. Các route đã kiểm tra không horizontal overflow; chat mobile đo được `scrollWidth=375`, `clientWidth=375`, nút `Dừng luyện tập` rộng `351px`/cao `52px`, warning/input/Gửi đều nằm trong viewport.
+- **Đã kiểm tra:** gửi thử một tin nhắn với accessibility bật; bố cục không chồng lấn và result hiển thị đầy đủ. `node tests/run-tests.js`: PASS. `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: PASS. `git diff --check -- src/public/app.css src/public/app.js src/public/index.html TASKS.md`: PASS.
+- **CHƯA XÁC MINH ĐƯỢC:** Gemini live ổn định qua nhiều lượt vì lần QA này runtime trả fallback an toàn do AI bận/chậm; resource hub chưa được pixel-review toàn trang ở cả hai viewport; result mobile large-text/high-contrast mới xác minh DOM và không tràn ngang, chưa pixel-review toàn bộ chiều dài cuộn.
+
+### Prompt Cho Antigravity - Review Visual Normalization
+
+Đọc `AGENTS.md`, `UI.md` và TASK-009. Review bản UI static hiện tại sau Codex Direct Visual Normalization.
+
+Mục tiêu: xác minh visual language Figma đã được port vào dashboard, chọn tình huống, consent, chat và result mà không mở rộng MVP. Được sửa chỉ trong `src/public/app.css`, `src/public/app.js`, `src/public/index.html`, `TASKS.md`; không sửa Gemini, safety, scoring, backend, dependency, React/Vite hoặc thư mục tham khảo.
+
+Acceptance criteria: mobile `390x844` không tràn ngang; `Chữ to` + `Tương phản cao` không cắt chữ/nút; `Dừng luyện tập`, warning, bubble, textarea và `Gửi` đều hiển thị; desktop `1440x900` gọn; không thêm feature. Chạy `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1` và browser QA toàn bộ flow. Bàn giao `done-pending-review` kèm diff/test thật, không tự commit/push trước review.
 
 ### Mục Tiêu
 
@@ -955,3 +971,60 @@ Ngày review: 2026-08-05.
 - Chưa commit/push diff này.
 - Có thể commit sau khi xử lý quyết định MVP + mobile QA, hoặc rollback/thu gọn các phần vượt scope.
 - Firestore restart thật và concurrency nhiều process vẫn **CHƯA XÁC MINH ĐƯỢC**.
+
+## TASK-010 - Full Figma UI Port
+
+### Trạng Thái
+
+ready-for-execution
+
+### Mục Tiêu
+
+Port lại toàn bộ view chính theo visual và bố cục tối giản của Figma, thay vì tiếp tục phủ CSS lên cấu trúc UI cũ. Chỉ thay đổi presentation layer; giữ nguyên logic MVP, Gemini, safety, scoring và backend.
+
+### Phạm Vi
+
+- Được viết lại markup/render ở `src/public/app.js`.
+- Được sửa `src/public/index.html` và viết lại `src/public/app.css`.
+- Được tham chiếu các màn hình trong `UI Redesign for Scam Training App/`, nhưng không đưa prototype navigation hoặc code React/Vite vào runtime.
+- Giữ các view MVP: dashboard, chọn tình huống/cấp độ, consent, chat roleplay và result/history/share.
+- Giữ `Chữ to`, `Tương phản cao`, nút `Dừng luyện tập`, cảnh báo an toàn và các nhãn tiếng Việt dễ hiểu.
+
+### Không Được Làm
+
+- Không sửa `src/services/*`, Gemini/model/prompt, safety validator, scoring engine, backend/API hoặc dependency.
+- Không thêm feature, scenario, bottom navigation hoặc flow mới.
+- Không chuyển app sang React/Vite.
+- Không commit thư mục `UI Redesign for Scam Training App/`, `.env`, `LOCAL_STATUS.md` hoặc `node_modules/`.
+
+### Acceptance Criteria
+
+- Dashboard, scenario picker, consent, chat và result dùng chung visual system theo Figma: typography, spacing, màu, card, button và hierarchy.
+- Không còn cảm giác app cũ nằm trong panel mới.
+- Mobile `390x844` và desktop `1440x900` không horizontal overflow.
+- Khi bật `Chữ to` + `Tương phản cao`, không có tiêu đề, nút, warning, textarea hoặc text chat bị cắt.
+- Nút `Dừng luyện tập` luôn rõ ràng và thao tác được.
+- Flow Gemini động và các chức năng MVP hiện tại vẫn hoạt động.
+
+### Kiểm Thử Bắt Buộc
+
+- `node tests/run-tests.js`
+- `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`
+- Browser QA cả mobile `390x844` và desktop `1440x900`.
+- Đi qua toàn bộ flow dashboard → scenario → consent → chat → result.
+- Gửi ít nhất một tin nhắn trong chat.
+- Kiểm tra chat với `Chữ to` + `Tương phản cao`.
+
+### Prompt Cho Antigravity
+
+Đọc `AGENTS.md` và `TASKS.md`, thực hiện `TASK-010 - Full Figma UI Port`.
+
+Mục tiêu: port toàn bộ presentation layer của app theo visual/bố cục tối giản trong `UI Redesign for Scam Training App/`, không tiếp tục vá nhỏ trên UI cũ.
+
+Được sửa: `src/public/app.js`, `src/public/app.css`, `src/public/index.html`. Được đọc thư mục Figma để tham chiếu. Không được sửa backend, Gemini, safety, scoring, dependency, flow MVP hoặc commit thư mục tham khảo.
+
+Acceptance criteria: dashboard, scenario picker, consent, chat và result đều dùng cùng visual system Figma; mobile `390x844` và desktop `1440x900` không tràn ngang; `Chữ to`, `Tương phản cao`, warning và `Dừng luyện tập` vẫn hoạt động; đi qua flow và gửi thử một tin nhắn thành công.
+
+Kiểm thử: chạy `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, sau đó browser QA mobile/desktop và ghi bằng chứng thật. Nếu có điểm chưa kiểm tra được, ghi `CHƯA XÁC MINH ĐƯỢC`.
+
+Sau khi hoàn tất: cập nhật TASK-010 thành `done-pending-review`, ghi diff ngắn và test thực tế vào `TASKS.md`, không tự commit hoặc push. Chờ Codex review bằng git diff, source, test và browser thật.
