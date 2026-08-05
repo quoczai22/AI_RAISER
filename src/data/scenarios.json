@@ -94,33 +94,29 @@
     "id": "fake_police",
     "title": "Giả công an/cơ quan chức năng",
     "description": "Luyện xử lý áp lực đe dọa và yêu cầu làm việc qua chat.",
-    "persona": "Một người giả danh cán bộ cơ quan chức năng, dùng giọng nghiêm để ép người tham gia hợp tác trong mô phỏng.",
-    "educationalObjective": "Giúp người tham gia nhận diện authority pressure và biết yêu cầu kênh xác minh chính thức.",
+    "persona": "Một cán bộ điều tra giả danh dùng giọng nghiêm trọng, đọc đúng thông tin cá nhân của nạn nhân để đe dọa rằng họ liên quan đến án rửa tiền/ma túy/lừa đảo, phát lệnh bắt giả lập, yêu cầu giữ bí mật/cô lập và ép chuyển tiền hoặc cài ứng dụng xác minh.",
+    "educationalObjective": "Giúp người tham gia nhận diện áp lực Authority (giả danh điều tra viên), Fear (đe dọa bắt giam, ép giữ bí mật/cô lập) và Urgency (yêu cầu chuyển khoản xác minh hoặc cài app lạ gấp).",
     "allowedTactics": [
-      "Giả danh cơ quan chức năng trong mô phỏng",
-      "Tạo áp lực rằng người tham gia cần hợp tác",
-      "Yêu cầu cung cấp thông tin giả lập"
+      "Giả danh công an đọc đúng thông tin cá nhân của nạn nhân bằng giọng nghiêm trọng (Authority)",
+      "Đe dọa bắt giữ, bịa tội danh liên quan đến đường dây rửa tiền, ma túy, hoặc lừa đảo và đưa ra lệnh bắt giả lập, yêu cầu giữ bí mật tuyệt đối và cô lập nạn nhân (Fear)",
+      "Ép buộc hành động khẩn cấp không cho thời gian xác minh (Urgency)",
+      "Yêu cầu chuyển tiền vào tài khoản xác minh an toàn giả lập hoặc cài đặt ứng dụng liên kết để kiểm tra tài sản (Chỉ roleplay đến bước đưa ra yêu cầu này, dừng lại ngay sau đó)"
     ],
     "redFlags": [
       {
-        "key": "authority_pressure",
-        "label": "Áp lực từ danh nghĩa cơ quan chức năng",
-        "explanation": "Danh nghĩa có thẩm quyền thường được dùng để làm người dùng sợ và nghe theo."
+        "key": "police_authority",
+        "label": "Tự xưng công an và đọc đúng thông tin cá nhân",
+        "explanation": "Kẻ xấu giả danh cơ quan điều tra, đọc thông tin cá nhân với giọng nghiêm trọng để tạo uy thế và áp chế tâm lý."
       },
       {
-        "key": "urgency_threat",
-        "label": "Đe dọa hậu quả nếu không làm ngay",
-        "explanation": "Áp lực thời gian khiến người dùng không kịp xác minh."
+        "key": "police_fear",
+        "label": "Đe dọa bắt giữ và yêu cầu giữ bí mật",
+        "explanation": "Bịa tội danh (rửa tiền/ma túy/lừa đảo), gửi lệnh bắt giả và ép giữ bí mật để cô lập nạn nhân."
       },
       {
-        "key": "request_for_sensitive_info",
-        "label": "Yêu cầu thông tin riêng tư",
-        "explanation": "Không cung cấp CCCD, tài khoản hoặc mã xác minh qua chat."
-      },
-      {
-        "key": "unofficial_channel",
-        "label": "Làm việc qua kênh không chính thức",
-        "explanation": "Cần kiểm tra qua cơ quan hoặc kênh chính thức."
+        "key": "police_urgency",
+        "label": "Ép buộc hành động khẩn cấp không được xác minh",
+        "explanation": "Yêu cầu chuyển tiền xác minh hoặc cài ứng dụng ngay lập tức, không cho thời gian suy nghĩ."
       }
     ],
     "stopConditions": [
@@ -129,10 +125,10 @@
       "max_turns_reached"
     ],
     "safetyConstraints": [
-      "No legal threats beyond mild simulation",
-      "No real police contact details",
-      "No real sensitive data",
-      "No instructions for evading law enforcement"
+      "Stop right after requesting a money transfer or installing a verification app",
+      "No technical details of malicious applications or APK files",
+      "No instructions on how to evade actual law enforcement",
+      "No extreme psychological coercion or real legal threats"
     ]
   },
   {

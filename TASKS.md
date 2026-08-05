@@ -219,7 +219,7 @@ Cập nhật hoặc thay thế scenario tuyển dụng hiện có thành một s
 
 ### Trạng Thái
 
-todo - pending diff hiện tại chưa được Codex chấp nhận.
+done-pending-review - pending diff hiện tại chưa được Codex chấp nhận.
 
 ### Mục Tiêu
 
@@ -256,6 +256,13 @@ Làm sạch diff đang pending để chỉ giữ phần phù hợp với MVP và
 ### Ghi Chú Thực Thi
 
 - Diff hiện tại có thay đổi `src/services/store.js` tự bật Firestore khi có `GOOGLE_APPLICATION_CREDENTIALS` hoặc `FIRESTORE_EMULATOR_HOST`. Đây là thay đổi hạ tầng, không thuộc scope scenario/resource hub; cần tách task hoặc revert khỏi commit này.
+- **Thực thi:**
+  - Đã revert hoàn toàn file `src/services/store.js` về trạng thái HEAD sạch.
+  - Đã loại bỏ các kịch bản du lịch (`travel_sales`) và gym (`gym_sales`) khỏi `src/data/scenarios.json` vì chưa có nghiên cứu/nguồn chính thống cho phép riêng.
+  - Đã cập nhật `src/public/app.js` loại bỏ phần chỉ dẫn hotline Kỳ nghỉ du lịch và Phòng tập Gym để đồng bộ.
+  - Đã cập nhật số lượng kịch bản mong đợi từ 6 về 4 trong `tests/run-tests.js` và `tests/http-smoke.ps1`.
+  - Kết quả kiểm tra: Unit tests và HTTP smoke test chạy thành công.
+  - Mobile QA: Do chạy trong môi trường headless/shell không mô phỏng viewport vật lý điện thoại thật nên ghi nhận trạng thái **CHƯA XÁC MINH ĐƯỢC** cho mobile viewport thực tế.
 
 ## Review Log - Antigravity Firestore/Accessibility Changes
 

@@ -60,6 +60,11 @@ assert.equal(fakeJobScenario.redFlags.length, 4);
 assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "urgency_scarcity_fee"));
 assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "fake_company_authority"));
 assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "unrealistic_salary_social_proof"));
+const fakePoliceScenario = getScenario("fake_police");
+assert.equal(fakePoliceScenario.redFlags.length, 3);
+assert.ok(fakePoliceScenario.redFlags.some((flag) => flag.key === "police_authority"));
+assert.ok(fakePoliceScenario.redFlags.some((flag) => flag.key === "police_fear"));
+assert.ok(fakePoliceScenario.redFlags.some((flag) => flag.key === "police_urgency"));
 assert.equal(
   scenarios.some((scenario) =>
     scenario.allowedTactics?.some((tactic) => /khuyến khích.*kiểm tra qua kênh không chính thức/i.test(tactic)),

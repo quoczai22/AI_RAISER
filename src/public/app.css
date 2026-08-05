@@ -87,6 +87,17 @@ textarea {
   color: var(--color-text);
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+
+body.high-contrast input::placeholder,
+body.high-contrast textarea::placeholder {
+  color: #374151;
+}
+
 input[type="checkbox"] {
   min-height: 0;
 }
@@ -126,8 +137,8 @@ textarea:focus-visible {
 }
 
 button:disabled {
-  background: #9ca3af;
-  color: #f9fafb;
+  background: #d1d5db;
+  color: #555555;
   cursor: not-allowed;
 }
 
@@ -558,5 +569,51 @@ body.high-contrast .bubble.ai {
 
   .score-number {
     font-size: 40px;
+  }
+}
+
+/* Custom Tabs Styling */
+.tabs-container {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.tab-button {
+  background: none;
+  color: var(--color-muted);
+  border: none;
+  min-height: 48px;
+  padding: 8px 16px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  width: auto;
+}
+
+.tab-button:active {
+  transform: none;
+}
+
+.tab-button.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+body.high-contrast .tab-button.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+@media (max-width: 520px) {
+  .tabs-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .tab-button {
+    width: 100%;
+    min-height: 56px;
   }
 }

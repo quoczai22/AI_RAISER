@@ -156,14 +156,12 @@ async function loadScenarios() {
 }
 
 function renderEntryDashboard() {
+  const currentTab = state.currentTab || "training";
   render(`
     <section class="panel stack">
       <div>
         <h2>Trang chính của bạn</h2>
         <p class="subtitle">Không cần mật khẩu, không cần OTP, không trừ tiền.</p>
-      </div>
-      <div class="notice">
-        Đây là phần tự luyện tập. Bạn có thể nhấn "Quay lại" bất cứ lúc nào.
       </div>
       <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
         <label class="toggle-row">
@@ -175,46 +173,102 @@ function renderEntryDashboard() {
           <span>Tương phản cao</span>
         </label>
       </div>
-      <label class="stack">
-        <strong>Tên hiển thị</strong>
-        <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
-      </label>
-      <div class="entry-actions">
-        <button id="start-training"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
+      <div class="tabs-container" role="tablist">
+        <button id="tab-training" class="tab-button ${currentTab === "training" ? "active" : ""}" role="tab" aria-selected="${currentTab === "training" ? "true" : "false"}">Luyện tập</button>
+        <button id="tab-hotlines" class="tab-button ${currentTab === "hotlines" ? "active" : ""}" role="tab" aria-selected="${currentTab === "hotlines" ? "true" : "false"}">Số điện thoại xác minh</button>
       </div>
-      <h3>Lịch sử luyện tập</h3>
-      <ul class="flag-list">
-        ${state.history.length === 0 ? '<li class="flag-item">Chưa có buổi luyện nào.</li>' : state.history.map((item) => `
-          <li class="flag-item success">
-            <strong>${escapeHtml(item.scenarioTitle)}</strong><br>
-            Điểm: ${item.immunityScore}/100 - ${escapeHtml(item.createdAt)}
-          </li>
-        `).join("")}
-      </ul>
+      ${currentTab === "training" ? `
+        <div class="tab-content stack" role="tabpanel" aria-labelledby="tab-training">
+          <div class="notice">
+            Đây là nơi tự luyện tập. Bạn có thể dừng bất kỳ lúc nào.
+          </div>
+          <label class="stack">
+            <strong>Tên hiển thị</strong>
+            <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
+          </label>
+          <div class="entry-actions">
+            <button id="start-training"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
+          </div>
+          <h3>Lịch sử luyện tập</h3>
+          <ul class="flag-list">
+            ${state.history.length === 0 ? '<li class="flag-item">Chưa có buổi luyện nào.</li>' : state.history.map((item) => `
+              <li class="flag-item success">
+                <strong>${escapeHtml(item.scenarioTitle)}</strong><br>
+                Điểm: ${item.immunityScore}/100 - ${escapeHtml(item.createdAt)}
+              </li>
+            `).join("")}
+          </ul>
+        </div>
+      ` : `
+        <div class="tab-content stack" role="tabpanel" aria-labelledby="tab-hotlines">
+          <h3>Tổng đài xác minh chính thức</h3>
+          <p class="subtitle">Lưu số điện thoại dưới đây để gọi xác minh khi có cuộc gọi đáng ngờ.</p>
+          <div class="notice">
+            <strong>Nên làm ngay:</strong> Gọi ngay tổng đài ngân hàng của bạn để khóa thẻ/tài khoản. Hoặc đến cơ quan Công an gần nhất để báo tin.
+          </div>
+          <ul class="flag-list">
+            <li class="flag-item success">
+              <strong>Số Công an khẩn cấp</strong><br>
+              <span>Gọi: <strong>113</strong></span>
+            </li>
+            <li class="flag-item success">
+              <strong>Cổng cảnh báo an toàn thông tin</strong><br>
+              <span>Trang web: <strong>canhbao.khonggianmang.vn</strong></span>
+            </li>
+            <li class="flag-item">
+              <strong>Tổng đài hỗ trợ của Ngân hàng</strong><br>
+              <span>Cách gọi: Gọi số điện thoại ghi ở mặt sau thẻ ATM của bạn.</span>
+            </li>
+            <li class="flag-item">
+              <strong>Điện thoại xác minh Tuyển dụng</strong><br>
+              <span>Cách gọi: Gọi số hotline trên trang web chính thức của công ty đó.</span>
+            </li>
+          </ul>
+        </div>
+      `}
     </section>
   `);
 
-
-  app.querySelector("#large-text-toggle").addEventListener("change", (event) => {
-    state.accessibility.largeText = event.target.checked;
-    saveAccessibilitySettings();
-    applyAccessibilitySettings();
-    announceStatus(event.target.checked ? "Đã bật chữ to." : "Đã tắt chữ to.");
-  });
-  app.querySelector("#high-contrast-toggle").addEventListener("change", (event) => {
-    state.accessibility.highContrast = event.target.checked;
-    saveAccessibilitySettings();
-    applyAccessibilitySettings();
-    announceStatus(event.target.checked ? "Đã bật tương phản cao." : "Đã tắt tương phản cao.");
-  });
-  app.querySelector("#start-training").addEventListener("click", () => {
+  app.querySelector("#tab-training").addEventListener("click", () => {
     acknowledgeTap();
-    const name = app.querySelector("#user-name").value.trim();
-    state.userName = name || "Bạn";
-    safeStorageSet("aisi_user_name", state.userName);
-    location.hash = "scenarios";
-    renderScenarioPicker();
+    state.currentTab = "training";
+    renderEntryDashboard();
   });
+  app.querySelector("#tab-hotlines").addEventListener("click", () => {
+    acknowledgeTap();
+    state.currentTab = "hotlines";
+    renderEntryDashboard();
+  });
+
+  const largeTextToggle = app.querySelector("#large-text-toggle");
+  if (largeTextToggle) {
+    largeTextToggle.addEventListener("change", (event) => {
+      state.accessibility.largeText = event.target.checked;
+      saveAccessibilitySettings();
+      applyAccessibilitySettings();
+      announceStatus(event.target.checked ? "Đã bật chữ to." : "Đã tắt chữ to.");
+    });
+  }
+  const highContrastToggle = app.querySelector("#high-contrast-toggle");
+  if (highContrastToggle) {
+    highContrastToggle.addEventListener("change", (event) => {
+      state.accessibility.highContrast = event.target.checked;
+      saveAccessibilitySettings();
+      applyAccessibilitySettings();
+      announceStatus(event.target.checked ? "Đã bật tương phản cao." : "Đã tắt tương phản cao.");
+    });
+  }
+  const startTraining = app.querySelector("#start-training");
+  if (startTraining) {
+    startTraining.addEventListener("click", () => {
+      acknowledgeTap();
+      const name = app.querySelector("#user-name").value.trim();
+      state.userName = name || "Bạn";
+      safeStorageSet("aisi_user_name", state.userName);
+      location.hash = "scenarios";
+      renderScenarioPicker();
+    });
+  }
 }
 
 function renderScenarioPicker() {
@@ -222,7 +276,7 @@ function renderScenarioPicker() {
     <section class="panel stack">
       <div>
         <h2>Chọn tình huống và cấp độ</h2>
-        <p class="subtitle">Mỗi buổi luyện khoảng 3 phút. Sau đó sẽ có phần giải thích dấu hiệu cảnh báo.</p>
+        <p class="subtitle">Mỗi buổi tập khoảng 3 phút. Cuối buổi sẽ chỉ ra các dấu hiệu lừa đảo.</p>
       </div>
       <div class="scenario-grid">
         ${state.scenarios.map((scenario) => `
@@ -238,9 +292,9 @@ function renderScenarioPicker() {
       <label class="stack">
         <strong>Cấp độ</strong>
         <select id="difficulty" aria-label="Cấp độ">
-          <option value="easy">Dễ - gợi ý rõ dấu hiệu</option>
-          <option value="medium">Vừa - áp lực tự nhiên hơn</option>
-          <option value="hard">Khó - ít gợi ý hơn</option>
+          <option value="easy">Dễ - hiển thị gợi ý rõ ràng</option>
+          <option value="medium">Trung bình - nhắn tin tự nhiên hơn</option>
+          <option value="hard">Khó - không có gợi ý</option>
         </select>
       </label>
       <button class="secondary" id="back-dashboard"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
@@ -287,14 +341,14 @@ function renderSimulationConsent() {
         <p class="subtitle">Tình huống: ${escapeHtml(state.selectedScenario?.title || scenarioById(state.session?.scenarioId)?.title || "")}</p>
       </div>
       <div class="notice">
-        Đây là tình huống mô phỏng. Bạn có thể dừng bất cứ lúc nào.
+        Đây là tình huống mô phỏng. Bạn có thể dừng bất kỳ lúc nào.
       </div>
       <div class="notice danger-note">
         Không nhập mã OTP, mật khẩu, CCCD hoặc tài khoản thật.
       </div>
       <label class="consent-row">
         <input id="simulation-consent" type="checkbox">
-        <span>Tôi hiểu đây là mô phỏng và sẽ không nhập thông tin thật.</span>
+        <span>Tôi hiểu đây là mô phỏng và không nhập thông tin thật.</span>
       </label>
       <div class="entry-actions">
         <button class="secondary" id="cancel-consent"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
@@ -366,14 +420,14 @@ function renderChatShell() {
       <div class="chat-topbar">
         <div>
           <h2>${escapeHtml(scenario?.title || "Tình huống mô phỏng")}</h2>
-          <p class="subtitle">Trợ lý AI phản hồi theo cuộc trò chuyện. Cấp độ: ${escapeHtml(state.session?.difficulty || "easy")}</p>
+          <p class="subtitle">AI phản hồi theo tin nhắn của bạn. Cấp độ: ${escapeHtml(state.session?.difficulty || "easy")}</p>
         </div>
         <button class="warning" id="stop-chat"><span aria-hidden="true">■</span> Dừng và xem kết quả</button>
       </div>
       <div class="chat-messages">
-        ${state.messages.length === 0 ? '<div class="bubble ai">Chào cô/chú, đây là tình huống mô phỏng. Mình cần trao đổi nhanh về một vấn đề cần xác minh.</div>' : ""}
+        ${state.messages.length === 0 ? '<div class="bubble ai">Chào bạn, đây là buổi luyện tập. Hãy nhắn tin đầu tiên để bắt đầu.</div>' : ""}
         ${state.messages.map((message) => `<div class="bubble ${message.role}">${escapeHtml(message.content)}</div>`).join("")}
-        ${state.isSending ? '<div class="bubble ai typing">Trợ lý AI đang phản hồi...</div>' : ""}
+        ${state.isSending ? '<div class="bubble ai typing">AI đang trả lời...</div>' : ""}
         ${state.safetyNotices.map((notice) => `<div class="notice danger-note">${escapeHtml(notice)}</div>`).join("")}
       </div>
       <form class="chat-form" id="chat-form">
@@ -445,15 +499,15 @@ async function sendChatMessage(text) {
 
 function fallbackNotice(reason) {
   if (reason === "NO_GEMINI_API_KEY") {
-    return "Trợ lý AI chưa sẵn sàng; app đang dùng phản hồi dự phòng an toàn.";
+    return "AI chưa sẵn sàng. Đang dùng tin nhắn mẫu an toàn.";
   }
   if (reason === "GEMINI_TIMEOUT") {
-    return "Trợ lý AI phản hồi chậm; app tạm dùng phản hồi dự phòng an toàn để buổi luyện không bị gián đoạn.";
+    return "AI trả lời chậm. Tạm dùng tin nhắn mẫu an toàn để không bị gián đoạn.";
   }
   if (reason === "GEMINI_HTTP_429") {
-    return "Trợ lý AI đang bận; app tạm dùng phản hồi dự phòng an toàn.";
+    return "AI đang bận. Tạm dùng tin nhắn mẫu an toàn.";
   }
-  return "Trợ lý AI gặp lỗi tạm thời; app tạm dùng phản hồi dự phòng an toàn.";
+  return "AI gặp lỗi tạm thời. Tạm dùng tin nhắn mẫu an toàn.";
 }
 
 async function renderDashboard(options = {}) {
@@ -499,7 +553,7 @@ function renderDashboardView(dashboard) {
   render(`
     <section class="panel stack">
       <div>
-        <h2>Kết quả buổi luyện tập</h2>
+        <h2>Kết quả luyện tập</h2>
         <p class="subtitle">${escapeHtml(dashboard.scenarioTitle)} - Cấp độ ${escapeHtml(dashboard.difficulty)}</p>
       </div>
       <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
@@ -514,15 +568,15 @@ function renderDashboardView(dashboard) {
       </div>
       <div class="score-card">
         <span class="score-number">${dashboard.immunityScore} / 100</span>
-        <span>Nhận diện ${dashboard.recognizedCount} / ${dashboard.totalCount} dấu hiệu cảnh báo.</span>
+        <span>Nhận biết ${dashboard.recognizedCount} / ${dashboard.totalCount} dấu hiệu cảnh báo.</span>
       </div>
-      <h3>Đã nhận diện tốt</h3>
-      <ul class="flag-list">${renderFlags(dashboard.recognizedRedFlags, "success", "Chưa có dấu hiệu nào được nhận diện rõ.")}</ul>
-      <h3>Cần luyện thêm</h3>
-      <ul class="flag-list">${renderFlags(dashboard.missedRedFlags, "", "Không còn dấu hiệu nào bị bỏ lỡ.")}</ul>
-      <h3>Đoạn hội thoại cần chú ý</h3>
+      <h3>Dấu hiệu bạn đã nhận biết</h3>
+      <ul class="flag-list">${renderFlags(dashboard.recognizedRedFlags, "success", "Bạn chưa nhận biết được dấu hiệu nào.")}</ul>
+      <h3>Dấu hiệu bạn bỏ lỡ (cần chú ý)</h3>
+      <ul class="flag-list">${renderFlags(dashboard.missedRedFlags, "", "Tuyệt vời! Bạn không bỏ lỡ dấu hiệu nào.")}</ul>
+      <h3>Trích đoạn hội thoại đáng ngờ</h3>
       <ul class="flag-list">
-        ${dashboard.highlights.length === 0 ? '<li class="flag-item">Chưa có đoạn cần chú ý.</li>' : dashboard.highlights.map((item) => `
+        ${dashboard.highlights.length === 0 ? '<li class="flag-item">Không có trích đoạn nào cần chú ý.</li>' : dashboard.highlights.map((item) => `
           <li class="flag-item ${item.status === "recognized" ? "success" : ""}">
             <strong>${escapeHtml(item.label)}</strong><br>
             ${escapeHtml(item.evidenceText || "Không có trích đoạn.")}
@@ -531,11 +585,11 @@ function renderDashboardView(dashboard) {
       </ul>
       <div class="notice">${escapeHtml(dashboard.nextRecommendation)}</div>
       <label class="stack">
-        <strong>Tóm tắt chia sẻ cho người thân</strong>
+        <strong>Tóm tắt gửi người thân</strong>
         <textarea id="share-summary" readonly>${escapeHtml(dashboard.shareSummary)}</textarea>
       </label>
       <div class="result-actions">
-        <button id="copy-share"><span aria-hidden="true">⧉</span> Sao chép tóm tắt</button>
+        <button id="copy-share"><span aria-hidden="true">⧉</span> Sao chép tin nhắn</button>
         <button class="secondary" id="restart"><span aria-hidden="true">↻</span> Luyện tiếp</button>
         <button class="secondary" id="home"><span aria-hidden="true">⌂</span> Trang chính</button>
       </div>
@@ -578,11 +632,11 @@ async function copyShareSummary(dashboard) {
   try {
     acknowledgeTap();
     await navigator.clipboard.writeText(text);
-    state.safetyNotices = ["Đã sao chép tóm tắt kết quả."];
-    announceStatus("Đã sao chép tóm tắt kết quả.");
+    state.safetyNotices = ["Đã sao chép tin nhắn tóm tắt."];
+    announceStatus("Đã sao chép tin nhắn tóm tắt.");
   } catch {
-    state.safetyNotices = ["Không sao chép tự động được. Bạn có thể chọn và sao chép thủ công."];
-    announceStatus("Không sao chép tự động được. Bạn có thể chọn và sao chép thủ công.");
+    state.safetyNotices = ["Lỗi sao chép. Bạn hãy chọn và sao chép thủ công."];
+    announceStatus("Lỗi sao chép. Bạn hãy chọn và sao chép thủ công.");
   }
   renderDashboardView({
     ...dashboard,

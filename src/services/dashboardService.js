@@ -74,32 +74,50 @@ function formatFlag(flag) {
 function recommendationFor(key) {
   const technique = techniqueFor(key);
   const recommendations = {
+    police_authority:
+      "Pattern: authority. Kẻ xấu tự xưng công an, đọc đúng thông tin cá nhân nạn nhân với giọng nghiêm trọng. Hãy nhớ: Công an không bao giờ làm việc qua mạng hay tin nhắn chat, luôn yêu cầu trực tiếp tại trụ sở.",
+    police_fear:
+      "Pattern: fear. Kẻ xấu đe dọa bắt giữ, bịa tội danh liên quan đến rửa tiền/ma túy/lừa đảo, gửi lệnh bắt giả và ép giữ bí mật/cô lập nạn nhân. Đây là hành vi thao túng tâm lý bằng nỗi sợ.",
+    police_urgency:
+      "Pattern: urgency. Công an không bao giờ yêu cầu chuyển tiền vào tài khoản xác minh, không yêu cầu cài ứng dụng ngoài, không yêu cầu OTP.",
     authority_pressure:
-      "Pattern: authority. Họ mượn danh tổ chức để tạo niềm tin. Hãy kiểm chứng qua kênh chính thức trước.",
+      "Pattern: authority. Họ mượn danh tổ chức hoặc Công an để tạo niềm tin. Hãy nhớ: Công an không bao giờ làm việc qua mạng hay tin nhắn chat, luôn yêu cầu trực tiếp tại trụ sở.",
     urgency_threat:
-      "Pattern: urgency + fear. Họ ép bạn làm ngay và làm bạn sợ. Hãy chậm lại trước khi hành động.",
+      "Pattern: urgency + fear. Họ đe dọa tội danh và yêu cầu giữ bí mật để cô lập bạn. Hãy chậm lại và liên hệ trực tiếp với người thân hoặc cơ quan chức năng địa phương.",
     request_for_sensitive_info:
-      "Pattern: authority + fear. Họ xin thông tin riêng tư bằng danh nghĩa uy tín. Không gửi mã, giấy tờ hoặc tài khoản qua chat.",
+      "Pattern: authority + fear. Họ xin thông tin riêng tư bằng danh nghĩa uy tín. Không bao giờ cung cấp số CCCD, tài khoản ngân hàng hoặc mã OTP qua tin nhắn chat.",
     unofficial_channel:
-      "Pattern: authority. Họ tự xưng là tổ chức lớn nhưng kéo bạn sang kênh lạ. Hãy kiểm tra lại ở kênh chính thức.",
+      "Pattern: authority. Họ tự xưng là tổ chức lớn nhưng kéo bạn sang kênh lạ. Hãy kiểm tra lại ở kênh chính thức hoặc gọi trực tiếp tổng đài.",
     identity_mismatch:
-      "Pattern: social proof/reciprocity. Họ lợi dụng lòng tin với người quen. Hãy xác minh danh tính bằng cách khác.",
+      "Pattern: social proof/reciprocity. Họ lợi dụng lòng tin với người quen. Hãy xác minh danh tính bằng cách gọi trực tiếp số điện thoại cũ.",
     request_to_transfer_money:
-      "Pattern: urgency + social proof/reciprocity. Họ dùng chuyện gấp hoặc tình cảm để xin tiền. Hãy gọi xác minh trước.",
+      "Pattern: urgency + social proof/reciprocity. Công an không bao giờ yêu cầu chuyển tiền vào tài khoản xác minh, không yêu cầu cài ứng dụng ngoài (.apk), và không yêu cầu OTP.",
     request_to_keep_secret:
-      "Pattern: fear + social proof/reciprocity. Họ bảo giữ bí mật để bạn không hỏi người khác. Đây là dấu hiệu nguy hiểm.",
+      "Pattern: fear + social proof/reciprocity. Họ bảo giữ bí mật để bạn không hỏi người khác. Đây là dấu hiệu nguy hiểm thường gặp trong các vụ lừa đảo.",
     fake_company_authority:
-      "Pattern: authority. Tên công ty lớn có thể bị mạo danh. Hãy kiểm tra tin tuyển dụng ở kênh chính thức.",
+      "Pattern: authority. Tên công ty lớn có thể bị mạo danh. Hãy kiểm tra tin tuyển dụng ở các kênh tuyển dụng chính thức của doanh nghiệp.",
     urgency_scarcity_fee:
-      "Pattern: urgency + scarcity. Họ nói sắp hết chỗ và cần đóng phí ngay. Đừng trả tiền chỉ vì bị thúc ép.",
+      "Pattern: urgency + scarcity. Họ nói sắp hết chỗ và cần đóng phí ngay. Đừng bao giờ trả tiền hoặc cọc trước chỉ vì bị thúc ép thời gian.",
     unrealistic_salary_social_proof:
-      "Pattern: social proof/reciprocity. Họ hứa lương cao và nói nhiều người đã thành công. Hãy nghi ngờ lời hứa quá tốt.",
+      "Pattern: social proof/reciprocity. Họ hứa hẹn quà tặng lớn hoặc thu nhập cao để tạo hiệu ứng đám đông. Hãy nghi ngờ các cơ hội quá dễ dàng.",
   };
   return recommendations[key] || `Pattern: ${technique.key}. Hãy nhận diện dấu hiệu chung. Đừng học thuộc một câu trả lời mẫu.`;
 }
 
 function techniqueFor(key) {
   const techniques = {
+    police_authority: {
+      key: "authority",
+      label: "authority - tự xưng công an, đọc đúng thông tin cá nhân, giọng nghiêm trọng",
+    },
+    police_fear: {
+      key: "fear",
+      label: "fear - đe doạ bắt giữ, bịa tội danh, lệnh bắt giả, yêu cầu giữ bí mật/cô lập",
+    },
+    police_urgency: {
+      key: "urgency",
+      label: "urgency - ép hành động ngay, không cho thời gian xác minh",
+    },
     authority_pressure: {
       key: "authority",
       label: "authority - giả danh quyền lực/uy tín",
@@ -150,22 +168,22 @@ function techniqueFor(key) {
 function recommendNextScenario(currentScenarioId, missedFlags) {
   const missedKeys = new Set(missedFlags.map((flag) => flag.key));
   if (currentScenarioId !== "fake_police" && missedKeys.has("authority_pressure")) {
-    return "Luyện tiếp kịch bản giả công an/cơ quan chức năng để xử lý áp lực thẩm quyền.";
+    return "Nên luyện kịch bản Giả công an để tập đối phó với kẻ giả danh Công an.";
   }
   if (currentScenarioId !== "fake_relative" && missedKeys.has("request_to_transfer_money")) {
-    return "Luyện tiếp kịch bản giả người thân cần tiền gấp để rèn xác minh danh tính.";
+    return "Nên luyện kịch bản Giả người thân để tập thói quen gọi điện xác minh.";
   }
   if (currentScenarioId !== "fake_job" && missedKeys.has("urgency_scarcity_fee")) {
-    return "Luyện tiếp kịch bản tuyển dụng giả để nhận diện phí giữ chỗ và cơ hội khan hiếm giả.";
+    return "Nên luyện kịch bản Tuyển dụng giả để tránh bị ép cọc tiền giữ chỗ.";
   }
   if (currentScenarioId !== "fake_bank") {
-    return "Luyện tiếp kịch bản giả ngân hàng để rèn phản xạ không cung cấp mã xác minh.";
+    return "Nên luyện kịch bản Giả ngân hàng để rèn phản xạ không gửi mã OTP.";
   }
-  return "Luyện lại cùng kịch bản với câu trả lời khác để kiểm tra phản xạ trước áp lực mới.";
+  return "Nên tập lại kịch bản này để thử các câu trả lời khác.";
 }
 
 function buildShareSummary({ session, scenario, score }) {
   const missed = score.missedRedFlags.slice(0, 2).map((flag) => flag.label).join(", ");
-  const needsPractice = missed || "duy trì thói quen kiểm tra nguồn trước khi hành động";
-  return `${session.userName || "Mình"} vừa hoàn thành buổi luyện AI Scam Inoculation: ${scenario.title}. Điểm miễn dịch: ${score.immunityScore}/100. Cần luyện thêm: ${needsPractice}.`;
+  const needsPractice = missed || "cách tự bảo vệ mình";
+  return `${session.userName || "Mình"} tập nhận biết lừa đảo kịch bản "${scenario.title}" đạt ${score.immunityScore}/100 điểm. Cần lưu ý: ${needsPractice}.`;
 }
