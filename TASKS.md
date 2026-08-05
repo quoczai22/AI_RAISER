@@ -162,7 +162,7 @@ P1.
 
 ### Trạng Thái
 
-todo - đã có báo cáo Nhánh B đủ cấu trúc để giao Antigravity. Codex không tự sửa code sản phẩm.
+todo - ưu tiên kế tiếp sau TASK-007. Đã có báo cáo Nhánh B đủ cấu trúc để giao Antigravity. Codex không tự sửa code sản phẩm.
 
 ### Mục Tiêu
 
@@ -211,9 +211,19 @@ Cập nhật hoặc thay thế scenario tuyển dụng hiện có thành một s
 
 ### Ghi Chú Thực Thi
 
+- **Lệnh giao việc cho Antigravity:** Thực hiện TASK-006 ngay ở sprint kế tiếp. Chỉ sửa các file trong Scope Cho Antigravity. Sau khi hoàn tất, đổi trạng thái task thành `done-pending-review`, ghi diff ngắn, test đã chạy, và không tự push nếu chưa được Codex review.
 - Nếu dùng id mới, đề xuất `job_offer_scam`; nếu giữ id hiện có `fake_job`, phải bảo đảm README/test/demo không bị lệch.
 - Do chủ đề có yếu tố buôn người/lao động cưỡng bức, lời thoại Gemini cần có tông mô phỏng vừa đủ, không tăng nặng mô tả tổn hại.
 - Mọi claim về số liệu tổng quy mô nạn nhân toàn quốc phải ghi **CHƯA XÁC MINH ĐƯỢC** hoặc không đưa vào sản phẩm.
+
+### Review Checklist Riêng Cho TASK-006
+
+- Codex phải đọc `git diff` thật sau khi Antigravity báo xong.
+- Codex phải đối chiếu từng red flag với báo cáo `Nghien-Cuu-Tuyen-Dung-Viec-Nhe-Luong-Cao.md`.
+- Nếu scenario mô phỏng giai đoạn giam giữ/cưỡng bức/vượt biên hoặc hướng dẫn vận hành đường dây, reject.
+- Nếu thêm hotline ngoài `111` mà không có nguồn chính thống trong báo cáo, reject.
+- Nếu sửa file ngoài scope mà không có ghi chú giải thích, reject hoặc yêu cầu tách commit.
+- Chỉ đánh dấu `done` sau khi unit test, HTTP smoke test và review taxonomy pass.
 
 ## TASK-007 - Review/Sửa Pending Diff Resource Hub & Scenario Scope
 
