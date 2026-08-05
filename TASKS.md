@@ -349,6 +349,14 @@ Loại bỏ tính năng nhập giọng nói khỏi MVP vì không ổn định t
 - Commit `3c9abc1` đã được push.
 - **CHƯA XÁC MINH ĐƯỢC:** mobile visual layout sau khi xóa nút bằng screenshot/browser.
 
+## Live Gemini Verification - 2026-08-05
+
+- Đã gọi trực tiếp `GET /api/runtime-status`: `geminiConfigured=true`, model `gemini-3.6-flash`.
+- Đã tạo session local, xác nhận consent và gửi một lượt chat thật.
+- Kết quả source response: `provider=gemini`, `fallbackReason=""`, `aiOutputValidated=true`.
+- Kết luận: Gemini hiện hoạt động trong local demo; lỗi fallback `GEMINI_HTTP_429` trước đó là trạng thái quota/rate limit tại thời điểm cũ.
+- **CHƯA XÁC MINH ĐƯỢC:** độ ổn định qua nhiều lượt chat, Firestore thật sau restart, concurrency nhiều process và mobile visual QA.
+
 ## Bắt Buộc: Review Bằng Chứng Trực Tiếp
 
 - Không tin hoặc dùng báo cáo tự khai của Antigravity làm bằng chứng.
