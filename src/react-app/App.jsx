@@ -4,6 +4,7 @@ import EntryForm from './components/EntryForm';
 import Dashboard from './components/Dashboard';
 import ScenarioPicker from './components/ScenarioPicker';
 import SimulationConsent from './components/SimulationConsent';
+import ChatShell from './components/ChatShell';
 import './app.css';
 
 export default function App() {
@@ -125,11 +126,7 @@ export default function App() {
 
     if (route.startsWith('#chat')) {
       return (
-        <div className="panel ui-card stack" style={{ padding: '24px' }}>
-          <h2 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 900, fontSize: '1.4rem', margin: 0 }}>Phòng chat giả lập lừa đảo</h2>
-          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Sprint 2 Migration: Chat room lừa đảo với AI sẽ sớm có ở đây.</p>
-          <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
-        </div>
+        <ChatShell />
       );
     }
 
