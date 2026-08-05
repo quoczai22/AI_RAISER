@@ -425,7 +425,7 @@ Dọn sạch các thay đổi local đã bị Codex reject sau commit `5469dd5`,
 
 ### Trạng Thái
 
-rejected-needs-rework
+done-pending-review
 
 ### Thực thi
 
@@ -573,6 +573,66 @@ rejected-needs-rework
   - Mobile `390x844`, bật `Chữ to` + `Tương phản`, vào chat: nút `Dừng luyện tập`, warning strip, bubble, textarea, nút `Gửi` đều visible và không bị cắt.
   - Gửi 1 tin nhắn thử và xác nhận layout vẫn không cắt.
 - Sau khi sửa, cập nhật TASK-009 lại `done-pending-review`, chạy unit + HTTP smoke; không tự push.
+
+### Codex Direct Fix 2026-08-06
+
+- **Trạng thái:** `rejected-needs-rework` sau kiểm tra lại bằng browser.
+- **Diff ngắn:**
+  - `src/public/app.css`: đổi mobile chat topbar thành bố cục 1 cột/2 hàng ở viewport nhỏ; nút `Dừng luyện tập` full-width, tự xuống dòng, không khóa height; thêm override riêng khi `body.large-text` để nút dừng, tiêu đề, mức độ, warning strip vẫn lớn nhưng không cắt.
+  - Dọn trailing whitespace trong `src/public/app.css`, `src/public/app.js`, `src/public/index.html`; không đổi Gemini, safety, scoring hoặc backend.
+- **Test đã chạy:**
+  - `node tests/run-tests.js`: PASS.
+  - `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: PASS.
+  - `git diff --check -- src/public/app.css src/public/app.js src/public/index.html TASKS.md`: PASS.
+- **Browser QA đã chạy bằng app local `http://127.0.0.1:3000`:**
+  - Mobile `390x844`, chat thường: không horizontal overflow; `Dừng luyện tập`, warning strip, bubble, textarea và nút `Gửi` visible.
+  - Mobile `390x844`, bật `Chữ to` + `Tương phản`: `bodyClasses="large-text high-contrast chat-screen"`; nút `Dừng luyện tập` rộng khoảng `351px`, font khoảng `23px`, visible đầy đủ; warning strip, bubble, textarea và `Gửi` visible; `scrollWidth` bằng `clientWidth`.
+  - Mobile `390x844`, sau khi gửi tin nhắn thử: chat vẫn giữ layout; có user bubble và AI/fallback bubble; textarea và `Gửi` vẫn visible, không tràn ngang.
+  - Desktop `1440x900`, chat thường: `Dừng luyện tập`, warning strip, messages, textarea và `Gửi` visible; không horizontal overflow.
+  - Desktop `1440x900`, result screen: render được score/result/share layout, không horizontal overflow; nội dung dài cần cuộn dọc.
+- **CHƯA XÁC MINH ĐƯỢC:**
+  - Gemini live ổn định nhiều lượt; trong lần gửi tin nhắn QA, runtime dùng fallback an toàn do Gemini chậm/bận.
+  - Result/share card ở mobile `390x844` bật đồng thời `Chữ to` + `Tương phản` mới xác minh DOM/không tràn ngang sau redirect kết quả, chưa pixel-review toàn bộ chiều dài cuộn.
+
+### Prompt Cho Antigravity
+
+Đọc `AGENTS.md` và `TASKS.md`, review TASK-009 ở trạng thái `done-pending-review`.
+
+Mục tiêu: kiểm tra lại bản sửa UI mobile chat và accessibility theo bằng chứng thật, không tự thêm feature.
+Được sửa nếu cần rework hẹp: `src/public/app.css`, `src/public/app.js`, `src/public/index.html`, `TASKS.md`. Không được sửa Gemini, safety, scoring, backend, dependency, hoặc thư mục `UI Redesign for Scam Training App/`.
+
+Acceptance criteria:
+- Mobile `390x844` bật `Chữ to` + `Tương phản`: `Dừng luyện tập`, warning strip, bubble chat, textarea và nút `Gửi` hiển thị đầy đủ, không cắt/chồng lấn/tràn ngang.
+- Gửi thử một tin nhắn, layout chat vẫn ổn.
+- Desktop `1440x900` dashboard/chat/result không tràn ngang và giữ tiếng Việt thuần.
+
+Kiểm thử: chạy `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, browser QA mobile/desktop như trên. Sau khi hoàn tất: nếu đạt thì ghi review; nếu cần sửa thì ghi rework cụ thể, cập nhật trạng thái phù hợp, không tự push trước review.
+
+### Codex Review 2026-08-06 - Direct Fix Recheck
+
+- **Kết luận:** Reject TASK-009; chưa được commit/push phần source UI.
+- **Đã xác minh:** `node tests/run-tests.js` pass.
+- **Đã xác minh:** `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1` pass.
+- **Đã xác minh:** tại mobile `390x844`, body có `large-text high-contrast chat-screen` và trang không tràn ngang.
+- **Vấn đề P1:** nút `Dừng luyện tập` vẫn bị cắt chữ trong ảnh browser. DOM đo được button khoảng `106px` rộng, font khoảng `21.85px`, `scrollHeight=63` nhưng `clientHeight=48`; ảnh thực tế chỉ hiện một phần nhãn. Đây là safety control nên không thể chấp nhận.
+- **Đã xác minh:** warning strip, bubble, textarea và `Gửi` hiện vẫn nhìn thấy; điều này không bù được lỗi cắt nút dừng.
+- **CHƯA XÁC MINH ĐƯỢC:** result/share card ở mobile khi bật đồng thời `Chữ to` + `Tương phản`.
+
+### Prompt Cho Antigravity - Rework Lần 5
+
+Đọc `AGENTS.md` và `TASKS.md`. Sửa hẹp TASK-009 theo review `Codex Review 2026-08-06 - Direct Fix Recheck`.
+
+Mục tiêu: làm cho toàn bộ nhãn `Dừng luyện tập` hiển thị trọn vẹn trên mobile `390x844` khi bật đồng thời `Chữ to` và `Tương phản cao`.
+
+Được sửa: chỉ `src/public/app.css`, và `src/public/app.js` nếu thật sự cần markup nhỏ. Cập nhật `TASKS.md` chỉ để ghi trạng thái/test. Không sửa Gemini, safety, scoring, backend, dependency hoặc thư mục `UI Redesign for Scam Training App/`.
+
+Acceptance criteria:
+- Ảnh browser phải hiển thị đủ 100% chữ `Dừng luyện tập`, không bị cắt, không chồng lên tiêu đề/mức độ.
+- Button phải có chiều cao đủ cho text lớn; DOM không được có `scrollHeight > clientHeight` hoặc text bị che.
+- Giữ nguyên warning strip, bubble, textarea và nút `Gửi` hiển thị đầy đủ.
+- Không horizontal overflow ở `390x844`.
+
+Kiểm thử bắt buộc: `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, browser QA ở mobile `390x844` với hai chế độ bật cùng lúc; chụp/đọc DOM sau khi gửi một tin nhắn. Sau khi xong, cập nhật TASK-009 thành `done-pending-review`, ghi bằng chứng thật, không tự commit/push.
 
 ### Mục Tiêu
 
