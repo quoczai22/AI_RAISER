@@ -1087,3 +1087,69 @@ Acceptance criteria:
 Kiểm thử: chạy `node tests/run-tests.js`, `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, browser QA toàn bộ flow ở `390x844` và `1440x900`, gửi một tin nhắn, chụp màn hình từng màn hình chính. Nếu chưa tự kiểm tra được pixel parity, ghi `CHƯA XÁC MINH ĐƯỢC`.
 
 Sau khi hoàn tất: cập nhật TASK-010 thành `done-pending-review`, ghi diff/test/browser evidence thật, không tự commit hoặc push. Chờ Codex review.
+
+## TASK-011 - Migrate Frontend To React
+
+### Trạng Thái
+
+ready-for-execution
+
+### Mục Tiêu
+
+Chuyển presentation layer của app từ static HTML/CSS/JS sang React để port giao diện Figma chính xác và dễ bảo trì hơn. Đây là migration frontend có kiểm soát; không viết lại backend và không đổi mục tiêu scam-immunity MVP.
+
+### Quyết Định Kiến Trúc
+
+- Giữ Node server và các API/service hiện tại.
+- Dùng React cho frontend; Vite chỉ được thêm nếu cần cho build/dev rõ ràng.
+- Gemini vẫn chỉ chạy server-side qua API hiện tại.
+- Safety validator, scoring engine, chat orchestration và database boundary giữ nguyên.
+- Migration phải có thể chạy local và có đường fallback rõ ràng trong suốt quá trình.
+
+### Phạm Vi Sprint 1
+
+- Khảo sát entrypoint/server/API hiện tại và lập mapping static view → React component.
+- Tạo skeleton React tối thiểu với các component/layout cần cho Figma.
+- Chưa xóa static UI cũ cho đến khi React boot được và có smoke test.
+- Chưa migrate toàn bộ logic chat trong Sprint 1 nếu chưa có mapping state/API.
+
+### Không Được Làm
+
+- Không sửa `src/services/*`, Gemini/model/prompt, safety, scoring hoặc database contract.
+- Không thêm feature/scenario ngoài MVP.
+- Không đưa API key vào client.
+- Không xóa frontend cũ trước khi có React smoke test và fallback được kiểm chứng.
+- Không thêm UI prototype-only như Design System screen hoặc bottom navigation.
+
+### Acceptance Criteria Sprint 1
+
+- React app khởi động được bằng lệnh documented trong `README.md`.
+- React render được app shell và ít nhất dashboard route với dữ liệu thật từ flow hiện tại.
+- Có mapping rõ cho dashboard, scenario, consent, chat và result.
+- Không làm hỏng Node server/API hiện tại.
+- Unit test và HTTP smoke test hiện tại vẫn pass.
+- Không có secret hoặc `.env` bị đưa vào bundle/client.
+
+### Prompt Cho Antigravity
+
+Đọc `AGENTS.md` và `TASKS.md`, thực hiện `TASK-011 - Migrate Frontend To React`, chỉ làm Sprint 1.
+
+Mục tiêu: tạo skeleton React để tiếp nhận toàn bộ visual Figma sau này, giữ nguyên Node backend và logic Gemini hiện tại.
+
+Được sửa: `package.json`, `package-lock.json` hoặc lockfile tương ứng nếu cần dependency React/Vite; thư mục frontend mới được thống nhất; `server.js` chỉ sửa tối thiểu để phục vụ React build/dev. Được cập nhật `README.md`, `TASKS.md` để ghi lệnh chạy và trạng thái. Không được sửa service Gemini, safety, scoring, database contract hoặc xóa static UI cũ.
+
+Việc cần làm:
+- Đọc server/API hiện tại và lập mapping route/state static → React component.
+- Tạo React entrypoint, app shell và dashboard đầu tiên theo hướng Figma.
+- Giữ các nhãn tiếng Việt, `Chữ to`, `Tương phản cao` và accessibility semantics.
+- Đảm bảo API key chỉ ở server-side.
+- Document lệnh chạy dev/build/test và fallback trong migration.
+
+Acceptance criteria:
+- React boot được local.
+- Dashboard React render được và không phá Node API.
+- `node tests/run-tests.js` pass.
+- `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1` pass.
+- Không có secret trong source/bundle.
+
+Sau khi hoàn tất: cập nhật TASK-011 thành `done-pending-review`, ghi diff, test và mapping route thật vào `TASKS.md`, không tự commit hoặc push. Chờ Codex review trước khi migrate scenario, consent, chat và result.
