@@ -317,7 +317,33 @@ Làm sạch diff đang pending để chỉ giữ phần phù hợp với MVP và
 
 ### Trạng Thái
 
-todo - ưu tiên ngay lập tức trước mọi feature/demo/deploy tiếp theo.
+done
+
+### Thực thi
+
+- Đã dọn dẹp các tệp tin local bị sửa đổi ngoài scope (revert về trạng thái HEAD):
+  - `README.md`
+  - `RiskReport.md`
+  - `Testing.md`
+  - `src/public/app.css`
+  - `src/public/app.js`
+  - `src/services/chatOrchestrator.js`
+  - `src/services/store.js`
+  - `tests/run-tests.js`
+- Đã xóa tệp tin cơ sở dữ liệu cục bộ `sessions_local.db`.
+- Đã chạy kiểm tra tự động thành công:
+  - `node tests/run-tests.js` (PASS)
+  - `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1` (PASS)
+- Đã xác nhận `git status` và `git diff` sạch hoàn toàn (chỉ còn thay đổi ở `TASKS.md`).
+
+### Codex Review 2026-08-05
+
+- **Đã xác minh:** `git status --short --branch` chỉ còn `TASKS.md` dirty trước khi review; không còn dirty diff trong 8 file product/docs bị reject.
+- **Đã xác minh:** `git diff -- src/services/store.js src/services/chatOrchestrator.js src/public/app.js src/public/app.css tests/run-tests.js README.md Testing.md RiskReport.md` rỗng.
+- **Đã xác minh:** không còn marker `sessions_local`, `writeFileSync`, `local file database`, `local file store`, `file DB` trong `src`, `tests`, `README.md`, `Testing.md`, `RiskReport.md`.
+- **Đã xác minh:** `node tests/run-tests.js` pass.
+- **Đã xác minh:** `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1` pass.
+- Kết luận: accept TASK-008. Repo đã trở lại trạng thái reviewable; local file DB persistence bị reject đã được dọn.
 
 ### Mục Tiêu
 
