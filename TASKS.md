@@ -162,7 +162,7 @@ P1.
 
 ### Trạng Thái
 
-done-pending-review - ưu tiên kế tiếp sau TASK-007. Đã có báo cáo Nhánh B đủ cấu trúc để giao Antigravity. Codex không tự sửa code sản phẩm.
+done - Codex đã review commit `5469dd5` bằng diff/source/test trực tiếp. Các thay đổi local sau commit này chưa được chấp nhận.
 
 ### Mục Tiêu
 
@@ -232,6 +232,25 @@ Cập nhật hoặc thay thế scenario tuyển dụng hiện có thành một s
 - Nếu thêm hotline ngoài `111` mà không có nguồn chính thống trong báo cáo, reject.
 - Nếu sửa file ngoài scope mà không có ghi chú giải thích, reject hoặc yêu cầu tách commit.
 - Chỉ đánh dấu `done` sau khi unit test, HTTP smoke test và review taxonomy pass.
+
+### Codex Review Commit 5469dd5
+
+- **Đã xác minh:** scenario `fake_job` được thay thế thành `Tuyển dụng việc nhẹ lương cao`, vẫn giữ 4 scenario tổng thể và không thêm scenario ngoài scope.
+- **Đã xác minh:** 5 red flags khớp báo cáo Nhánh B: mô tả công việc mơ hồ, tuyển qua mạng xã hội/người quen, hối thúc xuất cảnh gấp, không hợp đồng rõ ràng, đề nghị đi không chính ngạch/không đủ giấy tờ.
+- **Đã xác minh:** safety constraints cấm mô phỏng chi tiết giam giữ/bạo lực/vượt biên, không nêu tên đường dây thật hoặc địa điểm cụ thể.
+- **Đã xác minh:** Resource Hub thêm duy nhất hotline `111` cho phòng, chống mua bán người; không thêm hotline cấp tỉnh hoặc số doanh nghiệp.
+- **Đã xác minh:** `dashboardService.js` ánh xạ các red flags mới về 5 nhóm taxonomy đã khóa.
+- **Đã xác minh:** `node tests/run-tests.js` pass.
+- **Đã xác minh:** `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1` pass.
+- **Đã xác minh:** `git show --check HEAD` sạch.
+- **Chấp nhận có ghi chú:** commit có sửa `src/public/app.js` để thêm `111`; file này không liệt kê trong scope ban đầu, nhưng nằm trong acceptance criteria Resource Hub của TASK-006 nên được chấp nhận như ngoại lệ hợp lý.
+
+### Pending Local Diff Sau Commit 5469dd5
+
+- **Reject / chưa chấp nhận:** các thay đổi local chưa commit ở `README.md`, `RiskReport.md`, `Testing.md`, `src/public/app.css`, `src/public/app.js`, `src/services/store.js`, `tests/run-tests.js`.
+- Lý do reject chính: `src/services/store.js` thêm persistent local file `sessions_local.db`, thay đổi behavior storage và test persistence ngoài scope TASK-006.
+- Lý do reject phụ: copy/UI thay đổi rộng trong `src/public/app.js` và CSS không thuộc task tuyển dụng Nhánh B, cần task riêng nếu muốn giữ.
+- Hướng xử lý cho Antigravity: revert toàn bộ pending local diff sau `5469dd5`, hoặc tách thành task riêng với nguồn/acceptance criteria trước khi làm tiếp. Không được push phần pending này.
 
 ## TASK-007 - Review/Sửa Pending Diff Resource Hub & Scenario Scope
 
