@@ -69,6 +69,51 @@ Runtime status, không lộ secret:
 http://localhost:3000/api/runtime-status
 ```
 
+## React Frontend Migration (TASK-011)
+
+Chúng tôi đang di cư giao diện tĩnh sang React (Sprint 1 Skeleton).
+
+### Chạy React Ở Chế Độ Phát Triển (Dev Mode)
+
+Trong lúc phát triển, chạy dev server với Vite:
+
+```bash
+npm run frontend:dev
+```
+
+Mở trình duyệt:
+```text
+http://localhost:5173
+```
+*Vite dev server sẽ tự động proxy mọi request tới `/api/*` sang backend server Node chạy ở cổng 3000.*
+
+### Build và Chạy Ở Chế Độ Fallback Production
+
+Để kiểm thử giao diện React chạy trực tiếp từ Node backend server:
+
+1. Build React app:
+```bash
+npm run frontend:build
+```
+*Lệnh này sẽ compile và tạo ra thư mục static build `dist/` ở thư mục root.*
+
+2. Chạy backend server với biến môi trường `USE_REACT=true`:
+- Windows PowerShell:
+```powershell
+$env:USE_REACT="true"; node server.js
+```
+- Linux/macOS:
+```bash
+USE_REACT=true node server.js
+```
+
+3. Mở trình duyệt:
+```text
+http://localhost:3000
+```
+
+*Nếu không set `USE_REACT=true` (hoặc set thành `false`), backend server sẽ tự động fallback serve giao diện tĩnh cũ tại `src/public/` giúp các unit test và HTTP smoke test cũ luôn hoạt động xanh.*
+
 ## Cấu Hình Môi Trường
 
 Tạo file `.env` từ `.env.example` hoặc set biến môi trường:

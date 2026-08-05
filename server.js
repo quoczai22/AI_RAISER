@@ -14,8 +14,10 @@ import { sendChatMessage } from "./src/services/chatOrchestrator.js";
 import { completeSession, getDashboard } from "./src/services/dashboardService.js";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
-const publicDir = resolve(rootDir, "src", "public");
 loadEnvFile();
+const publicDir = process.env.USE_REACT === "true"
+  ? resolve(rootDir, "dist")
+  : resolve(rootDir, "src", "public");
 if (process.env.GEMINI_MODEL && process.env.GEMINI_MODEL !== "gemini-3.6-flash") {
   throw new Error(`Forbidden GEMINI_MODEL: "${process.env.GEMINI_MODEL}". AGENTS.md forces the use of "gemini-3.6-flash" only.`);
 }

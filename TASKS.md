@@ -1092,10 +1092,13 @@ Sau khi hoàn tất: cập nhật TASK-010 thành `done-pending-review`, ghi dif
 
 ### Trạng Thái
 
-rejected-needs-rework
+done
 
 ### Thực thi Sprint 1
 
+- **Khắc phục lỗi build P0**:
+  - Tái cấu trúc lại file cấu hình `vite.config.js` sử dụng đường dẫn tuyệt đối (`path.resolve(__dirname, ...)`) cho `root` và `build.outDir`. Điều này ngăn chặn Vite đi lên quá nhiều cấp cha dẫn tới lỗi từ chối quyền truy cập (`Access is denied`), cho phép build thành công 100% ra thư mục `dist/` ở root dự án.
+  - Sửa đổi template `src/react-app/index.html` loại bỏ link CSS tĩnh `/app.css` để tránh lỗi HTTP 404 khi chạy serve, do Vite đã tự động bundling và inject CSS động vào file build.
 - **Khởi tạo và cấu hình môi trường React/Vite**:
   - Cập nhật dependencies (`react`, `react-dom`) và devDependencies (`vite`, `@vitejs/plugin-react`) vào `package.json` và chạy `npm install` thành công.
   - Tạo cấu hình `vite.config.js` với tính năng proxy `/api/*` chuyển hướng cuộc gọi đến cổng backend Node `http://127.0.0.1:3000`.
@@ -1121,10 +1124,12 @@ rejected-needs-rework
 
 ### Test thực tế
 
-- `node tests/run-tests.js`: PASS.
-- `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: PASS.
-- **Vite Build**: Lệnh `npm run frontend:build` tạo thành công bundle tĩnh `dist/` mà không gặp bất kỳ lỗi compile nào.
-- **Browser QA (USE_REACT=true, PORT=3001)**: ĐÃ XÁC MINH ĐẦY ĐỦ (PASS) bởi subagent (React app boot local thành công, nhập tên 'Bác Hùng' và click Bắt đầu luyện tập; Dashboard render chính xác tên và stats; Accessibility toggle 'Chữ to' và 'Tương phản cao' hoạt động tốt trên body class).
+- `node tests/run-tests.js`: PASS (với static fallback mặc định).
+- `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: PASS (với static fallback mặc định).
+- **Vite Build**: Chạy `npm run frontend:build` **PASS** 100% (tạo thành công `dist/index.html` và assets bundle bên trong repo mà không gặp bất kỳ lỗi compile nào).
+- **Browser QA (USE_REACT=true, PORT=3002)**: ĐÃ XÁC MINH ĐẦY ĐỦ (PASS) bởi subagent (React app boot local thành công, nhập tên 'Bác Hùng' và click Bắt đầu luyện tập; Dashboard render chính xác tên và stats; Accessibility toggle 'Chữ to' và 'Tương phản cao' hoạt động tốt trên body class).
+- **Backend API check (PORT=3002)**: ĐÃ XÁC MINH ĐẦY ĐỦ (PASS) bởi subagent (đường dẫn `/api/scenarios` trả về đầy đủ và chính xác dữ liệu JSON của các kịch bản lừa đảo).
+- **Stub route check**: Đã xác nhận rõ ràng các route `scenario`, `consent`, `chat`, `result` và `hotline` đều hiển thị trang skeleton stub thông báo tính năng đang phát triển ở Sprint 1.
 
 ### Mục Tiêu
 
@@ -1216,3 +1221,15 @@ Acceptance criteria:
 Kiểm thử bắt buộc: chạy build, chạy server React ở port riêng, browser QA dashboard React, kiểm tra HTTP response của `/` và `/api/scenarios`, sau đó chạy unit + HTTP smoke. Nếu chưa kiểm tra được bằng browser thật, ghi `CHƯA XÁC MINH ĐƯỢC`.
 
 Sau khi hoàn tất: cập nhật TASK-011 thành `done-pending-review`, ghi diff/test/browser evidence thật, không tự commit hoặc push. Chờ Codex review.
+
+### Codex Review 2026-08-06 - Sprint 1 Acceptance
+
+- **Kết luận:** Accept TASK-011 Sprint 1. Chưa coi đây là hoàn tất toàn bộ migration React.
+- **Đã xác minh:** `npm.cmd run frontend:build` pass khi chạy với quyền filesystem phù hợp; bundle tạo tại `dist/index.html` và `dist/assets/*` bên trong repo.
+- **Đã xác minh:** Node với `USE_REACT=true`, `PORT=3002` trả HTTP 200 cho `/` và `/api/scenarios`.
+- **Đã xác minh:** Browser React boot được tại `http://127.0.0.1:3002/`; nhập tên `Bác Hùng` chuyển sang dashboard và stats render được.
+- **Đã xác minh:** Bật `Chữ to` + `Tương phản cao` tạo đúng body classes `large-text high-contrast`, dashboard không horizontal overflow.
+- **Đã xác minh:** Static fallback mặc định vẫn pass `node tests/run-tests.js` và `tests/http-smoke.ps1`.
+- **Đã xác minh:** Không thấy thay đổi trong `src/services/*`; API key không nằm trong React bundle theo phạm vi kiểm tra source/bundle.
+- **Giới hạn được chấp nhận của Sprint 1:** scenario, consent, chat, result và hotline trong React vẫn là stub; các route này phải làm ở Sprint tiếp theo, không được báo là đã migrate hoàn tất.
+- **CHƯA XÁC MINH ĐƯỢC:** React production flow đầy đủ từ scenario đến result, vì các route trên chưa được triển khai.
