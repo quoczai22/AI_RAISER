@@ -215,6 +215,10 @@ function renderEntryDashboard() {
               <strong>Cổng cảnh báo an toàn thông tin</strong><br>
               <span>Trang web: <strong>canhbao.khonggianmang.vn</strong></span>
             </li>
+            <li class="flag-item success">
+              <strong>Tổng đài phòng, chống mua bán người</strong><br>
+              <span>Gọi: <strong>111</strong></span>
+            </li>
             <li class="flag-item">
               <strong>Tổng đài hỗ trợ của Ngân hàng</strong><br>
               <span>Cách gọi: Gọi số điện thoại ghi ở mặt sau thẻ ATM của bạn.</span>

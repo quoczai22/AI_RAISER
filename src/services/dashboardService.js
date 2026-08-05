@@ -94,12 +94,16 @@ function recommendationFor(key) {
       "Pattern: urgency + social proof/reciprocity. Công an không bao giờ yêu cầu chuyển tiền vào tài khoản xác minh, không yêu cầu cài ứng dụng ngoài (.apk), và không yêu cầu OTP.",
     request_to_keep_secret:
       "Pattern: fear + social proof/reciprocity. Họ bảo giữ bí mật để bạn không hỏi người khác. Đây là dấu hiệu nguy hiểm thường gặp trong các vụ lừa đảo.",
-    fake_company_authority:
-      "Pattern: authority. Tên công ty lớn có thể bị mạo danh. Hãy kiểm tra tin tuyển dụng ở các kênh tuyển dụng chính thức của doanh nghiệp.",
-    urgency_scarcity_fee:
-      "Pattern: urgency + scarcity. Họ nói sắp hết chỗ và cần đóng phí ngay. Đừng bao giờ trả tiền hoặc cọc trước chỉ vì bị thúc ép thời gian.",
-    unrealistic_salary_social_proof:
-      "Pattern: social proof/reciprocity. Họ hứa hẹn quà tặng lớn hoặc thu nhập cao để tạo hiệu ứng đám đông. Hãy nghi ngờ các cơ hội quá dễ dàng.",
+    job_vague_description:
+      "Pattern: Authority. Tin tuyển dụng mập mờ, không cung cấp thông tin doanh nghiệp rõ ràng. Luôn xác minh tư cách pháp nhân và thông tin đăng ký của doanh nghiệp qua cổng thông tin quốc gia trước khi ứng tuyển.",
+    unofficial_recruitment_channel:
+      "Pattern: Social Proof/Reciprocity. Lợi dụng lòng tin từ các mối quan hệ quen biết hoặc liên hệ qua tài khoản mạng xã hội cá nhân. Cần kiểm chứng thông tin qua các kênh thông báo chính thức của công ty.",
+    urgent_departure_pressure:
+      "Pattern: Urgency. Tạo áp lực thời gian để thúc ép quyết định nhanh và xuất cảnh gấp. Hãy chậm lại, kéo dài thời gian và tham khảo ý kiến người thân hoặc cơ quan chức năng.",
+    no_clear_contract:
+      "Pattern: Scarcity. Từ chối cung cấp hợp đồng lao động rõ ràng hoặc không cho xem trước. Người lao động đi làm việc ở nước ngoài bắt buộc phải có hợp đồng bằng văn bản theo đúng quy định pháp luật.",
+    illegal_border_crossing_offer:
+      "Pattern: Fear. Đề nghị đi bằng kênh không chính ngạch hoặc không cần visa, hộ chiếu. Đây là dấu hiệu dụ dỗ xuất cảnh trái phép, vi phạm pháp luật nghiêm trọng.",
   };
   return recommendations[key] || `Pattern: ${technique.key}. Hãy nhận diện dấu hiệu chung. Đừng học thuộc một câu trả lời mẫu.`;
 }
@@ -146,17 +150,25 @@ function techniqueFor(key) {
       key: "fear + social proof/reciprocity",
       label: "fear + social proof/reciprocity - cô lập nạn nhân bằng bí mật và cảm xúc",
     },
-    fake_company_authority: {
+    job_vague_description: {
       key: "authority",
-      label: "authority - mượn danh công ty lớn",
+      label: "authority - mô tả mơ hồ, thiếu pháp nhân rõ ràng",
     },
-    urgency_scarcity_fee: {
-      key: "urgency + scarcity",
-      label: "urgency + scarcity - ép giữ chỗ gấp bằng cơ hội khan hiếm",
-    },
-    unrealistic_salary_social_proof: {
+    unofficial_recruitment_channel: {
       key: "social proof/reciprocity",
-      label: "social proof/reciprocity - lời chứng đám đông và hứa hẹn thu nhập",
+      label: "social proof/reciprocity - tuyển dụng qua mạng xã hội cá nhân, người quen",
+    },
+    urgent_departure_pressure: {
+      key: "urgency",
+      label: "urgency - áp lực quyết định nhanh và xuất cảnh gấp",
+    },
+    no_clear_contract: {
+      key: "scarcity",
+      label: "scarcity - từ chối cung cấp hoặc ký hợp đồng trước xuất cảnh",
+    },
+    illegal_border_crossing_offer: {
+      key: "fear",
+      label: "fear - dụ dỗ đi đường tiểu ngạch không visa giấy tờ",
     },
   };
   return techniques[key] || {

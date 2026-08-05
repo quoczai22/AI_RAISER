@@ -162,7 +162,7 @@ P1.
 
 ### Trạng Thái
 
-todo - ưu tiên kế tiếp sau TASK-007. Đã có báo cáo Nhánh B đủ cấu trúc để giao Antigravity. Codex không tự sửa code sản phẩm.
+done-pending-review - ưu tiên kế tiếp sau TASK-007. Đã có báo cáo Nhánh B đủ cấu trúc để giao Antigravity. Codex không tự sửa code sản phẩm.
 
 ### Mục Tiêu
 
@@ -215,6 +215,14 @@ Cập nhật hoặc thay thế scenario tuyển dụng hiện có thành một s
 - Nếu dùng id mới, đề xuất `job_offer_scam`; nếu giữ id hiện có `fake_job`, phải bảo đảm README/test/demo không bị lệch.
 - Do chủ đề có yếu tố buôn người/lao động cưỡng bức, lời thoại Gemini cần có tông mô phỏng vừa đủ, không tăng nặng mô tả tổn hại.
 - Mọi claim về số liệu tổng quy mô nạn nhân toàn quốc phải ghi **CHƯA XÁC MINH ĐƯỢC** hoặc không đưa vào sản phẩm.
+- **Thực thi:**
+  - Đã cập nhật và thay thế kịch bản tuyển dụng hiện tại thành kịch bản nhận diện bẫy "Việc nhẹ lương cao" (giữ nguyên ID `fake_job` để tránh phá vỡ test/demo).
+  - Đã định nghĩa 5 red flags bắt buộc (`job_vague_description`, `unofficial_recruitment_channel`, `urgent_departure_pressure`, `no_clear_contract`, `illegal_border_crossing_offer`) trong `scenarios.json`.
+  - Đã cấu hình các đề xuất và định nghĩa kỹ thuật tương ứng trong `src/services/dashboardService.js` bám sát các nhóm taxonomy có sẵn (`authority`, `social proof/reciprocity`, `urgency`, `scarcity`, `fear`).
+  - Đã thêm chỉ dẫn số hotline `111` phòng, chống mua bán người vào Resource Hub trong `src/public/app.js`.
+  - Đã cập nhật các assertions trong `tests/run-tests.js`.
+  - Đã chạy kiểm tra: Unit tests và HTTP smoke test chạy thành công.
+  - Trạng thái mobile viewport vật lý điện thoại thật: **CHƯA XÁC MINH ĐƯỢC** (UNVERIFIED) do chạy trong môi trường headless/shell.
 
 ### Review Checklist Riêng Cho TASK-006
 
