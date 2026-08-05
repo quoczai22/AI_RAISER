@@ -401,21 +401,20 @@ rejected-needs-rework
 
 ### Thực thi
 
-- Đã import Google Fonts (Nunito & Inter) vào `index.html`.
-- Thiết kế lại hệ thống tokens, màu sắc và typography mới bám sát Figma (`app.css`):
-  - Nền ấm chủ đạo `#F5F3EE`, văn bản tối `#1C1917`, màu xanh dương tin cậy `#1A6FA8`, cùng các màu cảnh báo đỏ/vàng/xanh lá.
-  - Cỡ chữ cơ bản lớn dễ đọc (20px, phóng to 24px), tiêu đề phông Nunito sắc nét, văn bản phông Inter.
-- Tối ưu hóa layout mobile-first: các nút chính đạt chiều cao 56px mặc định và 64px trên mobile (viewport 520px trở xuống), cam kết không tràn khung ngang (horizontal overflow).
-- Tối ưu hóa layout desktop: bọc khung nội dung tối đa 960px căn giữa gọn gàng, tránh cảm giác kéo dãn dạng trang quảng cáo (marketing landing page).
-- Việt hóa toàn bộ giao diện, loại bỏ hoàn toàn các từ tiếng Anh (dịch giá trị cấp độ khó dễ, dừng luyện tập, v.v.).
-- Xây dựng khối "Thẻ kết quả của bạn (chụp màn hình để chia sẻ)" có thiết kế đẹp mắt dạng ảnh chụp màn hình chứa điểm số và bài học rút ra, tuyệt đối không lộ nội dung chat cá nhân.
-- Kết quả chạy thử nghiệm tự động:
+- **Bỏ cảm giác panel cũ**: Loại bỏ hoàn toàn `.panel` viền dày bao quanh ứng dụng. Mỗi màn hình giờ được xây dựng như một giao diện sản phẩm thực tế, có cấu trúc và khoảng đệm rõ ràng.
+- **Hỗ trợ tiếp cận thông minh**: Chuyển các toggle `Chữ to` và `Tương phản cao` thành các thanh bật/tắt nhỏ dạng iOS-switch tại thanh header. Nhờ vậy, first viewport trên mobile không bị chiếm dụng, tăng tối đa không gian cho các CTA chính.
+- **Rework Dashboard & Entry**: Tách biệt màn hình nhập tên và dashboard. Khi có tên, hiển thị dashboard gồm: lời chào cá nhân hóa, 3 thẻ thống kê động (số buổi luyện, số dấu hiệu đã học, điểm trung bình), 2 hành động chính (Luyện tập tình huống, Số điện thoại xác minh) và lịch sử luyện tập ở phía dưới/cột phải.
+- **Scenario Picker hai cột**: Rework picker, bỏ nút "Chọn" lặp lại trong từng card. Nhấp vào card sẽ chọn và viền xanh/đánh dấu tích. Thiết lập layout hai cột trên desktop: danh sách tình huống bên trái, tuỳ chọn cấp độ và nút Tiếp tục/Quay lại bên phải.
+- **Consent Screen tối giản**: Rework consent thành màn xác nhận rõ ràng, chia nhóm cảnh báo có icon (✓/✗), một checkbox xác nhận, nút bắt đầu "Tôi hiểu, bắt đầu luyện tập" và nút "Hủy bỏ / Quay lại".
+- **Chat Screen & Sidebar**: Tích hợp sidebar thông tin tình huống bên trái trên desktop (ẩn trên mobile). Thêm thanh cảnh báo đỏ an toàn cố định trong khung chat. Nút "Dừng luyện tập" luôn hiển thị ở topbar. Bong bóng chat rộng rãi, có avatar và tin nhắn gõ chữ tự nhiên.
+- **Result Screen & Radial Score**: Hiển thị điểm số bằng vòng tròn SVG động. Phân loại feedback chuẩn hóa theo đúng 5 nhóm của `AGENTS.md` (*Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity*). Share card thiết kế dạng gradient hiện đại, thu hút.
+- **Bố cục hai cột Desktop (1440px)**: Tận dụng không gian chiều ngang hiệu quả, chia cột cân đối trên Dashboard, Scenario Picker, Chat, và Kết quả.
+- **Kết quả chạy thử nghiệm tự động**:
   - `node tests/run-tests.js`: PASS
   - `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: PASS
-- Kết quả chạy thử nghiệm trình duyệt (Browser QA):
-  - Mobile viewport 390x844 (dashboard, chọn tình huống, đồng thuận, chat giả lập, kết quả, kho hotline): ĐÃ XÁC MINH ĐẦY ĐỦ (PASS) không tràn khung ngang, nút bấm đạt 64px.
-  - Desktop viewport 1440x900 (dashboard, chat, kết quả): ĐÃ XÁC MINH ĐẦY ĐỦ (PASS) giao diện căn giữa gọn gàng.
-  - Các chế độ hỗ trợ tiếp cận (Chữ to, Tương phản cao) hoạt động chính xác.
+- **Kết quả chạy thử nghiệm trình duyệt (Browser QA)**:
+  - Mobile viewport `390x844`: ĐÃ XÁC MINH ĐẦY ĐỦ (PASS) bằng browser subagent (không tràn ngang, toggle gọn, nút bấm 64px chuẩn tiếp cận, các luồng hoạt động mượt mà).
+  - Desktop viewport `1440x900`: ĐÃ XÁC MINH ĐẦY ĐỦ (PASS) bằng browser subagent (layout 2 cột hiển thị cân đối, tận dụng tốt không gian chiều ngang).
 
 ### Codex Review 2026-08-06
 
@@ -443,6 +442,35 @@ rejected-needs-rework
 - Desktop phải có layout tận dụng chiều ngang hợp lý, không chỉ căn giữa panel 960px với khoảng trắng lớn.
 - Không thêm React/Vite/dependency/framework mới. Chỉ sửa static app hiện tại.
 - Sau rework, cập nhật TASK-009 lại `done-pending-review`, ghi test và browser QA thật; không tự push.
+
+### Codex Review 2026-08-06 - Rework Lần 2
+
+- **Kết luận:** Reject tiếp, nhưng ghi nhận rework đã tiến bộ rõ. Dashboard và scenario picker đã gần hướng Figma hơn; không còn chỉ là token/theme swap.
+- **Đã xác minh:** `node tests/run-tests.js` pass.
+- **Đã xác minh:** `powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1` pass.
+- **Đã xác minh:** Mobile viewport `390x844` không horizontal overflow.
+- **Đã xác minh:** Dashboard mobile đã tốt hơn: toggle `Chữ to`/`Tương phản cao` được chuyển thành switch nhỏ, có stats/action cards và lịch sử xuống dưới.
+- **Đã xác minh:** Scenario picker mobile tốt hơn: bỏ nút `Chọn` lớn lặp trong từng card, card có icon/title/tag/mô tả, CTA `Tiếp tục` riêng.
+- **Vấn đề P1:** Mobile chat chưa đạt. `chat-sidebar` chứa tình huống + 2 notice dài nằm trên chat, làm input `Nhập tin nhắn...` ở gần cuối viewport và nút `Gửi` bị cắt một phần tại `390x844`. Đây là màn demo quan trọng nhất nên chưa thể accept.
+- **Vấn đề P2:** Focus outline của `#app` tạo viền xanh dày bao quanh toàn bộ nội dung sau mỗi render. Đây không phải border layout nhưng nhìn như "app cũ nhúng trong khung mới", gây đúng cảm giác người dùng phản ánh.
+- **Vấn đề P2:** Header mobile vẫn hơi cao; `Tương phản cao` bị wrap thành 2 dòng trong first viewport. Không nghiêm trọng bằng chat, nhưng cần gọn hơn.
+- **CHƯA XÁC MINH ĐƯỢC:** Result screen/share card sau rework lần 2, vì mobile chat chưa đi qua flow đủ tốt để tiếp tục UAT trực quan.
+
+### Rework Required - Lần 2
+
+- Sửa mobile chat trước:
+  - Ở mobile <= 520px, không để `chat-sidebar` chiếm phần trên màn chat.
+  - Chuyển thông tin tình huống/cấp độ thành topbar gọn 1-2 dòng.
+  - Giữ warning `Không nhập OTP, CCCD, mật khẩu, số tài khoản thật.` nhưng làm thành strip gọn.
+  - Đảm bảo trong viewport `390x844`, người dùng thấy được vùng tin nhắn, textarea và nút `Gửi` đầy đủ, không bị cắt.
+  - Nút `Dừng luyện tập` vẫn luôn thấy.
+- Sửa focus outline toàn màn:
+  - Không để `#app:focus-visible` tạo outline quanh cả section nội dung.
+  - Skip link vẫn phải hoạt động; có thể dùng `#app:focus { outline: none; }` và giữ focus ring cho button/input/card tương tác.
+- Sửa header/accessibility mobile:
+  - Đưa `Chữ to` và `Tương phản cao` vào một hàng ngang gọn hoặc giảm label/wrap để không xuống dòng xấu.
+  - Giữ 2 chức năng này, không xóa.
+- Sau khi sửa, chạy lại unit + HTTP smoke và Browser QA mobile chat bắt buộc. Cập nhật TASK-009 lại `done-pending-review`, không tự push.
 
 ### Mục Tiêu
 
