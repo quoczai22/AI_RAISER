@@ -10,3 +10,9 @@
 - Modules: chatOrchestrator, geminiClient.server (server-only), safetyValidator, scoringEngine, dashboardService.
 - Nộp bài = link AI Studio project (Share→Public). GitHub/Cloud Run chỉ bonus.
 - Code liên tục, báo cáo ngắn dạng diff. Xung đột → hỏi trước khi tự quyết.
+
+## Quy tắc giao việc cho Antigravity
+
+- Sau mỗi lần tạo hoặc cập nhật task trong `TASKS.md`, Codex phải viết ngay một phần **Prompt cho Antigravity** ngay bên dưới task đó hoặc trong cùng lần cập nhật.
+- Prompt phải ngắn, có thể copy nguyên văn để giao việc, và luôn nêu rõ: mục tiêu, phạm vi/file được phép sửa, điều không được làm, acceptance criteria, lệnh kiểm thử, trạng thái cần bàn giao và yêu cầu không tự push trước review.
+- Nếu task bị reject hoặc cần rework, phải tạo prompt rework mới bám đúng các lỗi đã xác minh; không giao lại bằng mô tả mơ hồ hoặc chỉ dựa trên báo cáo của Antigravity.

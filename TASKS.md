@@ -2,6 +2,34 @@
 
 File này là task artifact cho Antigravity thực thi. Codex giữ vai trò manager/reviewer: không tự viết code tính năng, chỉ cập nhật định hướng, acceptance criteria và review theo `AGENTS.md`.
 
+## Quy tắc Task → Prompt
+
+Mỗi task mới hoặc mỗi lần task cần rework phải có ngay một phần **Prompt cho Antigravity** trong cùng lần cập nhật. Prompt là bản copy-paste để giao việc và bắt buộc có:
+
+- Mục tiêu và bối cảnh bám theo `AGENTS.md`.
+- Phạm vi file được phép sửa và các file/khu vực cấm đụng.
+- Acceptance criteria có thể kiểm chứng.
+- Lệnh test và yêu cầu browser QA nếu task có UI.
+- Trạng thái bàn giao: `done-pending-review`, diff ngắn, test đã chạy, không tự push.
+
+Nếu task bị reject, prompt rework phải chỉ sửa đúng các lỗi đã xác minh. Không ghi `Đạt` cho phần chưa tự kiểm chứng; dùng đúng cụm `CHƯA XÁC MINH ĐƯỢC`.
+
+### Mẫu Prompt Cho Antigravity
+
+```text
+Đọc AGENTS.md và TASKS.md, thực hiện [TASK-ID] [tên task].
+
+Mục tiêu: [mục tiêu cụ thể].
+Được sửa: [file/phạm vi]. Không được sửa: [file/phạm vi]. Không thêm feature/đổi kiến trúc ngoài task.
+
+Acceptance criteria:
+- [tiêu chí kiểm chứng 1]
+- [tiêu chí kiểm chứng 2]
+
+Kiểm thử: [lệnh test]; [browser QA nếu có].
+Sau khi hoàn tất: cập nhật task thành done-pending-review, ghi diff và test thực tế, không tự push. Chờ Codex review bằng git diff/source/test thật.
+```
+
 ## Context Snapshot
 
 - Repo hiện tại: Node.js server + static web UI, không framework nặng.
