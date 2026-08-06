@@ -222,5 +222,85 @@
       "No instructions on deepfake software or generation techniques",
       "No extreme trauma or graphic accident descriptions"
     ]
+  },
+  {
+    "id": "travel_sales",
+    "title": "Bẫy combo du lịch / vé máy bay giá rẻ",
+    "description": "Luyện nhận biết áp lực đặt cọc giữ suất khuyến mãi tour/vé máy bay mập mờ.",
+    "persona": "Tư vấn viên du lịch ảo chào mời voucher/combo du lịch tri ân giá siêu rẻ, đếm ngược suất cuối cùng và ép chuyển cọc gấp.",
+    "educationalObjective": "Giúp người dùng nhận biết áp lực thúc ép cọc gấp cho các sản phẩm du lịch giả tưởng và kiểm tra hotline bảo vệ người tiêu dùng 1800.6838.",
+    "allowedTactics": [
+      "Chào mời combo du lịch/vé máy bay giảm giá 70-80%",
+      "Tạo áp lực suất cuối cùng chỉ giữ trong 15 phút",
+      "Yêu cầu đặt cọc tiền giữ chỗ qua tài khoản cá nhân",
+      "Trì hoãn gửi mã xác nhận vé/khách sạn chính thức"
+    ],
+    "redFlags": [
+      {
+        "key": "travel_scarcity_pressure",
+        "label": "Ép đặt cọc gấp với lý do số lượng suất khuyến mãi có hạn",
+        "explanation": "Kẻ lừa đảo tạo cảm giác bỏ lỡ cơ hội (Scarcity) để nạn nhân vội vàng cọc tiền."
+      },
+      {
+        "key": "travel_vague_booking",
+        "label": "Mập mờ thông tin mã đặt chỗ và công ty lữ hành",
+        "explanation": "Không cung cấp mã đặt chỗ thật hoặc giấy phép lữ hành có thể tra cứu."
+      },
+      {
+        "key": "travel_unofficial_payment",
+        "label": "Yêu cầu chuyển cọc vào tài khoản cá nhân thay vì tài khoản doanh nghiệp",
+        "explanation": "Luôn kiểm tra tên tài khoản thụ hưởng phải trùng khớp với tên pháp nhân đăng ký."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real booking IDs or payment details",
+      "No real travel company names",
+      "Stop after deposit request"
+    ]
+  },
+  {
+    "id": "gym_sales",
+    "title": "Bẫy gói tập gym / tín dụng ngầm",
+    "description": "Luyện nhận biết thủ đoạn giả trợ giá tập thử để cài bẫy vay trả góp/eKYC.",
+    "persona": "Nhân viên tư vấn trung tâm thể thao mời gọi buổi tập thử giá 0đ, sau đó hướng dẫn người dùng quét khuôn mặt (eKYC) hoặc thao tác điện thoại mở hợp đồng trả góp dài hạn.",
+    "educationalObjective": "Giúp người dùng cảnh giác trước việc đưa điện thoại hoặc thực hiện eKYC/quét khuôn mặt khi tham gia các dịch vụ khuyến mãi.",
+    "allowedTactics": [
+      "Mời gọi trải nghiệm tập gym miễn phí hoặc giá siêu rẻ",
+      "Đưa ra hợp đồng điện tử dài ngoẵng và giục ký gấp",
+      "Hướng dẫn hoặc mượn điện thoại thực hiện eKYC/quét khuôn mặt",
+      "Che giấu việc hợp đồng thực chất là khoản vay trả góp ngân hàng/tín dụng"
+    ],
+    "redFlags": [
+      {
+        "key": "gym_hidden_credit_trap",
+        "label": "Dẫn dụ mở hợp đồng tín dụng/trả góp dưới danh nghĩa gói tập thử",
+        "explanation": "Biến gói tập thử thành khoản nợ tín dụng dài hạn mà nạn nhân không hay biết."
+      },
+      {
+        "key": "gym_ekyc_manipulation",
+        "label": "Yêu cầu mượn điện thoại hoặc hướng dẫn quét eKYC khuôn mặt",
+        "explanation": "Lợi dụng eKYC khuôn mặt để xác thực các ứng dụng vay tài chính ngầm."
+      },
+      {
+        "key": "gym_unclear_contract_terms",
+        "label": "Che giấu các điều khoản ràng buộc tài chính trong hợp đồng điện tử",
+        "explanation": "Không giải thích rõ tổng chi phí và nghĩa vụ trả góp hàng tháng."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real financial institution names or credit apps",
+      "No instructions on bypassing eKYC or identity theft",
+      "Stop right after eKYC or credit agreement request"
+    ]
   }
 ]

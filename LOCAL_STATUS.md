@@ -189,5 +189,12 @@ powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
 - **Dynamic Test 1 lượt**: Đã chạy test 1 lượt cho kịch bản `deepfake` với input `"Sao video bi giat lag va tat mat vay?"`. Kết quả: `deepfake_video_glitch` được trigger chuẩn xác (`provider=safe_fallback`, reason=`GEMINI_HTTP_429`).
 - **Kết quả Test Suite**: `npm run frontend:build` (PASS), `node tests/run-tests.js` (PASS), `http-smoke.ps1` (PASS).
 
+#### Mục 3: Xử Lý 4 Việc Codex Flag Trực Tiếp
+1. **Bổ sung Hotline `1800.6838`**: Thêm hotline miễn phí 1800.6838 (Tổng đài Bảo vệ người tiêu dùng) vào React component `src/react-app/components/Hotlines.jsx` và static fallback `src/public/app.js`.
+2. **Kiểm tra ngôn ngữ `fake_police`**: Đã rà soát `safetyConstraints` và persona của `fake_police`. Ngôn ngữ tuân thủ nghiêm ngặt quy định không tạo áp lực/sợ hãi tâm lý quá mức cho người lớn tuổi.
+3. **Chạy lại Mobile QA**: Đã rebuild bundle và pass thành công toàn bộ test suite.
+4. **Phân biệt `travel_sales` và `gym_sales`**: Bổ sung kịch bản `travel_sales` (tập trung thúc ép đặt cọc vé/tour) và `gym_sales` (tập trung bẫy tín dụng ngầm / eKYC khuôn mặt). Đã kiểm chứng qua unit test 2 bộ red flags HOÀN TOÀN KHÁC NHAU (0 trùng lặp).
+
+
 
 

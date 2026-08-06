@@ -4,6 +4,7 @@ const statusRegion = document.querySelector("#status-region");
 const state = {
   scenarios: [],
   selectedScenario: null,
+  selectedDifficulty: "easy",
   session: null,
   messages: [],
   safetyNotices: [],
@@ -119,6 +120,7 @@ function announceStatus(message) {
   }
 }
 
+// Keep core validation escape methods intact
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -155,97 +157,12 @@ async function loadScenarios() {
   routeFromHash();
 }
 
-function renderEntryDashboard() {
-  const currentTab = state.currentTab || "training";
-  render(`
-    <section class="panel stack">
-      <div>
-        <h2>Trang chính của bạn</h2>
-        <p class="subtitle">Không cần mật khẩu, không cần OTP, không trừ tiền.</p>
-      </div>
-      <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
-        <label class="toggle-row">
-          <input id="large-text-toggle" type="checkbox" ${state.accessibility.largeText ? "checked" : ""}>
-          <span>Chữ to</span>
-        </label>
-        <label class="toggle-row">
-          <input id="high-contrast-toggle" type="checkbox" ${state.accessibility.highContrast ? "checked" : ""}>
-          <span>Tương phản cao</span>
-        </label>
-      </div>
-      <div class="tabs-container" role="tablist">
-        <button id="tab-training" class="tab-button ${currentTab === "training" ? "active" : ""}" role="tab" aria-selected="${currentTab === "training" ? "true" : "false"}">Luyện tập</button>
-        <button id="tab-hotlines" class="tab-button ${currentTab === "hotlines" ? "active" : ""}" role="tab" aria-selected="${currentTab === "hotlines" ? "true" : "false"}">Số điện thoại xác minh</button>
-      </div>
-      ${currentTab === "training" ? `
-        <div class="tab-content stack" role="tabpanel" aria-labelledby="tab-training">
-          <div class="notice">
-            Đây là nơi tự luyện tập. Bạn có thể dừng bất kỳ lúc nào.
-          </div>
-          <label class="stack">
-            <strong>Tên hiển thị</strong>
-            <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" autocomplete="off" placeholder="Ví dụ: Cô Lan" aria-label="Tên hiển thị">
-          </label>
-          <div class="entry-actions">
-            <button id="start-training"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
-          </div>
-          <h3>Lịch sử luyện tập</h3>
-          <ul class="flag-list">
-            ${state.history.length === 0 ? '<li class="flag-item">Chưa có buổi luyện nào.</li>' : state.history.map((item) => `
-              <li class="flag-item success">
-                <strong>${escapeHtml(item.scenarioTitle)}</strong><br>
-                Điểm: ${item.immunityScore}/100 - ${escapeHtml(item.createdAt)}
-              </li>
-            `).join("")}
-          </ul>
-        </div>
-      ` : `
-        <div class="tab-content stack" role="tabpanel" aria-labelledby="tab-hotlines">
-          <h3>Tổng đài xác minh chính thức</h3>
-          <p class="subtitle">Lưu số điện thoại dưới đây để gọi xác minh khi có cuộc gọi đáng ngờ.</p>
-          <div class="notice">
-            <strong>Nên làm ngay:</strong> Gọi ngay tổng đài ngân hàng của bạn để khóa thẻ/tài khoản. Hoặc đến cơ quan Công an gần nhất để báo tin.
-          </div>
-          <ul class="flag-list">
-            <li class="flag-item success">
-              <strong>Số Công an khẩn cấp</strong><br>
-              <span>Gọi: <strong>113</strong></span>
-            </li>
-            <li class="flag-item success">
-              <strong>Cổng cảnh báo an toàn thông tin</strong><br>
-              <span>Trang web: <strong>canhbao.khonggianmang.vn</strong></span>
-            </li>
-            <li class="flag-item success">
-              <strong>Tổng đài phòng, chống mua bán người</strong><br>
-              <span>Gọi: <strong>111</strong></span>
-            </li>
-            <li class="flag-item">
-              <strong>Tổng đài hỗ trợ của Ngân hàng</strong><br>
-              <span>Cách gọi: Gọi số điện thoại ghi ở mặt sau thẻ ATM của bạn.</span>
-            </li>
-            <li class="flag-item">
-              <strong>Điện thoại xác minh Tuyển dụng</strong><br>
-              <span>Cách gọi: Gọi số hotline trên trang web chính thức của công ty đó.</span>
-            </li>
-          </ul>
-        </div>
-      `}
-    </section>
-  `);
+function initAccessibility() {
+  const largeTextToggle = document.querySelector("#large-text-toggle");
+  const highContrastToggle = document.querySelector("#high-contrast-toggle");
 
-  app.querySelector("#tab-training").addEventListener("click", () => {
-    acknowledgeTap();
-    state.currentTab = "training";
-    renderEntryDashboard();
-  });
-  app.querySelector("#tab-hotlines").addEventListener("click", () => {
-    acknowledgeTap();
-    state.currentTab = "hotlines";
-    renderEntryDashboard();
-  });
-
-  const largeTextToggle = app.querySelector("#large-text-toggle");
   if (largeTextToggle) {
+    largeTextToggle.checked = state.accessibility.largeText;
     largeTextToggle.addEventListener("change", (event) => {
       state.accessibility.largeText = event.target.checked;
       saveAccessibilitySettings();
@@ -253,8 +170,9 @@ function renderEntryDashboard() {
       announceStatus(event.target.checked ? "Đã bật chữ to." : "Đã tắt chữ to.");
     });
   }
-  const highContrastToggle = app.querySelector("#high-contrast-toggle");
+
   if (highContrastToggle) {
+    highContrastToggle.checked = state.accessibility.highContrast;
     highContrastToggle.addEventListener("change", (event) => {
       state.accessibility.highContrast = event.target.checked;
       saveAccessibilitySettings();
@@ -262,56 +180,300 @@ function renderEntryDashboard() {
       announceStatus(event.target.checked ? "Đã bật tương phản cao." : "Đã tắt tương phản cao.");
     });
   }
-  const startTraining = app.querySelector("#start-training");
-  if (startTraining) {
-    startTraining.addEventListener("click", () => {
+
+  applyAccessibilitySettings();
+}
+
+function renderEntryDashboard() {
+  if (!state.userName) {
+    render(`
+      <section class="panel">
+        <div class="consent-layout stack" style="max-width: 390px; margin: 0 auto;">
+          <div class="ui-card stack" style="padding: 24px;">
+            <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; gap: 16px; margin-bottom: 8px;">
+              <div style="width: 80px; height: 80px; background: var(--primary); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: var(--shadow);">🛡️</div>
+              <div>
+                <h2 style="margin: 0; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.6rem; color: var(--foreground);">Luyện tập<br>nhận biết lừa đảo</h2>
+                <p class="subtitle" style="margin: 6px 0 0; color: var(--muted-foreground); font-size: 0.9rem;">Cùng AI luyện tập để không bị lừa — hoàn toàn miễn phí, không cần tài khoản.</p>
+              </div>
+            </div>
+            
+            <div class="notice" style="border-left-color: var(--success); background: var(--success-bg); color: var(--secondary-foreground); font-weight: 700; border-radius: var(--radius); padding: 12px 16px;">
+              <strong>Không cần mật khẩu, không cần OTP, không trừ tiền.</strong>
+            </div>
+            
+            <div class="stack" style="gap: 8px;">
+              <strong style="font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1rem; color: var(--foreground);">Tên của cô/chú/anh/chị</strong>
+              <input id="user-name" value="${escapeHtml(state.userName)}" maxlength="40" placeholder="Ví dụ: Bác Hùng, Chị Mai..." aria-label="Tên hiển thị">
+            </div>
+            
+            <div class="entry-actions" style="margin-top: 8px;">
+              <button id="start-training" style="width: 100%;"><span aria-hidden="true">▶</span> Bắt đầu luyện tập</button>
+            </div>
+
+            <div style="background: var(--secondary); border: 1px solid #B6DFC2; border-radius: var(--radius); padding: 16px; gap: 8px; display: grid;">
+              <p style="font-size: 0.85rem; font-weight: 700; color: var(--secondary-foreground); margin: 0 0 8px;">✓ Hoàn toàn an sau</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <div class="build-badge" style="border: 0; background: var(--card); padding: 4px 10px; font-size: 0.75rem; color: var(--secondary-foreground); font-weight: 700; border-radius: 100px;">✓ Không cần mật khẩu</div>
+                <div class="build-badge" style="border: 0; background: var(--card); padding: 4px 10px; font-size: 0.75rem; color: var(--secondary-foreground); font-weight: 700; border-radius: 100px;">✓ Không cần OTP</div>
+                <div class="build-badge" style="border: 0; background: var(--card); padding: 4px 10px; font-size: 0.75rem; color: var(--secondary-foreground); font-weight: 700; border-radius: 100px;">✓ Không mất tiền</div>
+              </div>
+            </div>
+
+            <p style="text-align: center; font-size: 0.75rem; color: var(--muted-foreground); margin: 8px 0 0;">Ứng dụng luyện tập — không xác minh thật</p>
+          </div>
+        </div>
+      </section>
+    `);
+
+    const startBtn = app.querySelector("#start-training");
+    if (startBtn) {
+      startBtn.addEventListener("click", () => {
+        acknowledgeTap();
+        const name = app.querySelector("#user-name").value.trim();
+        state.userName = name || "Bạn";
+        safeStorageSet("aisi_user_name", state.userName);
+        location.hash = "scenarios";
+        renderScenarioPicker();
+      });
+    }
+    return;
+  }
+
+  const completedSessions = state.history.length;
+  const avgScore = completedSessions > 0
+    ? Math.round(state.history.reduce((sum, h) => sum + h.immunityScore, 0) / completedSessions) + "%"
+    : "0%";
+
+  const historyHtml = state.history.length === 0
+    ? '<li class="flag-item" style="border-left-color: var(--border); background: var(--background); font-weight: normal; color: var(--muted-foreground);">Chưa có buổi luyện nào. Hãy bắt đầu luyện tập để tăng đề kháng lừa đảo!</li>'
+    : state.history.map((item) => `
+        <li class="history-card">
+          <div class="history-card-left">
+            <h4>${escapeHtml(item.scenarioTitle)}</h4>
+            <span>${escapeHtml(item.createdAt)}</span>
+          </div>
+          <div class="history-card-right">
+            <div class="history-card-score">${item.immunityScore}/100</div>
+          </div>
+        </li>
+      `).join("");
+
+  render(`
+    <section class="panel">
+      <div class="dashboard-layout">
+        <!-- Cột trái -->
+        <div class="stack" style="gap: 20px;">
+          <!-- Welcome Header -->
+          <div class="dashboard-welcome" style="background: var(--primary); color: white; border: 0; padding: 24px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: start; box-shadow: var(--shadow);">
+            <div class="welcome-info" style="color: white;">
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.8;">Xin chào,</p>
+              <h2 style="margin: 4px 0 0; color: white; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.75rem;">${escapeHtml(state.userName)} 👋</h2>
+              <p class="subtitle" style="margin: 6px 0 0; color: rgba(255, 255, 255, 0.7); font-size: 0.85rem;">Hôm nay bạn muốn luyện tập tình huống nào?</p>
+            </div>
+            <button class="outline" id="change-name-btn" style="min-height: 40px; padding: 6px 12px; font-size: 0.8rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: white; border-radius: 8px; font-family: 'Nunito', sans-serif;">Đổi tên</button>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-value">${completedSessions}</div>
+              <div class="stat-label">Buổi luyện</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">📚</div>
+              <div class="stat-value">5</div>
+              <div class="stat-label">Dấu hiệu học</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">⭐</div>
+              <div class="stat-value">${avgScore}</div>
+              <div class="stat-label">Điểm trung bình</div>
+            </div>
+          </div>
+
+          <p class="eyebrow" style="margin-bottom: 0;">Bạn muốn làm gì?</p>
+
+          <div class="ui-card action-card" id="btn-scenarios" role="button" tabindex="0" aria-label="Luyện tập tình huống. Chọn kịch bản và luyện phản xạ với AI.">
+            <div class="action-card-icon">🎯</div>
+            <div style="flex: 1;">
+              <strong class="action-card-title">Luyện tập tình huống</strong>
+              <p class="subtitle" style="margin: 2px 0 0; font-size: 0.85rem;">Chọn kịch bản và luyện phản xạ với AI</p>
+            </div>
+            <span class="action-card-right">›</span>
+          </div>
+
+          <div class="ui-card action-card" id="btn-hotlines" role="button" tabindex="0" aria-label="Số điện thoại xác minh. Danh bạ đường dây nóng chính thức khi nghi ngờ.">
+            <div class="action-card-icon hotline">📞</div>
+            <div style="flex: 1;">
+              <strong class="action-card-title">Số điện thoại xác minh</strong>
+              <p class="subtitle" style="margin: 2px 0 0; font-size: 0.85rem;">Danh bạ đường dây nóng chính thức khi nghi ngờ</p>
+            </div>
+            <span class="action-card-right">›</span>
+          </div>
+        </div>
+
+        <!-- Cột phải -->
+        <div class="stack" style="gap: 20px;">
+          <p class="eyebrow" style="margin-bottom: 0;">Lịch sử luyện tập gần đây</p>
+          <div class="ui-card stack" style="padding: 20px; gap: 12px; background: var(--card); border: 2px solid var(--border);">
+            <ul class="flag-list">
+              ${historyHtml}
+            </ul>
+            <div style="background: var(--secondary); border: 1px solid #B6DFC2; border-radius: var(--radius); padding: 12px 16px; margin-top: 4px;">
+              <p style="font-size: 0.8rem; color: var(--secondary-foreground); font-weight: 500; margin: 0; line-height: 1.4;">
+                💡 <strong>Mẹo:</strong> Luyện tập đều đặn mỗi ngày giúp nhận ra lừa đảo nhanh hơn rất nhiều.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  `);
+
+  app.querySelector("#change-name-btn").addEventListener("click", () => {
+    acknowledgeTap();
+    state.userName = "";
+    safeStorageRemove("aisi_user_name");
+    renderEntryDashboard();
+  });
+
+  const btnScenarios = app.querySelector("#btn-scenarios");
+  if (btnScenarios) {
+    const actScenarios = () => {
       acknowledgeTap();
-      const name = app.querySelector("#user-name").value.trim();
-      state.userName = name || "Bạn";
-      safeStorageSet("aisi_user_name", state.userName);
       location.hash = "scenarios";
       renderScenarioPicker();
+    };
+    btnScenarios.addEventListener("click", actScenarios);
+    btnScenarios.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        actScenarios();
+      }
+    });
+  }
+
+  const btnHotlines = app.querySelector("#btn-hotlines");
+  if (btnHotlines) {
+    const actHotlines = () => {
+      acknowledgeTap();
+      location.hash = "hotlines";
+      renderHotlines();
+    };
+    btnHotlines.addEventListener("click", actHotlines);
+    btnHotlines.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        actHotlines();
+      }
     });
   }
 }
 
 function renderScenarioPicker() {
+  const selectedId = state.selectedScenario?.id || null;
+  const difficulty = state.selectedDifficulty || "easy";
+
+  const scenariosHtml = state.scenarios.map((scenario) => {
+    const isSelected = scenario.id === selectedId;
+    const badgeClass = scenario.id === "fake_bank" || scenario.id === "fake_police" ? "popular" : "danger";
+    const badgeText = scenario.id === "fake_bank" ? "Phổ biến" : scenario.id === "fake_police" ? "Nguy hiểm" : "Mới";
+    
+    // Choose matching icon representing Figma app styling
+    let icon = "💼";
+    if (scenario.id === "fake_bank") icon = "🏦";
+    else if (scenario.id === "fake_police") icon = "🏢";
+    else if (scenario.id === "fake_relative") icon = "👤";
+
+    return `
+      <div class="scenario-card ${isSelected ? "selected" : ""}" data-scenario-id="${escapeHtml(scenario.id)}" role="button" tabindex="0" aria-checked="${isSelected ? "true" : "false"}" aria-label="${escapeHtml(scenario.title)}. ${escapeHtml(scenario.description)}.">
+        <div class="scenario-card-icon">
+          ${icon}
+        </div>
+        <div class="scenario-card-content">
+          <div class="scenario-card-header">
+            <h3>${escapeHtml(scenario.title)}</h3>
+            <span class="scenario-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <p>${escapeHtml(scenario.description)}</p>
+        </div>
+        ${isSelected ? '<span class="selected-indicator" aria-hidden="true">✓</span>' : ""}
+      </div>
+    `;
+  }).join("");
+
   render(`
-    <section class="panel stack">
-      <div>
-        <h2>Chọn tình huống và cấp độ</h2>
-        <p class="subtitle">Mỗi buổi tập khoảng 3 phút. Cuối buổi sẽ chỉ ra các dấu hiệu lừa đảo.</p>
-      </div>
-      <div class="scenario-grid">
-        ${state.scenarios.map((scenario) => `
-          <article class="scenario-card">
-            <div>
-              <h3>${escapeHtml(scenario.title)}</h3>
-              <p>${escapeHtml(scenario.description)}</p>
+    <section class="panel">
+      <div class="scenarios-layout">
+        <!-- Danh sách kịch bản -->
+        <div class="scenarios-list stack" style="gap: 16px;">
+          <h2 style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.4rem;">Chọn tình huống luyện tập</h2>
+          <p class="subtitle" style="margin: 0; font-size: 0.9rem;">Hãy chọn một kịch bản dưới đây để bắt đầu đối phó với các kịch bản lừa đảo phổ biến.</p>
+          <div class="scenario-grid">
+            ${scenariosHtml}
+          </div>
+        </div>
+
+        <!-- sidebar tùy chọn độ khó -->
+        <div class="scenarios-sidebar stack" style="gap: 16px;">
+          <div class="ui-card stack" style="padding: 24px; gap: 16px;">
+            <p class="eyebrow" style="margin-bottom: 0;">Mức độ thử thách</p>
+            <div class="difficulty-picker-row" style="display: grid; gap: 10px;">
+              <label class="difficulty-toggle">
+                <input type="radio" name="difficulty" value="easy" ${difficulty === "easy" ? "checked" : ""}>
+                <span>Dễ - hiển thị gợi ý rõ ràng</span>
+              </label>
+              <label class="difficulty-toggle">
+                <input type="radio" name="difficulty" value="medium" ${difficulty === "medium" ? "checked" : ""}>
+                <span>Trung bình - nhắn tin tự nhiên</span>
+              </label>
+              <label class="difficulty-toggle">
+                <input type="radio" name="difficulty" value="hard" ${difficulty === "hard" ? "checked" : ""}>
+                <span>Khó - không gợi ý</span>
+              </label>
             </div>
-            <button data-scenario-id="${escapeHtml(scenario.id)}"><span aria-hidden="true">✓</span> Chọn</button>
-          </article>
-        `).join("")}
+
+            <div class="stack" style="gap: 12px; margin-top: 12px;">
+              <button id="start-training-btn" ${!selectedId ? "disabled" : ""} style="width: 100%;"><span aria-hidden="true">▶</span> Tiếp tục</button>
+              <button class="outline" id="back-dashboard" style="width: 100%;"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <label class="stack">
-        <strong>Cấp độ</strong>
-        <select id="difficulty" aria-label="Cấp độ">
-          <option value="easy">Dễ - hiển thị gợi ý rõ ràng</option>
-          <option value="medium">Trung bình - nhắn tin tự nhiên hơn</option>
-          <option value="hard">Khó - không có gợi ý</option>
-        </select>
-      </label>
-      <button class="secondary" id="back-dashboard"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
     </section>
   `);
 
-  app.querySelectorAll("[data-scenario-id]").forEach((button) => {
-    button.addEventListener("click", async () => {
+  app.querySelectorAll("[data-scenario-id]").forEach((card) => {
+    const selectCard = () => {
       acknowledgeTap();
-      state.selectedScenario = scenarioById(button.dataset.scenarioId);
-      await createTrainingSession(app.querySelector("#difficulty").value);
+      const id = card.dataset.scenarioId;
+      state.selectedScenario = scenarioById(id);
+      renderScenarioPicker();
+    };
+    card.addEventListener("click", selectCard);
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        selectCard();
+      }
     });
   });
+
+  const diffRadios = app.querySelectorAll('input[name="difficulty"]');
+  diffRadios.forEach((radio) => {
+    radio.addEventListener("change", (e) => {
+      state.selectedDifficulty = e.target.value;
+    });
+  });
+
+  app.querySelector("#start-training-btn").addEventListener("click", async () => {
+    acknowledgeTap();
+    const diff = state.selectedDifficulty || "easy";
+    await createTrainingSession(diff);
+  });
+
   app.querySelector("#back-dashboard").addEventListener("click", () => {
     acknowledgeTap();
     location.hash = "";
@@ -338,25 +500,58 @@ async function createTrainingSession(difficulty) {
 }
 
 function renderSimulationConsent() {
+  const diffMap = { easy: "Dễ", medium: "Trung bình", hard: "Khó" };
+  const diffLabel = diffMap[state.session?.difficulty] || "Dễ";
+
   render(`
-    <section class="panel stack">
-      <div>
-        <h2>Trước khi bắt đầu</h2>
-        <p class="subtitle">Tình huống: ${escapeHtml(state.selectedScenario?.title || scenarioById(state.session?.scenarioId)?.title || "")}</p>
-      </div>
-      <div class="notice">
-        Đây là tình huống mô phỏng. Bạn có thể dừng bất kỳ lúc nào.
-      </div>
-      <div class="notice danger-note">
-        Không nhập mã OTP, mật khẩu, CCCD hoặc tài khoản thật.
-      </div>
-      <label class="consent-row">
-        <input id="simulation-consent" type="checkbox">
-        <span>Tôi hiểu đây là mô phỏng và không nhập thông tin thật.</span>
-      </label>
-      <div class="entry-actions">
-        <button class="secondary" id="cancel-consent"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
-        <button id="start-chat" disabled><span aria-hidden="true">▶</span> Bắt đầu mô phỏng</button>
+    <section class="panel">
+      <div class="consent-layout stack" style="max-width: 520px; margin: 0 auto;">
+        <div class="ui-card stack" style="padding: 24px; gap: 20px;">
+          <h2 style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.4rem; margin: 0;">Xác nhận trước khi bắt đầu</h2>
+          
+          <!-- Preview Card -->
+          <div style="background: var(--background); border: 2px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 2.25rem; background: var(--card); width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${state.selectedScenario?.id === "fake_bank" ? "🏦" : state.selectedScenario?.id === "fake_police" ? "🏢" : state.selectedScenario?.id === "fake_relative" ? "👤" : "💼"}
+            </div>
+            <div style="flex: 1;">
+              <p style="font-size: 0.75rem; color: var(--muted-foreground); margin: 0;">Tình huống đang luyện</p>
+              <p style="font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1rem; color: var(--foreground); margin: 2px 0 0;">${escapeHtml(state.selectedScenario?.title || scenarioById(state.session?.scenarioId)?.title || "")}</p>
+            </div>
+            <span class="build-badge" style="border: 0; background: var(--primary-soft); color: var(--primary); padding: 4px 10px; font-weight: 700; border-radius: 100px;">
+              ${escapeHtml(diffLabel)}
+            </span>
+          </div>
+
+          <!-- Warning note -->
+          <div class="notice danger-note" style="border-left-color: var(--danger); background: var(--danger-bg); color: #7F1D1D; border-radius: var(--radius); padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="font-size: 1.2rem;">⚠️</span>
+              <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem;">Lưu ý quan trọng:</strong>
+            </div>
+            <ul style="margin: 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.6;">
+              <li>Không cung cấp thông tin cá nhân thật</li>
+              <li>Không nhập OTP, CCCD, mật khẩu</li>
+              <li>Không nhập số tài khoản thật</li>
+              <li>AI đóng vai người lừa đảo để bạn luyện tập phản xạ</li>
+              <li>Bạn có thể dừng luyện tập bất cứ lúc nào</li>
+            </ul>
+          </div>
+
+          <div class="notice" style="border-left-color: var(--primary); background: var(--primary-soft); border-radius: var(--radius); padding: 12px 16px; font-size: 0.85rem; font-weight: 500; color: var(--foreground);">
+            🔒 Nội dung trò chuyện <strong>không được lưu lại</strong> và chỉ dùng để luyện tập.
+          </div>
+
+          <label class="consent-row" style="display: flex; gap: 12px; align-items: start; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius); background: var(--background); cursor: pointer; user-select: none;">
+            <input id="simulation-consent" type="checkbox" style="width: 24px; height: 24px; margin-top: 2px;">
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--foreground); line-height: 1.4;">Tôi hiểu đây là mô phỏng và cam kết không nhập thông tin thật.</span>
+          </label>
+
+          <div class="entry-actions" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+            <button id="start-chat" disabled style="width: 100%; min-height: 56px;"><span aria-hidden="true">▶</span> Tôi hiểu, bắt đầu luyện tập</button>
+            <button class="outline" id="cancel-consent" style="width: 100%; min-height: 56px;"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
+          </div>
+        </div>
       </div>
     </section>
   `);
@@ -419,29 +614,74 @@ async function renderConsentFromRoute() {
 
 function renderChatShell() {
   const scenario = state.selectedScenario || scenarioById(state.session?.scenarioId);
+  const diffMap = { easy: "Dễ", medium: "Trung bình", hard: "Khó" };
+  const diffLabel = diffMap[state.session?.difficulty] || "Dễ";
+
+  let icon = "💼";
+  if (scenario?.id === "fake_bank") icon = "🏦";
+  else if (scenario?.id === "fake_police") icon = "🏢";
+  else if (scenario?.id === "fake_relative") icon = "👤";
+
   render(`
-    <section class="panel chat-layout">
-      <div class="chat-topbar">
-        <div>
-          <h2>${escapeHtml(scenario?.title || "Tình huống mô phỏng")}</h2>
-          <p class="subtitle">AI phản hồi theo tin nhắn của bạn. Cấp độ: ${escapeHtml(state.session?.difficulty || "easy")}</p>
+    <section class="panel">
+      <div class="chat-layout">
+        <!-- Desktop Sidebar -->
+        <aside class="chat-sidebar">
+          <div class="stack" style="gap: 8px;">
+            <p class="eyebrow" style="margin: 0;">Tình huống đang luyện</p>
+            <h3 style="margin: 0; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--foreground);">${escapeHtml(scenario?.title || "Mô phỏng lừa đảo")}</h3>
+            <p class="subtitle" style="margin: 0; font-size: 0.8rem;">Cấp độ thử thách: <strong>${escapeHtml(diffLabel)}</strong></p>
+          </div>
+
+          <div class="notice danger-note" style="border-left-color: var(--danger); background: var(--danger-bg); color: #7F1D1D; font-size: 0.8rem; padding: 14px;">
+            <strong>Chú ý:</strong> Đây là kịch bản giả lập để thử phản xạ của bạn. Tuyệt đối không nhập thông tin cá nhân hay tài khoản thật.
+          </div>
+
+          <div class="notice" style="border-left-color: var(--success); background: var(--success-bg); color: var(--secondary-foreground); font-size: 0.8rem; padding: 14px;">
+            <strong>Mẹo luyện tập:</strong> Hãy phát hiện các dấu hiệu ép buộc chuyển khoản gấp, hối thúc thời gian, hoặc yêu cầu mật khẩu/OTP.
+          </div>
+        </aside>
+
+        <!-- Chat main window -->
+        <div class="chat-main">
+          <div class="chat-topbar" style="background: var(--primary); color: white; padding: 12px 20px; border: 0;">
+            <div class="chat-topbar-info" style="color: white;">
+              <h2 style="margin: 0; color: white; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.1rem;">${escapeHtml(scenario?.title || "Mô phỏng")}</h2>
+              <p class="subtitle" style="margin: 2px 0 0; color: rgba(255,255,255,0.7); font-size: 0.75rem;">Mức độ: <strong>${escapeHtml(diffLabel)}</strong></p>
+            </div>
+            <button class="warning" id="stop-chat" style="min-height: 40px; height: 40px; padding: 8px 16px; font-size: 0.85rem; font-family: 'Nunito', sans-serif; border-radius: 8px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; box-shadow: none;"><span aria-hidden="true">■</span> Dừng luyện tập</button>
+          </div>
+
+          <div class="chat-warning-strip" style="background: var(--danger-bg); color: #7F1D1D; font-size: 0.75rem; font-weight: 700; text-align: center; padding: 8px 16px; border-bottom: 1px solid var(--border); font-family: 'Nunito', sans-serif;">
+            ⚠️ Không nhập OTP, CCCD, mật khẩu, số tài khoản.
+          </div>
+
+          <div class="chat-messages" style="background: #F0EDE8; padding: 20px;">
+            ${state.messages.length === 0 ? `<div class="bubble ai" style="background: white; border: 2px solid var(--border); border-radius: 12px; border-top-left-radius: 2px; padding: 12px 16px; font-size: 0.95rem;">Chào bạn, đây là buổi luyện tập. Hãy nhắn tin đầu tiên để bắt đầu.</div>` : ""}
+            ${state.messages.map((message) => `
+              <div class="bubble ${message.role}" style="font-size: 0.95rem; border-radius: 12px; padding: 12px 16px; max-width: 80%; margin-bottom: 8px; line-height: 1.4; ${message.role === 'user' ? 'background: var(--primary); color: white; align-self: flex-end; border-top-right-radius: 2px;' : 'background: white; border: 2px solid var(--border); color: var(--foreground); align-self: flex-start; border-top-left-radius: 2px;'}">
+                <div class="bubble-content">${escapeHtml(message.content)}</div>
+              </div>
+            `).join("")}
+            ${state.isSending ? '<div class="bubble ai typing" style="font-style: italic; color: var(--muted-foreground); background: rgba(255,255,255,0.7); border: 2px solid var(--border); border-radius: 12px; border-top-left-radius: 2px; padding: 12px 16px; align-self: flex-start; font-size: 0.95rem;">AI đang trả lời...</div>' : ""}
+            ${state.safetyNotices.map((notice) => `<div class="notice danger-note" style="border-radius: var(--radius); margin-top: 8px; padding: 10px 14px; font-size: 0.85rem;">${escapeHtml(notice)}</div>`).join("")}
+          </div>
+
+          <form class="chat-form" id="chat-form" style="padding: 12px 20px; gap: 12px; background: var(--card); border-top: 2px solid var(--border);">
+            <textarea id="chat-input" maxlength="${state.runtime.maxMessageLength}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""} style="min-height: 52px; max-height: 120px; font-size: 0.95rem; border-radius: 10px;"></textarea>
+            <div class="chat-actions" style="height: 52px;">
+              <button type="submit" ${state.isSending ? "disabled" : ""} style="height: 52px; font-size: 1rem; border-radius: 10px; font-family: 'Nunito', sans-serif;"><span aria-hidden="true">➤</span> Gửi</button>
+            </div>
+          </form>
         </div>
-        <button class="warning" id="stop-chat"><span aria-hidden="true">■</span> Dừng và xem kết quả</button>
       </div>
-      <div class="chat-messages">
-        ${state.messages.length === 0 ? '<div class="bubble ai">Chào bạn, đây là buổi luyện tập. Hãy nhắn tin đầu tiên để bắt đầu.</div>' : ""}
-        ${state.messages.map((message) => `<div class="bubble ${message.role}">${escapeHtml(message.content)}</div>`).join("")}
-        ${state.isSending ? '<div class="bubble ai typing">AI đang trả lời...</div>' : ""}
-        ${state.safetyNotices.map((notice) => `<div class="notice danger-note">${escapeHtml(notice)}</div>`).join("")}
-      </div>
-      <form class="chat-form" id="chat-form">
-        <textarea id="chat-input" maxlength="${state.runtime.maxMessageLength}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Nhập tin nhắn..." aria-label="Nhập tin nhắn" ${state.isSending ? "disabled" : ""}></textarea>
-        <div class="chat-actions">
-          <button type="submit" ${state.isSending ? "disabled" : ""}><span aria-hidden="true">➤</span> Gửi</button>
-        </div>
-      </form>
     </section>
   `, { chatScreen: true });
+
+  const container = app.querySelector(".chat-messages");
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
 
   app.querySelector("#stop-chat").addEventListener("click", () => {
     acknowledgeTap();
@@ -468,7 +708,6 @@ function renderChatShell() {
     await sendChatMessage(text);
   });
 }
-
 
 async function sendChatMessage(text) {
   try {
@@ -553,66 +792,135 @@ async function renderChatFromRoute() {
   }
 }
 
+function getTaxonomyLabel(technique) {
+  const lower = String(technique || "").toLowerCase();
+  if (lower.includes("authority")) return "Giả danh cơ quan / uy tín (Authority)";
+  if (lower.includes("fear")) return "Thao túng nỗi sợ (Fear)";
+  if (lower.includes("urgency")) return "Hối thúc / Cấp bách (Urgency)";
+  if (lower.includes("scarcity")) return "Khan hiếm / Cơ hội (Scarcity)";
+  if (lower.includes("social proof") || lower.includes("reciprocity")) return "Lòng tin / Quan hệ (Social Proof/Reciprocity)";
+  return "Tâm lý thao túng (Psychological Manipulation)";
+}
+
+function renderFlags(flags, className, emptyText) {
+  if (!flags || flags.length === 0) {
+    return `<li class="flag-item ${className}" style="border-left-color: var(--border); background: var(--background); font-weight: normal; color: var(--muted-foreground); font-size: 0.9rem; padding: 12px 16px;">${escapeHtml(emptyText)}</li>`;
+  }
+  return flags.map((flag) => {
+    const taxLabel = getTaxonomyLabel(flag.techniqueLabel || flag.technique);
+    return `
+      <li class="flag-item ${className}" style="border-left: 6px solid ${className === 'success' ? 'var(--success)' : 'var(--warning)'}; background: ${className === 'success' ? 'var(--success-bg)' : 'var(--warning-bg)'}; border-radius: var(--radius); padding: 14px 18px; margin-bottom: 8px;">
+        <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: ${className === 'success' ? '#1A5C35' : '#78350F'};">${escapeHtml(flag.label)}</strong><br>
+        <em style="font-size: 0.8rem; font-weight: 700; color: var(--muted-foreground); display: inline-block; margin: 2px 0 6px; font-family: 'Nunito', sans-serif; font-style: normal;">Nhóm dấu hiệu: ${escapeHtml(taxLabel)}</em><br>
+        <span style="font-size: 0.85rem; display: block; margin-top: 4px; line-height: 1.4; color: var(--foreground);">${escapeHtml(flag.recommendation || flag.explanation || "")}</span>
+      </li>
+    `;
+  }).join("");
+}
+
 function renderDashboardView(dashboard) {
+  const diffMap = { easy: "Dễ", medium: "Trung bình", hard: "Khó" };
+  const diffLabel = diffMap[dashboard.difficulty] || "Dễ";
+
+  const shareCardHtml = `
+    <div class="share-card-wrapper" id="share-card-visual" style="background: var(--primary); border-radius: var(--radius); padding: 24px; color: white; position: relative; overflow: hidden; max-width: 600px; margin: 12px 0 24px; font-family: 'Nunito', sans-serif;">
+      <div class="share-card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 12px; margin-bottom: 16px;">
+        <div>
+          <p class="share-card-title" style="margin: 0; font-weight: 900; font-size: 1.1rem; color: white;">🛡️ Luyện nhận diện lừa đảo</p>
+          <p class="share-card-subtitle" style="margin: 2px 0 0; font-size: 0.75rem; opacity: 0.7; text-transform: uppercase;">AI Scam Inoculation</p>
+        </div>
+        <span class="share-card-badge" style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 100px; font-size: 0.8rem; font-weight: 700;">${escapeHtml(dashboard.scenarioTitle)}</span>
+      </div>
+      <div class="share-card-body" style="display: flex; align-items: center; gap: 24px; margin-bottom: 16px;">
+        <span class="share-card-score" style="font-size: 3rem; font-weight: 900; line-height: 1;">${dashboard.immunityScore}%</span>
+        <div class="share-card-text" style="font-size: 1rem; line-height: 1.4;">
+          <strong>Người luyện: ${escapeHtml(state.userName || "Người thân")}</strong><br>
+          Đã nhận biết được ${dashboard.recognizedCount} / ${dashboard.totalCount} dấu hiệu lừa đảo.
+        </div>
+      </div>
+      <div class="share-card-lesson" style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 14px 18px; font-style: italic; font-size: 1.05rem; line-height: 1.5; border-left: 4px solid rgba(255,255,255,0.5);">
+        <strong>Bài học rút ra:</strong> ${escapeHtml(dashboard.nextRecommendation.replace(/Nên luyện kịch bản.*/, "").trim() || "Luôn chậm lại, kiểm chứng thông tin và không chia sẻ mã OTP cho bất kỳ ai.")}
+      </div>
+      <div class="share-card-footer" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; opacity: 0.7; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 12px;">
+        <span>Luyện tập giúp tăng đề kháng lừa đảo</span>
+        <strong>AI Riser Vietnam 2026</strong>
+      </div>
+    </div>
+  `;
+
   render(`
-    <section class="panel stack">
-      <div>
-        <h2>Kết quả luyện tập</h2>
-        <p class="subtitle">${escapeHtml(dashboard.scenarioTitle)} - Cấp độ ${escapeHtml(dashboard.difficulty)}</p>
+    <section class="panel">
+      <div class="results-layout">
+        <!-- Cột trái -->
+        <div class="stack" style="gap: 20px;">
+          <div class="ui-card stack" style="padding: 24px; gap: 20px;">
+            <h2 style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.4rem; margin: 0;">Kết quả luyện tập</h2>
+            <p class="subtitle" style="margin: -10px 0 0; font-size: 0.85rem; color: var(--muted-foreground);">${escapeHtml(dashboard.scenarioTitle)} - Cấp độ ${escapeHtml(diffLabel)}</p>
+
+            <!-- Score Radial ring wrapper -->
+            <div class="score-card" style="background: var(--primary-soft); border: 2px solid var(--border); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 20px;">
+              <div class="score-container-radial" style="width: 80px; height: 80px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="80" height="80" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="rgba(26,111,168,0.1)" stroke-width="8" fill="none" />
+                  <circle cx="50" cy="50" r="40" stroke="var(--primary)" stroke-width="8" fill="none"
+                          stroke-dasharray="251.2" stroke-dashoffset="${251.2 - (dashboard.immunityScore / 100) * 251.2}"
+                          stroke-linecap="round" transform="rotate(-90 50 50)" />
+                </svg>
+                <div class="score-number" style="position: absolute; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.35rem; color: var(--primary);">${dashboard.immunityScore}%</div>
+              </div>
+              <div>
+                <strong style="font-family: 'Nunito', sans-serif; font-size: 1rem; color: var(--foreground);">Nhận biết ${dashboard.recognizedCount} / ${dashboard.totalCount} dấu hiệu cảnh báo.</strong>
+                <p style="font-size: 0.85rem; color: var(--muted-foreground); margin: 4px 0 0; line-height: 1.3;">
+                  ${dashboard.immunityScore >= 80 ? 'Rất tốt! Bạn có đề kháng rất vững vàng trước kịch bản này.' : dashboard.immunityScore >= 50 ? 'Khá tốt! Bạn đã nhận ra một số dấu hiệu, hãy luyện tập thêm.' : 'Hãy chú ý hơn và tiếp tục luyện tập để rèn luyện phản xạ.'}
+                </p>
+              </div>
+            </div>
+
+            <div class="notice" style="border-left-color: var(--warning); background: var(--warning-bg); color: #78350F; border-radius: var(--radius); padding: 16px; font-size: 0.9rem;">
+              <strong>Lời khuyên tiếp theo:</strong><br>
+              <span style="display: block; margin-top: 4px; line-height: 1.4;">${escapeHtml(dashboard.nextRecommendation)}</span>
+            </div>
+
+            <h3 style="font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.15rem; margin: 10px 0 0;">Trích đoạn hội thoại cần chú ý</h3>
+            <ul class="flag-list">
+              ${dashboard.highlights.length === 0 ? '<li class="flag-item" style="border-left-color: var(--border); background: var(--background); font-weight: normal; color: var(--muted-foreground); font-size: 0.9rem; padding: 12px 16px;">Không có trích đoạn nào cần chú ý.</li>' : dashboard.highlights.map((item) => `
+                <li class="flag-item ${item.status === "recognized" ? "success" : ""}" style="border-left: 6px solid ${item.status === "recognized" ? "var(--success)" : "var(--warning)"}; background: ${item.status === "recognized" ? "var(--success-bg)" : "var(--warning-bg)"}; border-radius: var(--radius); padding: 14px 18px;">
+                  <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: ${item.status === "recognized" ? "#1A5C35" : "#78350F"};">${escapeHtml(item.label)}</strong><br>
+                  <span style="font-size: 0.85rem; display: block; margin-top: 4px; font-style: italic; color: var(--foreground);">"${escapeHtml(item.evidenceText || "Không có trích đoạn.")}"</span>
+                </li>
+              `).join("")}
+            </ul>
+
+            <div class="result-actions pt-2" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;">
+              <button id="copy-share" style="flex: 1; min-width: 140px; font-family: 'Nunito', sans-serif; font-weight: 700;"><span aria-hidden="true">⧉</span> Sao chép tin nhắn</button>
+              <button class="secondary" id="restart" style="flex: 1; min-width: 140px; font-family: 'Nunito', sans-serif; font-weight: 700;"><span aria-hidden="true">↻</span> Luyện tiếp</button>
+              <button class="secondary" id="home" style="flex: 1; min-width: 140px; font-family: 'Nunito', sans-serif; font-weight: 700;"><span aria-hidden="true">⌂</span> Trang chính</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải -->
+        <div class="stack" style="gap: 20px;">
+          <div class="ui-card stack" style="padding: 24px; gap: 16px;">
+            <h3 style="font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.15rem; margin: 0;">Dấu hiệu bạn đã nhận biết</h3>
+            <ul class="flag-list">${renderFlags(dashboard.recognizedRedFlags, "success", "Bạn chưa nhận biết được dấu hiệu nào.")}</ul>
+
+            <h3 style="font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.15rem; margin: 10px 0 0;">Dấu hiệu cần chú ý (bỏ sót)</h3>
+            <ul class="flag-list">${renderFlags(dashboard.missedRedFlags, "", "Tuyệt vời! Bạn không bỏ sót dấu hiệu nào.")}</ul>
+
+            <h3 style="font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.15rem; margin: 10px 0 0;">Thẻ chia sẻ kết quả</h3>
+            <p class="subtitle" style="margin: -10px 0 0; font-size: 0.85rem; color: var(--muted-foreground);">Bạn có thể chụp màn hình thẻ dưới đây để chia sẻ với người thân.</p>
+            ${shareCardHtml}
+
+            <div class="stack" style="gap: 6px; margin-top: 8px;">
+              <strong style="font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: var(--foreground);">Tóm tắt gửi người thân</strong>
+              <textarea id="share-summary" readonly style="min-height: 80px; font-size: 0.85rem; border-radius: 8px; background: var(--background); border: 2px solid var(--border); resize: none; color: var(--foreground);">${escapeHtml(dashboard.shareSummary)}</textarea>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="accessibility-panel" aria-label="Tùy chọn hiển thị">
-        <label class="toggle-row">
-          <input id="large-text-toggle" type="checkbox" ${state.accessibility.largeText ? "checked" : ""}>
-          <span>Chữ to</span>
-        </label>
-        <label class="toggle-row">
-          <input id="high-contrast-toggle" type="checkbox" ${state.accessibility.highContrast ? "checked" : ""}>
-          <span>Tương phản cao</span>
-        </label>
-      </div>
-      <div class="score-card">
-        <span class="score-number">${dashboard.immunityScore} / 100</span>
-        <span>Nhận biết ${dashboard.recognizedCount} / ${dashboard.totalCount} dấu hiệu cảnh báo.</span>
-      </div>
-      <h3>Dấu hiệu bạn đã nhận biết</h3>
-      <ul class="flag-list">${renderFlags(dashboard.recognizedRedFlags, "success", "Bạn chưa nhận biết được dấu hiệu nào.")}</ul>
-      <h3>Dấu hiệu bạn bỏ lỡ (cần chú ý)</h3>
-      <ul class="flag-list">${renderFlags(dashboard.missedRedFlags, "", "Tuyệt vời! Bạn không bỏ lỡ dấu hiệu nào.")}</ul>
-      <h3>Trích đoạn hội thoại đáng ngờ</h3>
-      <ul class="flag-list">
-        ${dashboard.highlights.length === 0 ? '<li class="flag-item">Không có trích đoạn nào cần chú ý.</li>' : dashboard.highlights.map((item) => `
-          <li class="flag-item ${item.status === "recognized" ? "success" : ""}">
-            <strong>${escapeHtml(item.label)}</strong><br>
-            ${escapeHtml(item.evidenceText || "Không có trích đoạn.")}
-          </li>
-        `).join("")}
-      </ul>
-      <div class="notice">${escapeHtml(dashboard.nextRecommendation)}</div>
-      <label class="stack">
-        <strong>Tóm tắt gửi người thân</strong>
-        <textarea id="share-summary" readonly>${escapeHtml(dashboard.shareSummary)}</textarea>
-      </label>
-      <div class="result-actions">
-        <button id="copy-share"><span aria-hidden="true">⧉</span> Sao chép tin nhắn</button>
-        <button class="secondary" id="restart"><span aria-hidden="true">↻</span> Luyện tiếp</button>
-        <button class="secondary" id="home"><span aria-hidden="true">⌂</span> Trang chính</button>
-      </div>
-      ${state.safetyNotices.map((notice) => `<div class="notice">${escapeHtml(notice)}</div>`).join("")}
     </section>
   `);
-
-  app.querySelector("#large-text-toggle").addEventListener("change", (event) => {
-    state.accessibility.largeText = event.target.checked;
-    saveAccessibilitySettings();
-    applyAccessibilitySettings();
-    announceStatus(event.target.checked ? "Đã bật chữ to." : "Đã tắt chữ to.");
-  });
-  app.querySelector("#high-contrast-toggle").addEventListener("change", (event) => {
-    state.accessibility.highContrast = event.target.checked;
-    saveAccessibilitySettings();
-    applyAccessibilitySettings();
-    announceStatus(event.target.checked ? "Đã bật tương phản cao." : "Đã tắt tương phản cao.");
-  });
 
   app.querySelector("#copy-share").addEventListener("click", () => copyShareSummary(dashboard));
   app.querySelector("#restart").addEventListener("click", () => {
@@ -625,6 +933,69 @@ function renderDashboardView(dashboard) {
     renderScenarioPicker();
   });
   app.querySelector("#home").addEventListener("click", () => {
+    acknowledgeTap();
+    location.hash = "";
+    renderEntryDashboard();
+  });
+}
+
+function renderHotlines() {
+  render(`
+    <section class="panel">
+      <div class="consent-layout stack" style="max-width: 600px; margin: 0 auto;">
+        <div class="ui-card stack" style="padding: 24px; gap: 20px;">
+          <h2 style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.4rem; margin: 0;">Đường dây nóng xác minh chính thức</h2>
+          <p class="subtitle" style="margin: -10px 0 0; font-size: 0.85rem; color: var(--muted-foreground);">Khi nhận được thông tin đáng ngờ, hãy lập tức liên hệ các đường dây nóng chính thống dưới đây để xác minh.</p>
+
+          <div class="notice danger-note" style="border-left-color: var(--danger); background: var(--danger-bg); color: #7F1D1D; font-size: 0.85rem; padding: 14px 18px;">
+            <strong>Nguyên tắc cốt lõi:</strong> Tuyệt đối không gọi các số điện thoại lạ do người nhắn gửi. Chỉ liên lạc qua các đầu số do nhà nước và các tổ chức công bố chính thức.
+          </div>
+
+          <ul class="flag-list">
+            <li class="flag-item success" style="border-left: 6px solid var(--success); background: var(--success-bg); border-radius: var(--radius); padding: 14px 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <div>
+                  <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: #1A5C35;">Phòng chống mua bán người: 111</strong><br>
+                  <span style="font-size: 0.8rem; color: var(--muted-foreground); display: block; margin-top: 4px; line-height: 1.3;">Hỗ trợ phòng chống lừa đảo việc làm, lao động cưỡng bức ra nước ngoài.</span>
+                </div>
+                <a href="tel:111" style="background: var(--success); color: white; padding: 8px 16px; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-family: 'Nunito', sans-serif; display: inline-flex; align-items: center; gap: 4px; box-shadow: var(--shadow);">📞 Gọi</a>
+              </div>
+            </li>
+            <li class="flag-item success" style="border-left: 6px solid var(--success); background: var(--success-bg); border-radius: var(--radius); padding: 14px 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <div>
+                  <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: #1A5C35;">Cổng cảnh báo an toàn thông tin</strong><br>
+                  <span style="font-size: 0.8rem; color: var(--muted-foreground); display: block; margin-top: 4px; line-height: 1.3;">Báo cáo lừa đảo: <strong>canhbao.khonggianmang.vn</strong></span>
+                </div>
+                <a href="https://canhbao.khonggianmang.vn" target="_blank" rel="noopener noreferrer" style="background: var(--primary); color: white; padding: 8px 16px; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-family: 'Nunito', sans-serif; display: inline-flex; align-items: center; gap: 4px; box-shadow: var(--shadow);">🔗 Mở</a>
+              </div>
+            </li>
+            <li class="flag-item success" style="border-left: 6px solid var(--success); background: var(--success-bg); border-radius: var(--radius); padding: 14px 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <div>
+                  <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: #1A5C35;">Bảo vệ người tiêu dùng: 1800.6838</strong><br>
+                  <span style="font-size: 0.8rem; color: var(--muted-foreground); display: block; margin-top: 4px; line-height: 1.3;">Tư vấn, tiếp nhận phản ánh về các hợp đồng dịch vụ, bẫy du lịch, gói tập gym.</span>
+                </div>
+                <a href="tel:18006838" style="background: var(--success); color: white; padding: 8px 16px; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-family: 'Nunito', sans-serif; display: inline-flex; align-items: center; gap: 4px; box-shadow: var(--shadow);">📞 Gọi</a>
+              </div>
+            </li>
+            <li class="flag-item" style="border-left: 6px solid var(--border); background: var(--background); border-radius: var(--radius); padding: 14px 18px;">
+              <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--foreground);">Ngân hàng của bạn (Số mặt sau thẻ)</strong><br>
+              <span style="font-size: 0.8rem; color: var(--muted-foreground); display: block; margin-top: 4px; line-height: 1.3;">Gọi số hotline in trực tiếp ở mặt sau thẻ ngân hàng để yêu cầu khóa tài khoản khẩn cấp.</span>
+            </li>
+            <li class="flag-item" style="border-left: 6px solid var(--border); background: var(--background); border-radius: var(--radius); padding: 14px 18px;">
+              <strong style="font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--foreground);">Đường dây nóng doanh nghiệp</strong><br>
+              <span style="font-size: 0.8rem; color: var(--muted-foreground); display: block; margin-top: 4px; line-height: 1.3;">Tìm kiếm thông tin liên hệ chính thức trên trang web có chứng nhận đăng ký để xác minh tin tuyển dụng.</span>
+            </li>
+          </ul>
+
+          <button class="outline" id="back-dashboard" style="width: 100%; min-height: 56px; font-family: 'Nunito', sans-serif; font-weight: 700; margin-top: 8px;"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
+        </div>
+      </div>
+    </section>
+  `);
+
+  app.querySelector("#back-dashboard").addEventListener("click", () => {
     acknowledgeTap();
     location.hash = "";
     renderEntryDashboard();
@@ -648,19 +1019,6 @@ async function copyShareSummary(dashboard) {
   });
 }
 
-function renderFlags(flags, className, emptyText) {
-  if (!flags || flags.length === 0) {
-    return `<li class="flag-item ${className}">${escapeHtml(emptyText)}</li>`;
-  }
-  return flags.map((flag) => `
-    <li class="flag-item ${className}">
-      <strong>${escapeHtml(flag.label)}</strong><br>
-      <em>${escapeHtml(flag.techniqueLabel || flag.technique || "authority")}</em><br>
-      ${escapeHtml(flag.recommendation || flag.explanation || "")}
-    </li>
-  `).join("");
-}
-
 function saveHistory(dashboard) {
   state.lastDashboard = dashboard;
   const item = {
@@ -681,9 +1039,13 @@ function getSessionIdFromHash() {
 function renderError(message) {
   render(`
     <section class="panel stack">
-      <h2>Không thể tiếp tục</h2>
-      <div class="notice danger-note">${escapeHtml(message)}</div>
-      <button id="back-home"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
+      <div class="consent-layout stack" style="max-width: 520px; margin: 0 auto;">
+        <div class="ui-card stack" style="padding: 24px; gap: 20px;">
+          <h2 style="font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.4rem; margin: 0;">Không thể tiếp tục</h2>
+          <div class="notice danger-note" style="border-left-color: var(--danger); background: var(--danger-bg); color: #7F1D1D; border-radius: var(--radius); padding: 16px; font-size: 0.9rem;">${escapeHtml(message)}</div>
+          <button id="back-home" style="width: 100%; min-height: 56px; font-family: 'Nunito', sans-serif; font-weight: 700;"><span aria-hidden="true">←</span> Hủy bỏ / Quay lại</button>
+        </div>
+      </div>
     </section>
   `);
   app.querySelector("#back-home").addEventListener("click", () => {
@@ -705,6 +1067,10 @@ function routeFromHash() {
     renderScenarioPicker();
     return;
   }
+  if (location.hash.startsWith("#hotlines")) {
+    renderHotlines();
+    return;
+  }
   if (location.hash.startsWith("#consent/")) {
     renderConsentFromRoute();
     return;
@@ -721,4 +1087,5 @@ function routeFromHash() {
 }
 
 window.addEventListener("hashchange", routeFromHash);
+initAccessibility();
 loadScenarios().catch((error) => renderError(error.message));

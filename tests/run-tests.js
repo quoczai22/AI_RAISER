@@ -50,7 +50,7 @@ assert.equal(publicCssSource.includes(".skip-link"), true);
 assert.equal(publicCssSource.includes(".sr-only"), true);
 assert.equal(publicIndexSource.includes('href="#app"'), true);
 assert.equal(publicIndexSource.includes('role="status"'), true);
-assert.equal(scenarios.length, 5);
+assert.equal(scenarios.length, 7);
 assert.equal(scenarios[0].id, "fake_bank");
 assert.ok(scenarios.some((scenario) => scenario.id === "fake_job"));
 const fakeJobSummary = scenarios.find((scenario) => scenario.id === "fake_job");
@@ -62,6 +62,16 @@ assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "unofficial_recru
 assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "urgent_departure_pressure"));
 assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "no_clear_contract"));
 assert.ok(fakeJobScenario.redFlags.some((flag) => flag.key === "illegal_border_crossing_offer"));
+
+// Verify travel_sales and gym_sales have DISTINCT red flag sets
+const travelScenario = getScenario("travel_sales");
+const gymScenario = getScenario("gym_sales");
+assert.ok(travelScenario.redFlags.some((flag) => flag.key === "travel_scarcity_pressure"));
+assert.ok(gymScenario.redFlags.some((flag) => flag.key === "gym_hidden_credit_trap"));
+const travelKeys = new Set(travelScenario.redFlags.map((f) => f.key));
+const gymKeys = new Set(gymScenario.redFlags.map((f) => f.key));
+const intersection = [...travelKeys].filter((key) => gymKeys.has(key));
+assert.equal(intersection.length, 0, "travel_sales and gym_sales must have completely distinct red flag keys");
 const fakePoliceScenario = getScenario("fake_police");
 assert.equal(fakePoliceScenario.redFlags.length, 3);
 assert.ok(fakePoliceScenario.redFlags.some((flag) => flag.key === "police_authority"));
