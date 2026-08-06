@@ -18,3 +18,9 @@
 - Nếu task bị reject hoặc cần rework, phải tạo prompt rework mới bám đúng các lỗi đã xác minh; không giao lại bằng mô tả mơ hồ hoặc chỉ dựa trên báo cáo của Antigravity.
 - Sau khi task đã được Codex review và accept, Codex phải rút gọn task/context: chỉ giữ mục tiêu, phạm vi đang còn hiệu lực, kết quả kiểm chứng, giới hạn còn lại và bước tiếp theo. Chi tiết trùng lặp hoặc lịch sử dài chuyển sang file archive; không bắt Codex hoặc Antigravity đọc lại nếu không cần audit.
 - Antigravity sau mỗi task chỉ ghi diff ngắn, test thực tế, browser evidence và vấn đề còn lại; không sao chép lại toàn bộ context, prompt cũ hoặc lịch sử review.
+
+## Quy tắc Ranh Giới An Toàn (Security Boundary & Safety Constraints)
+
+- **Workspace Boundary**: Chỉ thao tác đọc, sửa, xóa file bên trong dự án hiện tại. Nghiêm cấm tác động vào file/folder/codebase ngoài phạm vi dự án hoặc các ổ đĩa khác.
+- **Cấm lệnh xóa nguy hiểm**: Nghiêm cấm sử dụng các lệnh xóa mang tính phá hủy diện rộng như `rm -rf`, `del /f /s /q`, `rmdir /s /q`, `Remove-Item -Recurse -Force` đối với các đường dẫn ngoài workspace hoặc thư mục hệ thống.
+
