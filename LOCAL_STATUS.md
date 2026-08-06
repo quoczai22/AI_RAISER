@@ -209,6 +209,15 @@ powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
 - **Tổng số kịch bản hoàn chỉnh**: Đạt 10/10 kịch bản (`fake_bank`, `fake_relative`, `fake_police`, `fake_job`, `deepfake`, `travel_sales`, `gym_sales`, `wrong_transfer`, `ecommerce_refund`, `vneid`).
 - **Test Suite Pass**: Frontend build (PASS), `node tests/run-tests.js` (PASS), `http-smoke.ps1` (PASS).
 
+#### Mục 6: Đánh Giá Firestore Persistence
+- **Trạng thái mã nguồn**: Lớp `FirestoreStore` trong `src/services/store.js` đã tích hợp đầy đủ SDK `@google-cloud/firestore` với fallback `inMemoryMap` an toàn khi không có GCP Project ID.
+- **Lý do dừng kiểm chứng cloud thật**: Cần Google Cloud Service Account Credentials thật và `FIRESTORE_PROJECT_ID` hoạt động để kết nối Firestore thật. Để đảm bảo không ảnh hưởng đến luồng server ổn định hiện tại, giữ đúng trạng thái `CHƯA XÁC MINH ĐƯỢC` đối với kết nối Firestore Cloud thật theo chỉ dẫn của Mục 6.
+
+#### Mục 7: Hoàn Thành Hàng Đợi Phiên Chạy Không Giám Sát
+- **Báo cáo tổng kết**: Đã hoàn thành 100% tất cả các mục từ Mục 1 đến Mục 6 theo đúng thứ tự, quy tắc bảo mật và giới hạn test.
+- **Trạng thái kết thúc**: **Đã xong hàng đợi, chờ việc tiếp theo**.
+
+
 
 
 
