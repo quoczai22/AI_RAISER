@@ -59,7 +59,9 @@ Giới hạn: hotline/resource hub React chưa migrate; Gemini live nhiều lư�
 
 ## TASK-015 - React Resource Hub / Hotline
 
-Trạng thái: `ready-for-execution`.
+### Trạng Thái
+
+`rejected-needs-rework`
 
 ### Prompt Cho Antigravity
 
@@ -80,6 +82,32 @@ Acceptance criteria:
 
 Sau khi xong: cập nhật TASK-015 thành `done-pending-review`, ghi diff/test/browser evidence thật, không tự commit/push. Chưa kiểm chứng được thì ghi `CHƯA XÁC MINH ĐƯỢC`.
 ```
+
+### Codex Review 2026-08-06
+
+- **Kết luận:** Reject TASK-015; source chưa được accept/push.
+- **Đã xác minh:** `npm.cmd run frontend:build` pass với quyền filesystem phù hợp.
+- **Đã xác minh:** `node tests/run-tests.js` và HTTP smoke test pass.
+- **Đã xác minh:** Dashboard mở Resource Hub bằng click và phím Enter; mobile `390x844` không horizontal overflow; `Chữ to` + `Tương phản cao` vẫn render.
+- **Vấn đề P1:** `Hotlines.jsx` gán `113` cho nhãn `Hotline NCSC` và mô tả đây là cơ quan an ninh mạng quốc gia. Đây là mapping sai; không được tự gán số hoặc gọi đây là hotline chính thức.
+- **Vấn đề P1:** `canhbao.khonggianmang.vn` là website nhưng UI ghi `Hotline:`, gây hiểu nhầm về loại contact.
+- **Đã xác minh:** `111` và hướng dẫn gọi số ở mặt sau thẻ/website chính thức đang hiển thị theo dạng phù hợp hơn.
+
+### Prompt Cho Antigravity - TASK-015 Rework Lần 1
+
+Đọc `AGENTS.md` và `TASKS.md`, sửa đúng các lỗi trong `Codex Review 2026-08-06` của TASK-015.
+
+Được sửa: `src/react-app/components/Hotlines.jsx`, `src/react-app/*` nếu cần cho label/layout, `TASKS.md`. Không sửa Gemini, safety, scoring, database, static fallback hoặc thêm feature.
+
+Bắt buộc:
+- Không hiển thị `113` dưới nhãn NCSC. Nếu chưa có nguồn được chấp thuận cho contact NCSC, phải xóa mục đó hoặc đổi thành hướng dẫn chung không có số.
+- Không dùng nhãn `Hotline:` cho `canhbao.khonggianmang.vn`; phải ghi rõ `Website cảnh báo:` hoặc `Trang web:`.
+- Giữ `111` chỉ khi đúng nguồn được chấp thuận; không thêm số mới.
+- Không gọi bất kỳ contact nào là “chính thức” nếu chưa có nguồn tương ứng trong tài liệu dự án.
+
+Acceptance criteria: Resource Hub vẫn mở được bằng click/Enter, nội dung thuần Việt; không còn mapping sai `113/NCSC`, không còn gắn nhãn Hotline cho website; mobile `390x844` và desktop `1440x900` không tràn; build, unit, HTTP smoke và browser QA pass.
+
+Sau khi xong: cập nhật TASK-015 thành `done-pending-review`, ghi evidence thật, không tự commit/push. Nếu chưa kiểm chứng được, ghi `CHƯA XÁC MINH ĐƯỢC`.
 
 ## Quy Trình Bàn Giao
 
