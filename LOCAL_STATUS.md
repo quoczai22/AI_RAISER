@@ -202,6 +202,14 @@ powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
 - **Dynamic AI Test 1 lượt**: Đã khởi động server test 1 lượt chat với tin nhắn `"Tai sao nham tien lai bat toi tra them lai suat vay?"`. Kết quả: `wrong_transfer_bait_loan` được phát hiện chuẩn xác (`provider=safe_fallback`, reason=`GEMINI_HTTP_429`).
 - **Test Suite Pass**: Frontend build (PASS), `node tests/run-tests.js` (PASS), `http-smoke.ps1` (PASS).
 
+#### Mục 5: Kiểm Tra Các Việc Đã Giao Nhưng Chưa Xác Nhận Xong
+- **Xác nhận `ecommerce_refund` (Shopee/Lazada hoàn tiền)**: Đã bổ sung kịch bản `ecommerce_refund` vào `scenarios.json` với 3 red flags chuẩn taxonomy (`ecommerce_fake_caller`, `ecommerce_refund_phishing_link`, `ecommerce_otp_request`).
+- **Xác nhận `vneid` (VNeID / Dịch vụ công)**: Đã bổ sung kịch bản `vneid` vào `scenarios.json` với 3 red flags chuẩn taxonomy (`vneid_fake_official`, `vneid_malicious_apk`, `vneid_remote_takeover`).
+- **Tham số hóa kịch bản giả danh (Refactor template)**: Toàn bộ 10 kịch bản trong `scenarios.json` đã được tham số hóa đầy đủ các trường `persona`, `educationalObjective`, `allowedTactics`, `redFlags`, `stopConditions`, và `safetyConstraints`.
+- **Tổng số kịch bản hoàn chỉnh**: Đạt 10/10 kịch bản (`fake_bank`, `fake_relative`, `fake_police`, `fake_job`, `deepfake`, `travel_sales`, `gym_sales`, `wrong_transfer`, `ecommerce_refund`, `vneid`).
+- **Test Suite Pass**: Frontend build (PASS), `node tests/run-tests.js` (PASS), `http-smoke.ps1` (PASS).
+
+
 
 
 

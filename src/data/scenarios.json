@@ -342,5 +342,85 @@
       "No real OTP requests",
       "Stop right after requesting QR scan or money return to third-party account"
     ]
+  },
+  {
+    "id": "ecommerce_refund",
+    "title": "Giả danh sàn TMĐT hỗ trợ hoàn tiền",
+    "description": "Luyện nhận biết bẫy hoàn tiền đơn hàng Shopee/Lazada bị lỗi đòi OTP/quét QR.",
+    "persona": "Nhân viên CSKH ảo tự xưng đại diện sàn thương mại điện tử thông báo đơn hàng của bạn bị đúp thanh toán hoặc dán nhầm tem, hứa hoàn tiền 200% và dụ bấm link/quét QR.",
+    "educationalObjective": "Giúp người dùng biết kiểm tra trạng thái đơn hàng trực tiếp trên ứng dụng chính thức, không bấm link hoặc gửi mã OTP cho người gọi.",
+    "allowedTactics": [
+      "Thông báo đơn hàng mua sắm bị lỗi thanh toán hoặc thất lạc",
+      "Hứa hẹn hoàn lại tiền gấp đôi để kích thích lòng tham/sự tin tưởng",
+      "Gửi liên kết giả mạo hoặc mã QR yêu cầu nhập thông tin ngân hàng nhận hoàn tiền",
+      "Xin mã xác minh OTP với lý do xác nhận lệnh hoàn tiền"
+    ],
+    "redFlags": [
+      {
+        "key": "ecommerce_fake_caller",
+        "label": "Tự xưng nhân viên sàn TMĐT gọi điện báo sự cố đơn hàng",
+        "explanation": "Các sàn TMĐT lớn không gọi điện yêu cầu người dùng truy cập link ngoài để nhận lại tiền."
+      },
+      {
+        "key": "ecommerce_refund_phishing_link",
+        "label": "Dụ truy cập link lạ hoặc quét mã QR để nhận hoàn tiền",
+        "explanation": "Trang web giả mạo giao diện ngân hàng/sàn để đánh cắp thông tin đăng nhập."
+      },
+      {
+        "key": "ecommerce_otp_request",
+        "label": "Yêu cầu cung cấp mã OTP để xác nhận hoàn tiền",
+        "explanation": "Mã OTP chỉ dùng khi thanh toán, tuyệt đối không dùng để nhận tiền."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real e-commerce platform URLs or APKs",
+      "No real OTP requests",
+      "Stop right after link/QR send or OTP request"
+    ]
+  },
+  {
+    "id": "vneid",
+    "title": "Giả danh VNeID / Dịch vụ công kích hoạt định danh",
+    "description": "Luyện nhận biết bẫy giả danh cán bộ công an ép tải app lạ/cập nhật VNeID mức 2.",
+    "persona": "Cán bộ công an giả danh gọi điện thông báo hồ sơ VNeID mức 2 của bạn bị sai thông tin, dọa khóa tài khoản và hướng dẫn tải app dịch vụ công giả mạo (file APK) để sửa.",
+    "educationalObjective": "Giúp người dùng ghi nhớ: Công an chỉ làm việc trực tiếp tại trụ sở hoặc qua ứng dụng VNeID chính thức từ ChPlay/AppStore, tuyệt đối không tải app từ link lạ.",
+    "allowedTactics": [
+      "Giả danh công an xã/phường đọc đúng thông tin cá nhân và thông báo VNeID bị lỗi",
+      "Tạo áp lực thời gian dọa khóa định danh hoặc ảnh hưởng giấy tờ cá nhân",
+      "Gửi đường link lạ dụ tải ứng dụng Dịch vụ công giả mạo (mô phỏng file APK)",
+      "Yêu cầu cấp quyền truy cập/trợ năng (Accessibility) trên điện thoại"
+    ],
+    "redFlags": [
+      {
+        "key": "vneid_fake_official",
+        "label": "Công an gọi điện yêu cầu cập nhật VNeID qua điện thoại",
+        "explanation": "Cơ quan công an không gọi điện yêu cầu cập nhật dữ liệu dân cư qua ứng dụng ngoài."
+      },
+      {
+        "key": "vneid_malicious_apk",
+        "label": "Hướng dẫn cài đặt ứng dụng APK lạ hoặc truy cập link dvc giả mạo",
+        "explanation": "Tải app ngoài ChPlay/AppStore chứa mã độc chiếm quyền điều khiển điện thoại."
+      },
+      {
+        "key": "vneid_remote_takeover",
+        "label": "Yêu cầu cấp quyền trợ năng hoặc quét eKYC trên ứng dụng lạ",
+        "explanation": "Quyền trợ năng cho phép kẻ xấu tự động đọc OTP và chuyển sạch tiền trong app ngân hàng."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real APK downloads or malicious payload instructions",
+      "No real government credentials",
+      "Stop right after link/APK offer"
+    ]
   }
 ]
