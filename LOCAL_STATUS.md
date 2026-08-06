@@ -183,4 +183,11 @@ powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
   - `ecommerce_refund` (Sàn TMĐT Shopee/Lazada hoàn tiền): **CHƯA CÓ**
   - `vneid` (VNeID / Dịch vụ công giả mạo): **CHƯA CÓ**
 
+#### Mục 2: Hoàn Thiện Tồn Đọng Kịch Bản Scope Gốc (deepfake)
+- **Kịch bản `deepfake`**: Bổ sung kịch bản `deepfake` vào `src/data/scenarios.json` theo đúng 5 nhóm taxonomy đã khóa (`deepfake_video_glitch`, `urgency_threat`, `request_to_transfer_money`).
+- **Cập nhật Unit / Smoke test**: Cập nhật số lượng kịch bản mong đợi từ 4 lên 5 trong `tests/run-tests.js` và `tests/http-smoke.ps1`.
+- **Dynamic Test 1 lượt**: Đã chạy test 1 lượt cho kịch bản `deepfake` với input `"Sao video bi giat lag va tat mat vay?"`. Kết quả: `deepfake_video_glitch` được trigger chuẩn xác (`provider=safe_fallback`, reason=`GEMINI_HTTP_429`).
+- **Kết quả Test Suite**: `npm run frontend:build` (PASS), `node tests/run-tests.js` (PASS), `http-smoke.ps1` (PASS).
+
+
 

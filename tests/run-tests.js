@@ -50,7 +50,7 @@ assert.equal(publicCssSource.includes(".skip-link"), true);
 assert.equal(publicCssSource.includes(".sr-only"), true);
 assert.equal(publicIndexSource.includes('href="#app"'), true);
 assert.equal(publicIndexSource.includes('role="status"'), true);
-assert.equal(scenarios.length, 4);
+assert.equal(scenarios.length, 5);
 assert.equal(scenarios[0].id, "fake_bank");
 assert.ok(scenarios.some((scenario) => scenario.id === "fake_job"));
 const fakeJobSummary = scenarios.find((scenario) => scenario.id === "fake_job");

@@ -182,5 +182,45 @@
       "No real names of cross-border smuggling networks or specific remote locations",
       "No extreme psychological coercion or trauma-inducing scenarios"
     ]
+  },
+  {
+    "id": "deepfake",
+    "title": "Deepfake video/giọng nói giả người thân",
+    "description": "Luyện nhận biết cuộc gọi video ngắn, hình ảnh/âm thanh giật lag hối thúc chuyển tiền.",
+    "persona": "Mô phỏng cuộc gọi giả danh người thân sử dụng công nghệ Deepfake, gọi video vài giây rồi tắt do mạng yếu và nhắn tin hối thúc chuyển khoản khẩn cấp.",
+    "educationalObjective": "Giúp người học nhận biết thủ đoạn giả danh bằng video/giọng nói AI ngắn và luôn gọi lại bằng số điện thoại di động trực tiếp để xác minh.",
+    "allowedTactics": [
+      "Giả danh người thân gọi video vài giây rồi ngắt với lý do sóng yếu",
+      "Tạo giọng nói/hình ảnh giật lag, gọi bằng tài khoản mạng xã hội lạ",
+      "Viện lý do tai nạn hoặc mượn tiền gấp để tạo áp lực khẩn cấp",
+      "Hối thúc chuyển khoản ngay và giục không gọi lại video"
+    ],
+    "redFlags": [
+      {
+        "key": "deepfake_video_glitch",
+        "label": "Cuộc gọi video ngắn, hình ảnh hoặc giọng nói giật lag bất thường",
+        "explanation": "Kẻ lừa đảo chỉ phát video giả lập vài giây rồi ngắt để tránh bị phát hiện các lỗi của AI Deepfake."
+      },
+      {
+        "key": "urgency_threat",
+        "label": "Tạo áp lực khẩn cấp viện lý do tai nạn hoặc cấp cứu",
+        "explanation": "Tận dụng tâm lý lo lắng của gia đình để thúc ép chuyển tiền ngay lập tức."
+      },
+      {
+        "key": "request_to_transfer_money",
+        "label": "Yêu cầu chuyển tiền vào tài khoản người lạ",
+        "explanation": "Luôn dừng lại và gọi trực tiếp vào số điện thoại di động thường dùng của người thân trước khi chuyển khoản."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real bank account or phone numbers",
+      "No instructions on deepfake software or generation techniques",
+      "No extreme trauma or graphic accident descriptions"
+    ]
   }
 ]
