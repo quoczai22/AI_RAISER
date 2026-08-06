@@ -195,6 +195,14 @@ powershell -ExecutionPolicy Bypass -File tests/http-smoke.ps1
 3. **Chạy lại Mobile QA**: Đã rebuild bundle và pass thành công toàn bộ test suite.
 4. **Phân biệt `travel_sales` và `gym_sales`**: Bổ sung kịch bản `travel_sales` (tập trung thúc ép đặt cọc vé/tour) và `gym_sales` (tập trung bẫy tín dụng ngầm / eKYC khuôn mặt). Đã kiểm chứng qua unit test 2 bộ red flags HOÀN TOÀN KHÁC NHAU (0 trùng lặp).
 
+#### Mục 4: Bổ Sung Kịch Bản "Chuyển Nhầm Tiền" (wrong_transfer)
+- **Cấu trúc Kịch bản**: Thêm kịch bản `wrong_transfer` vào `src/data/scenarios.json` gồm 2 biến thể chính:
+  - (a) Bẫy tín dụng đen / chuyển tiền mồi đòi trả tiền gốc + lãi suất cắt cổ (`wrong_transfer_bait_loan`).
+  - (b) Giả danh hỗ trợ ngân hàng dụ quét QR nhận lại tiền / cung cấp OTP (`wrong_transfer_fake_support_qr`).
+- **Dynamic AI Test 1 lượt**: Đã khởi động server test 1 lượt chat với tin nhắn `"Tai sao nham tien lai bat toi tra them lai suat vay?"`. Kết quả: `wrong_transfer_bait_loan` được phát hiện chuẩn xác (`provider=safe_fallback`, reason=`GEMINI_HTTP_429`).
+- **Test Suite Pass**: Frontend build (PASS), `node tests/run-tests.js` (PASS), `http-smoke.ps1` (PASS).
+
+
 
 
 

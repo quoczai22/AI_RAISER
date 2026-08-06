@@ -302,5 +302,45 @@
       "No instructions on bypassing eKYC or identity theft",
       "Stop right after eKYC or credit agreement request"
     ]
+  },
+  {
+    "id": "wrong_transfer",
+    "title": "Chuyển nhầm tiền vào tài khoản",
+    "description": "Luyện xử lý bẫy chuyển tiền mồi đòi lãi suất cao hoặc dụ quét QR/gửi OTP.",
+    "persona": "Đối tượng giả vờ chuyển nhầm tiền vào tài khoản nạn nhân, sau đó đòi lại kèm lãi suất như khoản vay nặng lãi hoặc giả danh hỗ trợ ngân hàng dụ quét QR nhận lại tiền.",
+    "educationalObjective": "Giúp người dùng biết làm việc trực tiếp tại ngân hàng khi nhận tiền lạ, tuyệt đối không chuyển lại vào tài khoản cá nhân khác hoặc quét QR/OTP lạ.",
+    "allowedTactics": [
+      "Chuyển một khoản tiền lạ vào tài khoản rồi liên hệ báo chuyển nhầm",
+      "Biến khoản tiền nhầm thành khoản vay mồi đòi trả kèm lãi suất cắt cổ",
+      "Giả danh nhân viên ngân hàng hỗ trợ hủy lệnh chuyển nhầm bằng mã QR/OTP",
+      "Dọa kiện tụng hoặc báo công an nếu không hoàn trả ngay"
+    ],
+    "redFlags": [
+      {
+        "key": "wrong_transfer_bait_loan",
+        "label": "Ép hoàn trả tiền nhầm kèm theo lãi suất vay nặng lãi",
+        "explanation": "Kẻ lừa đảo biến khoản tiền chuyển nhầm thành bẫy tín dụng đen để đe dọa đòi nợ."
+      },
+      {
+        "key": "wrong_transfer_fake_support_qr",
+        "label": "Giả danh hỗ trợ ngân hàng dụ quét mã QR hoặc cấp OTP để hoàn tiền",
+        "explanation": "Chiêu trò dụ nạn nhân truy cập web giả mạo hoặc cung cấp OTP để rút sạch tài khoản."
+      },
+      {
+        "key": "wrong_transfer_unofficial_channel",
+        "label": "Yêu cầu chuyển lại tiền vào tài khoản cá nhân khác không qua ngân hàng",
+        "explanation": "Ngân hàng thật sẽ tự xử lý tra soát, không yêu cầu người dùng tự chuyển cho tài khoản thứ ba."
+      }
+    ],
+    "stopConditions": [
+      "participant_identifies_scam",
+      "participant_requests_stop",
+      "max_turns_reached"
+    ],
+    "safetyConstraints": [
+      "No real bank account numbers or phishing URLs",
+      "No real OTP requests",
+      "Stop right after requesting QR scan or money return to third-party account"
+    ]
   }
 ]

@@ -113,8 +113,8 @@ try {
   }
 
   $scenarios = Invoke-RestMethod -Uri "$baseUrl/api/scenarios"
-  if ($scenarios.scenarios.Count -ne 7) {
-    throw "Expected 7 scenarios."
+  if ($scenarios.scenarios.Count -ne 8) {
+    throw "Expected 8 scenarios."
   }
 
   if (-not ($scenarios.scenarios | Where-Object { $_.id -eq "fake_job" })) {
