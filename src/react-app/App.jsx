@@ -7,6 +7,7 @@ import ScenarioPicker from './components/ScenarioPicker';
 import SimulationConsent from './components/SimulationConsent';
 import ChatShell from './components/ChatShell';
 import './app.css';
+import Hotlines from './components/Hotlines';
 
 export default function App() {
   const [userName, setUserName] = useState(() => {
@@ -137,13 +138,7 @@ export default function App() {
       }
 
     if (route.startsWith('#hotlines')) {
-      return (
-        <div className="panel ui-card stack" style={{ padding: '24px' }}>
-          <h2 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 900, fontSize: '1.4rem', margin: 0 }}>Đường dây nóng xác minh chính thức</h2>
-          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Sprint 2 Migration: Danh bạ khẩn cấp và NCSC link sẽ sớm có ở đây.</p>
-          <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
-        </div>
-      );
+      return <Hotlines />;
     }
 
     return (

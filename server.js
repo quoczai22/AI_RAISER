@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,9 +16,12 @@ import { completeSession, getDashboard } from "./src/services/dashboardService.j
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 loadEnvFile();
-const publicDir = process.env.USE_REACT === "true"
-  ? resolve(rootDir, "dist")
-  : resolve(rootDir, "src", "public");
+const distDir = resolve(rootDir, "dist");
+const legacyDir = resolve(rootDir, "src", "public");
+const publicDir = process.env.USE_REACT === "false"
+  ? legacyDir
+  : (existsSync(distDir) ? distDir : legacyDir);
+
 if (process.env.GEMINI_MODEL && process.env.GEMINI_MODEL !== "gemini-3.6-flash") {
   throw new Error(`Forbidden GEMINI_MODEL: "${process.env.GEMINI_MODEL}". AGENTS.md forces the use of "gemini-3.6-flash" only.`);
 }

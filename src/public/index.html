@@ -4,18 +4,33 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Luyện nhận diện lừa đảo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/app.css">
   </head>
   <body>
     <a class="skip-link" href="#app">Bỏ qua phần đầu trang</a>
     <main class="app-shell">
       <header class="app-header">
-        <div>
+        <div class="header-main">
           <p class="eyebrow">AI Riser Vietnam 2026</p>
           <h1>Luyện nhận diện lừa đảo</h1>
           <p class="subtitle">Luyện nhận diện lừa đảo cho gia đình</p>
         </div>
-        <span class="build-badge">Dùng Gemini của Google</span>
+        <div class="header-controls">
+          <div class="accessibility-bar" aria-label="Tùy chọn hiển thị">
+            <label class="toggle-row">
+              <input id="large-text-toggle" type="checkbox">
+              <span>Chữ to</span>
+            </label>
+            <label class="toggle-row">
+              <input id="high-contrast-toggle" type="checkbox">
+              <span>Tương phản cao</span>
+            </label>
+          </div>
+          <span class="build-badge">Dùng Gemini của Google</span>
+        </div>
       </header>
 
       <section id="app" tabindex="-1" aria-live="polite"></section>

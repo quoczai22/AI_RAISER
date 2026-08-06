@@ -1233,3 +1233,7 @@ Sau khi hoàn tất: cập nhật TASK-011 thành `done-pending-review`, ghi dif
 - **Đã xác minh:** Không thấy thay đổi trong `src/services/*`; API key không nằm trong React bundle theo phạm vi kiểm tra source/bundle.
 - **Giới hạn được chấp nhận của Sprint 1:** scenario, consent, chat, result và hotline trong React vẫn là stub; các route này phải làm ở Sprint tiếp theo, không được báo là đã migrate hoàn tất.
 - **CHƯA XÁC MINH ĐƯỢC:** React production flow đầy đủ từ scenario đến result, vì các route trên chưa được triển khai.
+
+## Archive Note - TASK-015/TASK-016 Reviews 2026-08-06
+
+Chi tiết rework, các prompt cũ và review mapping hotline đã được rút gọn khỏi `TASKS.md`. Kết quả hiện hành: React Resource Hub đã bỏ mapping NCSC/113; server mặc định phục vụ React build; build, unit và HTTP smoke pass; browser mặc định đã kiểm tra được luồng Dashboard -> Resource Hub -> quay lại. Viewport chính xác `390x844` và `1440x900` vẫn chưa được Codex xác minh độc lập.

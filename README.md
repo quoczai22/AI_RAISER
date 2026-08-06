@@ -21,7 +21,7 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 ## Stack
 
 - Node.js server, không cần framework nặng.
-- Static web UI.
+- React + Vite web UI (được tự động phục vụ tại `dist/` khi server chạy).
 - Gemini API server-side.
 - Persistent session storage trên Firestore (tự động fallback về Map in-memory nếu thiếu cấu hình).
 - Dockerfile sẵn sàng cho Cloud Run nếu cần public backup URL.
@@ -38,81 +38,42 @@ Nhập tên
 → Trang kết quả điểm miễn dịch + dấu hiệu cảnh báo + tóm tắt chia sẻ
 ```
 
-## Cách Chạy Local
+## Cách Chạy Local (React UI)
 
 Yêu cầu:
-
 - Node.js 20 trở lên.
 - PowerShell nếu chạy script test trên Windows.
 
-Chạy app:
+Chạy demo chính (React UI):
 
 ```bash
+# Step 1: Build React bundle
+npm run frontend:build
+
+# Step 2: Launch server
 node server.js
 ```
 
 Mở trình duyệt:
-
 ```text
 http://localhost:3000
 ```
 
-Health check:
+*Ghi chú phục vụ:*
+- Backend Node server mặc định tự động phục vụ React UI tại thư mục `dist/` (sau khi đã build `npm run frontend:build`).
+- Nếu muốn phục vụ giao diện tĩnh legacy cũ để đối chiếu, chạy với `USE_REACT=false`:
+  - Windows PowerShell: `$env:USE_REACT="false"; node server.js`
+  - Linux/macOS: `USE_REACT=false node server.js`
 
+Health check:
 ```text
 http://localhost:3000/healthz
 ```
 
-Runtime status, không lộ secret:
-
+Runtime status (không lộ secret):
 ```text
 http://localhost:3000/api/runtime-status
 ```
-
-## React Frontend Migration (TASK-011)
-
-Chúng tôi đang di cư giao diện tĩnh sang React (Sprint 1 Skeleton).
-
-### Chạy React Ở Chế Độ Phát Triển (Dev Mode)
-
-Trong lúc phát triển, chạy dev server với Vite:
-
-```bash
-npm run frontend:dev
-```
-
-Mở trình duyệt:
-```text
-http://localhost:5173
-```
-*Vite dev server sẽ tự động proxy mọi request tới `/api/*` sang backend server Node chạy ở cổng 3000.*
-
-### Build và Chạy Ở Chế Độ Fallback Production
-
-Để kiểm thử giao diện React chạy trực tiếp từ Node backend server:
-
-1. Build React app:
-```bash
-npm run frontend:build
-```
-*Lệnh này sẽ compile và tạo ra thư mục static build `dist/` ở thư mục root.*
-
-2. Chạy backend server với biến môi trường `USE_REACT=true`:
-- Windows PowerShell:
-```powershell
-$env:USE_REACT="true"; node server.js
-```
-- Linux/macOS:
-```bash
-USE_REACT=true node server.js
-```
-
-3. Mở trình duyệt:
-```text
-http://localhost:3000
-```
-
-*Nếu không set `USE_REACT=true` (hoặc set thành `false`), backend server sẽ tự động fallback serve giao diện tĩnh cũ tại `src/public/` giúp các unit test và HTTP smoke test cũ luôn hoạt động xanh.*
 
 ## Cấu Hình Môi Trường
 
