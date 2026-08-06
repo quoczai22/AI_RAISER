@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AppShell from './components/AppShell';
+import ResultScorecard from './components/ResultScorecard';
 import EntryForm from './components/EntryForm';
 import Dashboard from './components/Dashboard';
 import ScenarioPicker from './components/ScenarioPicker';
@@ -131,14 +132,9 @@ export default function App() {
     }
 
     if (route.startsWith('#dashboard/')) {
-      return (
-        <div className="panel ui-card stack" style={{ padding: '24px' }}>
-          <h2 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 900, fontSize: '1.4rem', margin: 0 }}>Kết quả phân tích chi tiết</h2>
-          <p className="subtitle" style={{ fontSize: '0.9rem' }}>Sprint 2 Migration: Scorecard và share card sẽ sớm có ở đây.</p>
-          <button className="outline" onClick={() => window.location.hash = ''}>← Quay lại trang chính</button>
-        </div>
-      );
-    }
+        const sessionId = route.split('/')[1];
+        return <ResultScorecard sessionId={sessionId} />;
+      }
 
     if (route.startsWith('#hotlines')) {
       return (
