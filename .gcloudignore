@@ -1,0 +1,13 @@
+.git
+.github
+.codex
+.agents
+.obsidian
+node_modules
+dist
+coverage
+.env
+.env.*
+*.log
+LOCAL_STATUS.md
+*_LOCAL.md

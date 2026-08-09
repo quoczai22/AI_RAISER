@@ -1,38 +1,74 @@
 import React from 'react';
+import propagandaCatalog from '../../data/cybersecurityPropagandaCatalog.json';
+import provinceReference from '../../data/vietnamProvinceReference.json';
 
-// Approved hotlines and verification guidance based on project documentation.
-// No unapproved or placeholder numbers are used.
+const provinceByCatalogId = provinceReference.reduce((items, province) => {
+  items[province.catalog_location_id] = province;
+  return items;
+}, {});
 
-const hotlinesData = [
+const regionLabels = {
+  Northern: 'Miền Bắc',
+  Central: 'Miền Trung & Tây Nguyên',
+  Southern: 'Miền Nam',
+};
+
+const scamTypeLabels = {
+  'AI Deepfake': 'AI giả giọng/giả mặt',
+  'Fake Government Apps': 'Ứng dụng giả mạo cơ quan',
+  'Social Engineering': 'Thao túng tâm lý',
+};
+
+const groupedCatalog = propagandaCatalog.reduce((groups, item) => {
+  const region = item.region;
+  if (!groups[region]) groups[region] = [];
+  groups[region].push(item);
+  return groups;
+}, {});
+
+const emergencyLines = [
   {
-    title: 'Hotline phòng chống mua bán người',
-    contactLabel: 'Hotline:',
-    contactValue: '111',
-    description: 'Dùng để báo cáo và nhận hỗ trợ khi phát hiện hành vi mua bán người.',
+    number: '156',
+    title: 'Phản ánh cuộc gọi lừa đảo',
+    description: 'Gọi miễn phí khi vừa nhận cuộc gọi rác hoặc có dấu hiệu lừa đảo.',
+    helper: 'SMS: LD [số lạ] [nội dung] gửi 5656',
+    href: 'tel:156',
+    tone: 'red',
+    icon: '🚨',
   },
   {
-    title: 'Trang cảnh báo an toàn thông tin (NCSC)',
-    contactLabel: 'Website cảnh báo:',
-    contactValue: 'canhbao.khonggianmang.vn',
-    description: 'Trang web chính thức cung cấp thông tin cảnh báo và hướng dẫn phòng tránh lừa đảo.',
+    number: '111',
+    title: 'Bảo vệ trẻ em',
+    description: 'Hỗ trợ trẻ em và phòng chống mua bán người.',
+    helper: 'Dùng khi người thân nhỏ tuổi bị dụ dỗ hoặc đe dọa.',
+    href: 'tel:111',
+    tone: 'blue',
+    icon: '🛡️',
+  },
+];
+
+const onlineChecks = [
+  {
+    title: 'Chống Lừa Đảo của Hiếu PC',
+    description: 'Kiểm tra nhanh đường link, số điện thoại hoặc email đáng nghi.',
+    href: 'https://chongluadao.vn',
+    label: 'chongluadao.vn',
+    button: 'Mở',
+    icon: '🌐',
   },
   {
-    title: 'Tổng đài bảo vệ quyền lợi người tiêu dùng',
-    contactLabel: 'Hotline miễn phí:',
-    contactValue: '1800.6838',
-    description: 'Tư vấn, tiếp nhận phản ánh về các hợp đồng dịch vụ, bẫy du lịch, gói tập gym và bảo vệ người tiêu dùng.',
+    title: 'Cảnh báo từ Bộ Công an',
+    description: 'Xem các thủ đoạn lừa đảo mới trên mạng xã hội.',
+    href: 'https://mps.gov.vn/bai-viet/cong-an-tinh-quang-ninh-tuyen-truyen-phuong-thuc-thu-doan-lua-dao-moi-tren-mang-xa-hoi-tai-dia-diem-tiep-cong-dan-cua-cong-an-tinh-1778493752',
+    label: 'mps.gov.vn',
+    button: 'Mở',
+    icon: '🏛️',
   },
   {
-    title: 'Hướng dẫn gọi số trên thẻ ngân hàng',
-    contactLabel: null,
-    contactValue: null,
-    description: 'Gọi số điện thoại in trên mặt sau thẻ ngân hàng để khóa tài khoản khi nghi ngờ.',
-  },
-  {
-    title: 'Hướng dẫn gọi hotline trên website chính thức',
-    contactLabel: null,
-    contactValue: null,
-    description: 'Truy cập website chính thức của tổ chức để lấy thông tin hotline hợp pháp.',
+    title: 'Xác minh ngân hàng',
+    description: 'Gọi số in mặt sau thẻ ngân hàng hoặc tìm số trên website chính thức.',
+    warning: 'Không gọi số từ tin nhắn, email, Zalo người lạ.',
+    icon: '🏦',
   },
 ];
 
@@ -42,38 +78,101 @@ export default function Hotlines() {
   };
 
   return (
-    <section className="panel ui-card stack" style={{ padding: '24px' }}>
-      <h2 style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 900, fontSize: '1.4rem', margin: 0 }}>
-        Đường dây nóng và hướng dẫn xác minh
-      </h2>
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: '16px' }}>
-        {hotlinesData.map((item, idx) => (
-          <li key={idx} style={{ marginBottom: '16px', borderLeft: '4px solid var(--primary)', paddingLeft: '12px' }}>
-            <strong style={{ fontSize: '1.05rem' }}>{item.title}</strong>
-            {item.contactValue && (
-              <p style={{ margin: '6px 0' }}>
-                {item.contactLabel} <code>{item.contactValue}</code>
-              </p>
-            )}
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>{item.description}</p>
-          </li>
-        ))}
-      </ul>
+    <section className="verification-screen" aria-labelledby="verification-title">
+      <div className="verification-warning" role="note">
+        <span aria-hidden="true">⊘</span>
+        <strong>Không gọi theo số người lạ gửi trong tin nhắn. Chỉ dùng các số dưới đây.</strong>
+      </div>
+
+      <div className="verification-grid">
+        <div className="verification-column">
+          <h2 id="verification-title">Đường dây khẩn cấp</h2>
+          <div className="verification-card-list">
+            {emergencyLines.map((line) => (
+              <article className={`emergency-line-card ${line.tone}`} key={line.number}>
+                <div className="hotline-symbol" aria-hidden="true">{line.icon}</div>
+                <div className="hotline-main">
+                  <strong>{line.number}</strong>
+                  <span>{line.title}</span>
+                  <small>{line.description}</small>
+                  <em>{line.helper}</em>
+                </div>
+                <a className="call-now-button" href={line.href} aria-label={`Gọi ${line.number}`}>
+                  <span aria-hidden="true">📞</span>
+                  Gọi
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="verification-column">
+          <h2>Xác minh trực tuyến</h2>
+          <div className="verification-card-list">
+            {onlineChecks.map((item) => (
+              <article className="online-check-card" key={item.title}>
+                <div className="online-symbol" aria-hidden="true">{item.icon}</div>
+                <div>
+                  <strong>{item.title}</strong>
+                  {item.label && item.href && (
+                    <a href={item.href} target="_blank" rel="noopener noreferrer">
+                      {item.label}
+                    </a>
+                  )}
+                  <p>{item.description}</p>
+                  {item.warning && <b>{item.warning}</b>}
+                </div>
+                {item.href && (
+                  <a className="open-source-button" href={item.href} target="_blank" rel="noopener noreferrer">
+                    <span aria-hidden="true">🔗</span>
+                    {item.button}
+                  </a>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <section className="verification-catalog" aria-labelledby="verification-catalog-title">
+        <div>
+          <h2 id="verification-catalog-title">Danh mục cảnh báo theo địa phương</h2>
+          <p>Các nguồn tuyên truyền đang được đưa vào hàng chờ để phục vụ phần luyện nhận diện.</p>
+        </div>
+
+        <div className="verification-region-grid">
+          {Object.entries(groupedCatalog).map(([region, items]) => (
+            <article className="verification-region-card" key={region}>
+              <h3>{regionLabels[region] || region}</h3>
+              <ul>
+                {items.map((item) => (
+                  <li key={item.location_id}>
+                    <div>
+                      <strong>{provinceByCatalogId[item.location_id]?.name || item.location_id}</strong>
+                      <span>{scamTypeLabels[item.scam_type] || item.scam_type}</span>
+                      {provinceByCatalogId[item.location_id] && (
+                        <small>
+                          Mã tỉnh {provinceByCatalogId[item.location_id].official_province_code} · {provinceByCatalogId[item.location_id].full_name}
+                        </small>
+                      )}
+                      <small>{item.propaganda_document_id}</small>
+                    </div>
+                    <b>{item.status === 'ACTIVE' ? 'Nguồn tham khảo' : item.status}</b>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <button
         type="button"
-        className="outline"
+        className="verification-back-button"
         onClick={handleBack}
-        style={{
-          marginTop: '16px',
-          minHeight: '48px',
-          width: '100%',
-          fontSize: '1rem',
-          fontWeight: 700,
-          cursor: 'pointer',
-        }}
         aria-label="Quay lại trang chính"
       >
-        ← Quay lại trang chính
+        ← Quay lại
       </button>
     </section>
   );

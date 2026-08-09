@@ -1,0 +1,51 @@
+[
+  {
+    "location_id": "VN-HN",
+    "region": "Northern",
+    "scam_type": "Social Engineering",
+    "propaganda_document_id": "VN-HN-HOAPHU-20241115-SOCENG",
+    "status": "ACTIVE"
+  },
+  {
+    "location_id": "VN-QN",
+    "region": "Northern",
+    "scam_type": "Social Engineering",
+    "propaganda_document_id": "VN-QN-PORTAL-20260512-SOCENG",
+    "status": "ACTIVE"
+  },
+  {
+    "location_id": "VN-HP",
+    "region": "Northern",
+    "scam_type": "AI Deepfake",
+    "propaganda_document_id": "VN-HP-CATP-20240217-DEEPFAKE",
+    "status": "ACTIVE"
+  },
+  {
+    "location_id": "VN-DN",
+    "region": "Central",
+    "scam_type": "Social Engineering",
+    "propaganda_document_id": "VN-DN-PORTAL-20260114-SOCENG",
+    "status": "ACTIVE"
+  },
+  {
+    "location_id": "VN-TTH",
+    "region": "Central",
+    "scam_type": "AI Deepfake",
+    "propaganda_document_id": "VN-TTH-CATP-20251124-DEEPVOICE",
+    "status": "ACTIVE"
+  },
+  {
+    "location_id": "VN-LD",
+    "region": "Central",
+    "scam_type": "AI Deepfake",
+    "propaganda_document_id": "VN-LD-CATP-20260520-DEEPFAKE",
+    "status": "ACTIVE"
+  },
+  {
+    "location_id": "VN-SG",
+    "region": "Southern",
+    "scam_type": "AI Deepfake",
+    "propaganda_document_id": "VN-SG-CATP-20260108-AI-DEEPFAKE",
+    "status": "ACTIVE"
+  }
+]

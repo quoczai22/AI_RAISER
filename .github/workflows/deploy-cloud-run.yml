@@ -1,0 +1,68 @@
+name: Deploy Cloud Run
+
+on:
+  workflow_dispatch:
+
+env:
+  SERVICE: ai-scam-inoculation
+  REGION: asia-southeast1
+  GEMINI_MODEL: gemini-3.6-flash
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Validate required config
+        shell: bash
+        run: |
+          test -n "${{ vars.GCP_PROJECT_ID }}" || (echo "Missing repo variable GCP_PROJECT_ID" && exit 1)
+          test -n "${{ secrets.GEMINI_API_KEY }}" || (echo "Missing repo secret GEMINI_API_KEY" && exit 1)
+
+      - name: Sync Gemini API key to Secret Manager
+        shell: bash
+        run: |
+          printf "%s" "${{ secrets.GEMINI_API_KEY }}" > /tmp/gemini-api-key.txt
+          if gcloud secrets describe gemini-api-key --project "${{ vars.GCP_PROJECT_ID }}" >/dev/null 2>&1; then
+            gcloud secrets versions add gemini-api-key \
+              --project "${{ vars.GCP_PROJECT_ID }}" \
+              --data-file /tmp/gemini-api-key.txt
+          else
+            gcloud secrets create gemini-api-key \
+              --project "${{ vars.GCP_PROJECT_ID }}" \
+              --replication-policy automatic \
+              --data-file /tmp/gemini-api-key.txt
+          fi
+          rm -f /tmp/gemini-api-key.txt
+
+      - name: Deploy public Cloud Run service
+        shell: bash
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --source . \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --region "$REGION" \
+            --allow-unauthenticated \
+            --set-env-vars "GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=45000,MAX_MESSAGE_LENGTH=1000,MAX_JSON_BODY_BYTES=65536,MAX_SESSIONS=200" \
+            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest"
+
+      - name: Print public URL
+        shell: bash
+        run: |
+          gcloud run services describe "$SERVICE" \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --region "$REGION" \
+            --format "value(status.url)"

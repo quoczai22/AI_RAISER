@@ -48,8 +48,8 @@ export default function EntryForm({ onSaveName }) {
             <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary-foreground)', margin: '0 0 8px' }}>✓ Hoàn toàn an toàn</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               <div className="build-badge" style={{ border: 0, background: 'var(--card)', padding: '4px 10px', fontSize: '0.75rem', color: 'var(--secondary-foreground)', fontWeight: 700, borderRadius: '100px' }}>✓ Không cần mật khẩu</div>
-              <div class="build-badge" style={{ border: 0, background: 'var(--card)', padding: '4px 10px', fontSize: '0.75rem', color: 'var(--secondary-foreground)', fontWeight: 700, borderRadius: '100px' }}>✓ Không cần OTP</div>
-              <div class="build-badge" style={{ border: 0, background: 'var(--card)', padding: '4px 10px', fontSize: '0.75rem', color: 'var(--secondary-foreground)', fontWeight: 700, borderRadius: '100px' }}>✓ Không mất tiền</div>
+              <div className="build-badge" style={{ border: 0, background: 'var(--card)', padding: '4px 10px', fontSize: '0.75rem', color: 'var(--secondary-foreground)', fontWeight: 700, borderRadius: '100px' }}>✓ Không cần OTP</div>
+              <div className="build-badge" style={{ border: 0, background: 'var(--card)', padding: '4px 10px', fontSize: '0.75rem', color: 'var(--secondary-foreground)', fontWeight: 700, borderRadius: '100px' }}>✓ Không mất tiền</div>
             </div>
           </div>
 

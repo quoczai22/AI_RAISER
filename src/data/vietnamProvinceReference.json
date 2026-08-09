@@ -1,0 +1,58 @@
+[
+  {
+    "catalog_location_id": "VN-HN",
+    "official_province_code": "01",
+    "name": "Hà Nội",
+    "full_name": "Thành phố Hà Nội",
+    "code_name": "ha_noi",
+    "region": "Northern"
+  },
+  {
+    "catalog_location_id": "VN-QN",
+    "official_province_code": "22",
+    "name": "Quảng Ninh",
+    "full_name": "Tỉnh Quảng Ninh",
+    "code_name": "quang_ninh",
+    "region": "Northern"
+  },
+  {
+    "catalog_location_id": "VN-HP",
+    "official_province_code": "31",
+    "name": "Hải Phòng",
+    "full_name": "Thành phố Hải Phòng",
+    "code_name": "hai_phong",
+    "region": "Northern"
+  },
+  {
+    "catalog_location_id": "VN-DN",
+    "official_province_code": "48",
+    "name": "Đà Nẵng",
+    "full_name": "Thành phố Đà Nẵng",
+    "code_name": "da_nang",
+    "region": "Central"
+  },
+  {
+    "catalog_location_id": "VN-TTH",
+    "official_province_code": "46",
+    "name": "Huế",
+    "full_name": "Thành phố Huế",
+    "code_name": "hue",
+    "region": "Central"
+  },
+  {
+    "catalog_location_id": "VN-LD",
+    "official_province_code": "68",
+    "name": "Lâm Đồng",
+    "full_name": "Tỉnh Lâm Đồng",
+    "code_name": "lam_dong",
+    "region": "Central"
+  },
+  {
+    "catalog_location_id": "VN-SG",
+    "official_province_code": "79",
+    "name": "Hồ Chí Minh",
+    "full_name": "Thành phố Hồ Chí Minh",
+    "code_name": "ho_chi_minh",
+    "region": "Southern"
+  }
+]

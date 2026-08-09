@@ -8,6 +8,7 @@ import SimulationConsent from './components/SimulationConsent';
 import ChatShell from './components/ChatShell';
 import './app.css';
 import Hotlines from './components/Hotlines';
+import ShareCard from './components/ShareCard';
 
 export default function App() {
   const [userName, setUserName] = useState(() => {
@@ -31,6 +32,13 @@ export default function App() {
   });
 
   const [route, setRoute] = useState(window.location.hash);
+  const [latestSessionId, setLatestSessionId] = useState(() => {
+    try {
+      return localStorage.getItem('aisi_last_session_id') || '';
+    } catch {
+      return '';
+    }
+  });
   const [history, setHistory] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('aisi_history') || '[]');
@@ -93,6 +101,10 @@ export default function App() {
         return res.json();
       })
       .then(data => {
+        setLatestSessionId(data.session.id);
+        try {
+          localStorage.setItem('aisi_last_session_id', data.session.id);
+        } catch {}
         window.location.hash = `consent/${data.session.id}`;
       })
       .catch(err => {
@@ -105,6 +117,10 @@ export default function App() {
   };
 
   const renderContent = () => {
+    if (route.startsWith('#start')) {
+      return <EntryForm onSaveName={handleSaveName} />;
+    }
+
     if (!userName) {
       return <EntryForm onSaveName={handleSaveName} />;
     }
@@ -137,6 +153,11 @@ export default function App() {
         return <ResultScorecard sessionId={sessionId} />;
       }
 
+    if (route.startsWith('#share/')) {
+      const sessionId = route.split('/')[1];
+      return <ShareCard sessionId={sessionId} userName={userName} />;
+    }
+
     if (route.startsWith('#hotlines')) {
       return <Hotlines />;
     }
@@ -153,6 +174,7 @@ export default function App() {
   return (
     <AppShell
       userName={userName}
+      latestSessionId={latestSessionId}
       accessibility={accessibility}
       onUpdateAccessibility={handleUpdateAccessibility}
     >
