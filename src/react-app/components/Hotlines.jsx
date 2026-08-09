@@ -1,9 +1,15 @@
 import React from 'react';
 import propagandaCatalog from '../../data/cybersecurityPropagandaCatalog.json';
+import propagandaSources from '../../data/cybersecurityPropagandaSources.json';
 import provinceReference from '../../data/vietnamProvinceReference.json';
 
 const provinceByCatalogId = provinceReference.reduce((items, province) => {
   items[province.catalog_location_id] = province;
+  return items;
+}, {});
+
+const sourceByDocumentId = propagandaSources.reduce((items, source) => {
+  items[source.propaganda_document_id] = source;
   return items;
 }, {});
 
@@ -137,7 +143,7 @@ export default function Hotlines() {
       <section className="verification-catalog" aria-labelledby="verification-catalog-title">
         <div>
           <h2 id="verification-catalog-title">Danh mục cảnh báo theo địa phương</h2>
-          <p>Các nguồn tuyên truyền đang được đưa vào hàng chờ để phục vụ phần luyện nhận diện.</p>
+          <p>Bấm mở bài cảnh báo gốc để đối chiếu thông tin từ nguồn chính thức.</p>
         </div>
 
         <div className="verification-region-grid">
@@ -147,8 +153,19 @@ export default function Hotlines() {
               <ul>
                 {items.map((item) => (
                   <li key={item.location_id}>
-                    <div>
+                    <div className="catalog-article-icon" aria-hidden="true">📰</div>
+                    <div className="catalog-article-body">
                       <strong>{provinceByCatalogId[item.location_id]?.name || item.location_id}</strong>
+                      {sourceByDocumentId[item.propaganda_document_id] && (
+                        <a
+                          className="catalog-source-title"
+                          href={sourceByDocumentId[item.propaganda_document_id].source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {sourceByDocumentId[item.propaganda_document_id].source_title}
+                        </a>
+                      )}
                       <span>{scamTypeLabels[item.scam_type] || item.scam_type}</span>
                       {provinceByCatalogId[item.location_id] && (
                         <small>
@@ -157,7 +174,20 @@ export default function Hotlines() {
                       )}
                       <small>{item.propaganda_document_id}</small>
                     </div>
-                    <b>{item.status === 'ACTIVE' ? 'Nguồn tham khảo' : item.status}</b>
+                    <div className="catalog-card-actions">
+                      <b>{item.status === 'ACTIVE' ? 'Nguồn tham khảo' : item.status}</b>
+                      {sourceByDocumentId[item.propaganda_document_id] && (
+                        <a
+                          className="catalog-source-link"
+                          href={sourceByDocumentId[item.propaganda_document_id].source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Mở bài cảnh báo: ${sourceByDocumentId[item.propaganda_document_id].source_title}`}
+                        >
+                          🔗 Mở
+                        </a>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
