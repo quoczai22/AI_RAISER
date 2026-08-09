@@ -262,6 +262,7 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`AI Scam Inoculation running at http://localhost:${PORT}`);
+const HOST = process.env.HOST || "0.0.0.0";
+server.listen(PORT, HOST, () => {
+  console.log(`AI Scam Inoculation running at http://${HOST}:${PORT}`);
 });
