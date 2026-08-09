@@ -1,0 +1,10 @@
+{
+  "description": "Interactive Vietnamese training app helps older adults recognize social scams through roleplay scenarios with clear guidance and supportive feedback.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
