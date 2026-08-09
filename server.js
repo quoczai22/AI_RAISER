@@ -25,7 +25,7 @@ const publicDir = process.env.USE_REACT === "false"
 if (process.env.GEMINI_MODEL && process.env.GEMINI_MODEL !== "gemini-3.6-flash") {
   throw new Error(`Forbidden GEMINI_MODEL: "${process.env.GEMINI_MODEL}". AGENTS.md forces the use of "gemini-3.6-flash" only.`);
 }
-const port = getPositiveIntEnv("PORT", 3000);
+const PORT = process.env.PORT || 3000;
 
 const jsonHeaders = {
   "content-type": "application/json; charset=utf-8",
@@ -262,6 +262,6 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`AI Scam Inoculation running at http://localhost:${port}`);
+server.listen(PORT, () => {
+  console.log(`AI Scam Inoculation running at http://localhost:${PORT}`);
 });
