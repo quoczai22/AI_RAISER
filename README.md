@@ -11,7 +11,7 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 - Không dùng `temperature`, `top_p`, `top_k`.
 - Gemini được gọi server-side, không lộ API key ra client.
 - Chat động, không phải decision tree cố định.
-- Có 4 kịch bản MVP: giả ngân hàng, giả người thân, giả công an/cơ quan chức năng, tuyển dụng giả.
+- Có 10 kịch bản MVP: giả ngân hàng, giả người thân, giả công an/cơ quan chức năng, tuyển dụng giả, deepfake, du lịch giá rẻ, gói tập/tín dụng ngầm, chuyển nhầm tiền, hoàn tiền TMĐT, VNeID/dịch vụ công giả.
 - Score minh bạch: số red flags nhận diện đúng / tổng red flags của kịch bản.
 - Feedback chỉ dạy pattern thao túng: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
 - Safety validator mask/chặn OTP, CCCD, số tài khoản, số thẻ, số điện thoại, mật khẩu, link thật.
@@ -23,7 +23,7 @@ Người dùng nhập tên, chọn tình huống/cấp độ, đồng ý tham gi
 - Node.js server, không cần framework nặng.
 - React + Vite web UI (được tự động phục vụ tại `dist/` khi server chạy).
 - Gemini API server-side.
-- Persistent session storage trên Firestore (tự động fallback về Map in-memory nếu thiếu cấu hình).
+- Session storage mặc định dùng Map in-memory an toàn cho demo; Firestore chỉ bật khi cấu hình rõ ràng.
 - Dockerfile sẵn sàng cho Cloud Run nếu cần public backup URL.
 
 ## Luồng Demo
@@ -89,9 +89,12 @@ MAX_JSON_BODY_BYTES=65536
 MAX_SESSIONS=200
 PORT=3000
 FIRESTORE_PROJECT_ID=your_gcp_project_id
+ENABLE_FIRESTORE=false
+FRAME_ANCESTORS='self' https://aistudio.google.com https://*.googleusercontent.com https://*.run.app
 ```
 
-- **Firestore (Lưu trữ lâu dài)**: Nếu cấu hình `FIRESTORE_PROJECT_ID` hoặc `GOOGLE_CLOUD_PROJECT`, ứng dụng sẽ tự động lưu trữ các buổi luyện tập (sessions) lên Firestore để giữ trạng thái khi server khởi động lại. Nếu thiếu, ứng dụng tự động fallback về Map in-memory.
+- **Firestore (Lưu trữ lâu dài)**: Mặc định app dùng Map in-memory để demo không bị lỗi quyền Firestore trên Cloud Run. Firestore chỉ bật khi cấu hình `FIRESTORE_PROJECT_ID`, hoặc khi set `ENABLE_FIRESTORE=true` để dùng `GOOGLE_CLOUD_PROJECT`.
+- **AI Studio / Cloud Run iframe**: `FRAME_ANCESTORS` mặc định cho phép Google AI Studio và Cloud Run preview nhúng app. Nếu triển khai môi trường riêng, có thể siết lại biến này.
 - **Gemini AI**: Nếu chưa có `GEMINI_API_KEY`, app vẫn chạy bằng fallback an toàn để demo luồng sản phẩm. Tuy nhiên demo cuối cho AI Riser cần cấu hình Gemini thật để chứng minh tính AI-native.
 
 ## Cách Test

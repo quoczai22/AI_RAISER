@@ -5,7 +5,8 @@ class FirestoreStore {
     this.useFirestore = false;
     this.inMemoryMap = new Map();
 
-    const projectId = process.env.FIRESTORE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
+    const projectId = process.env.FIRESTORE_PROJECT_ID ||
+      (process.env.ENABLE_FIRESTORE === "true" ? process.env.GOOGLE_CLOUD_PROJECT : "");
     if (projectId) {
       try {
         this.db = new Firestore({ projectId });
