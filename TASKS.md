@@ -233,6 +233,80 @@ Sửa và kiểm thử source trong repo trước khi đưa lại vào AI Studio
 
 > Làm TASK-037 sau khi Codex cung cấp commit hash source mới. Trong Google AI Studio, cập nhật/import ĐÚNG commit đó; xác nhận `firestore.rules` là default deny và không chứa public `allow ... if true`. Không sửa UI, MVP, Gemini server-side, safety, scoring, taxonomy, safe fallback; không thêm Firebase Auth, Cloud Run, Firebase Web SDK client, dependency, secret hoặc project config vào Git. Deploy đúng rules default deny. Chỉ cho Node server-side identity/IAM đọc/ghi Firestore; browser tiếp tục gọi API Node, không Firestore direct. Tạo một completed session canonical, ghi session ID, immunityScore, totalCount, triggeredKeys, event count. Xóa in-memory cache, refresh browser, đọc lại cùng session và xác nhận mọi giá trị khớp. Nếu server-side access fail sau default deny: dừng, ghi BLOCKED với raw safe error; không nới rule. Tạo `QA_REPORT_TASK_037.md` gồm commit hash, Project/Database ID, rule source đã deploy, file change list, raw output an toàn, test kết quả và mọi CHƯA XÁC MINH ĐƯỢC. Không commit/push.
 
+### Kết quả external report (2026-08-20)
+
+- Source/rules security từ commit `ddfb3d9` được report là đã dùng; cloud test dừng an toàn với `7 PERMISSION_DENIED: Cloud Firestore API has not been used in project ais-asia-east1-779d7537e66b415 before or it is disabled`.
+- Không accept cloud persistence: canonical session/allowlist chỉ được xem là evidence local/server attempt cho đến khi read/write thật vào database active thành công sau default deny.
+- Có lệch project: database Firestore trước đó report ở `gen-lang-client-0936873228`, nhưng server runtime attempt dùng `ais-asia-east1-779d7537e66b415`. Không tự bật API/billing hay cấp IAM cho project nào khi chưa có owner confirmation.
+
+## TASK-038 - Căn Chỉnh Firestore Project và Server IAM - PENDING OWNER CONFIRMATION
+
+### Mục tiêu
+
+Xác định đúng Firebase/Firestore project do chủ dự án sở hữu, sau đó cấu hình server runtime dùng đúng project và least-privilege IAM để TASK-037 cloud persistence có thể được test lại an toàn.
+
+### Owner cần xác nhận trước
+
+1. Project nào là Firestore project hợp lệ/chủ dự án kiểm soát: `gen-lang-client-0936873228` hay project khác.
+2. Có cho phép bật Cloud Firestore API/billing nếu console yêu cầu hay không.
+3. Service identity chính xác của AI Studio server runtime và có cho phép cấp quyền Firestore tối thiểu cho identity đó trên đúng project hay không.
+
+### Cấm
+
+- Không tự bật API/billing, không tự cấp IAM, không tự đổi `FIRESTORE_PROJECT_ID` trong Git, không đưa credential vào source/report.
+- Không nới `firestore.rules`, không dùng Firebase Web SDK client/Firebase Auth để lách, không thay MVP.
+
+### Acceptance criteria sau owner confirmation
+
+1. Runtime log chỉ ra cùng Project ID/Database ID đã được owner xác nhận.
+2. Server-side `@google-cloud/firestore` write/read thành công với rules default deny vẫn deploy.
+3. TASK-037 canonical session persistence sau cache clear + refresh PASS.
+4. `QA_REPORT_TASK_038.md` ghi evidence an toàn, IAM role ở mức tổng quát không secret và không claim nếu thiếu raw success output.
+
+### Prompt cho Antigravity / AI Studio
+
+> TASK-038 is blocked until the owner explicitly confirms the Firestore project, whether enabling Firestore API/billing is allowed, and the AI Studio server runtime identity may receive least-privilege Firestore access. Do not enable any API, billing, IAM role, rule change, secret, or source config on your own. First report the exact server runtime project/identity and the configured Firestore Project/Database IDs without exposing credentials. After owner confirmation only, use the owner-approved project through server-side `@google-cloud/firestore` and least-privilege IAM; keep firestore.rules default deny and browser API-only. Rerun TASK-037 canonical write -> clear cache -> refresh -> read. If any permission/API mismatch remains, report BLOCKED with raw safe error. Do not add Firebase Web SDK client/Auth, do not change MVP, and do not commit/push.
+
+## TASK-039 - Final Local Import Gate - LOCAL AUDIT COMPLETE / PASS LOCAL
+
+### Mục tiêu
+
+Tạo evidence local cuối cùng cho source GitHub trước khi import vào Google AI Studio. Đây là task Antigravity duy nhất ở vòng hiện tại. Chưa import AI Studio và không thực hiện bất kỳ thao tác Google Cloud/Firebase nào.
+
+### Phạm vi được phép
+
+- Đọc: `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md`, `AI_STUDIO_IMPORT_CHECKLIST.md`.
+- Kiểm tra source/rules/config: `firestore.rules`, `.gitignore`, `.env.example`, `src/`, `server.js`, `tests/run-tests.js`, `README.md`.
+- Chỉ tạo hoặc cập nhật `QA_REPORT_TASK_039.md` và evidence text an toàn nếu cần.
+
+### Cấm
+
+- Không sửa source, dependency, UI, workflow, Gemini prompt/model, safety validator, scoring, fallback, Firestore rules hoặc config.
+- Không mở/import/publish Google AI Studio; không mở Firebase/Google Cloud Console; không bật API/billing; không cấp IAM; không thêm secret hoặc Project ID thật vào Git.
+- Không commit/push.
+
+### Acceptance criteria
+
+1. `npm.cmd test`, `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, `npm.cmd run frontend:build`, `git diff --check`: PASS.
+2. `firestore.rules` là default deny; không có public `allow ... if true`.
+3. Browser bundle/source frontend không có Firebase Web SDK hoặc Firestore direct access; chỉ server-side được phép dùng `@google-cloud/firestore`.
+4. Secret scan không phát hiện API key/credential bị track; `.gitignore` chặn các mẫu key/service-account hiện có.
+5. Ghi chính xác commit HEAD, tracked diff và untracked files; không tự coi QA/Word/evidence untracked là source cần import.
+6. Báo cáo tách rõ `PASS local` với `CHƯA XÁC MINH ĐƯỢC cloud`: Gemini ổn định, AI Studio public link, Firestore persistence thật, Facebook/Zalo trên HTTPS public.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-039 Final Local Import Gate. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` và `AI_STUDIO_IMPORT_CHECKLIST.md`. Chỉ audit local, không sửa bất kỳ source/config/dependency nào, không mở Google AI Studio/Firebase/Cloud Console, không import/publish, không bật API/billing/IAM, không commit/push. Chạy: `npm.cmd test`; `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`; `npm.cmd run frontend:build`; `git diff --check`. Tự đọc `firestore.rules` xác nhận default deny, quét `src/react-app/` và `src/public/` xác nhận không Firebase Web SDK/Firestore direct access, kiểm tra `git ls-files` và `.gitignore` để không có secret/credential bị track. Ghi `QA_REPORT_TASK_039.md` gồm commit HEAD, tracked/untracked status, output tóm tắt từng lệnh, PASS/FAIL từng criterion và mục CHƯA XÁC MINH ĐƯỢC: Gemini live ổn định, AI Studio public, Firestore cloud persistence, Facebook/Zalo HTTPS public. Không tự kết luận import-ready nếu có criterion FAIL; bàn giao diff ngắn và browser evidence nếu có.
+
+### Codex review (2026-08-20)
+
+- Đã tự đọc report, rules, Git status và source frontend; không chỉ dựa vào report Antigravity.
+- `npm.cmd test` và HTTP smoke: PASS. Production build: PASS khi chạy ngoài sandbox OneDrive; lỗi access directory ở lần chạy sandbox đầu là giới hạn môi trường, không phải lỗi build source.
+- `firestore.rules` default deny; quét độc lập `src/react-app/` và `src/public/` không có Firebase/Firestore; Firestore chỉ có ở server-side `src/services/store.js` qua `@google-cloud/firestore`.
+- Secret-content scan không phát hiện key/credential tracked. Workflow Cloud Run chỉ tham chiếu tên Secret Manager `gemini-api-key`, không chứa secret.
+- Source code không có diff; worktree hiện chỉ có thay đổi tài liệu/trạng thái và QA/Word/evidence untracked. Trước import, chủ dự án cần chọn snapshot GitHub sạch chứa Markdown cần giữ; không tự thêm toàn bộ QA/Word/evidence untracked.
+- TASK-039: **ACCEPTED LOCAL**. Gemini live ổn định, public URL AI Studio, Firestore persistence cloud, Facebook/Zalo trên HTTPS public: **CHƯA XÁC MINH ĐƯỢC**.
+
 ## TASK-026 - Progressive rendering an toàn - ACCEPTED
 
 - Gemini không phát chunk trực tiếp ra UI. Hệ thống dùng pipeline `sendChatMessage` hiện có để parse, retry và validate toàn bộ output trước.
