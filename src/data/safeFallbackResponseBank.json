@@ -1,0 +1,82 @@
+{
+  "fake_bank": {
+    "clarify": "Dạ hệ thống đang báo tài khoản có dấu hiệu bất thường trong mô phỏng nên bên em cần bác phản hồi sớm ạ.",
+    "delay": "Dạ thời hạn xử lý đang được nói là sắp hết, nên người liên hệ trong tình huống này đang cố hối bác quyết định nhanh ạ.",
+    "default": [
+      "Dạ bên em đang cần bác xác nhận gấp một việc liên quan đến tài khoản trong mô phỏng này ạ.",
+      "Dạ tài khoản của bác đang được báo là có giao dịch cần kiểm tra sớm, nên bên em xin bác tiếp tục trao đổi ạ."
+    ]
+  },
+  "fake_relative": {
+    "clarify": "Bác ơi, trong tình huống này người nhắn đang nói là gặp việc gấp nên muốn bác phản hồi ngay ạ.",
+    "delay": "Bác ơi, người liên hệ đang cố làm bác thấy không thể chờ thêm trong mô phỏng này ạ.",
+    "default": [
+      "Bác ơi, em đang có việc gấp nên cần bác để ý tin nhắn này ngay ạ.",
+      "Bác ơi, người liên hệ trong tình huống này đang nhờ bác xử lý nhanh và muốn bác giữ kín ạ."
+    ]
+  },
+  "fake_police": {
+    "clarify": "Trong mô phỏng này, người liên hệ tự xưng cơ quan chức năng và nói sự việc cần được xử lý gấp.",
+    "delay": "Người liên hệ trong tình huống này đang tạo áp lực rằng bác không được chậm trễ.",
+    "default": [
+      "Tôi cần bác hợp tác ngay trong tình huống mô phỏng này vì hồ sơ đang được nói là có vấn đề.",
+      "Người liên hệ tiếp tục dùng danh nghĩa cơ quan chức năng để yêu cầu bác phản hồi khẩn."
+    ]
+  },
+  "fake_job": {
+    "clarify": "Bên tuyển dụng trong mô phỏng đang nói cơ hội này dễ tham gia và có thu nhập hấp dẫn.",
+    "delay": "Người tuyển dụng trong tình huống này đang hối bác quyết định nhanh để không bỏ lỡ cơ hội.",
+    "default": [
+      "Bên em đang nói chỉ còn ít cơ hội phù hợp nên muốn bác phản hồi sớm ạ.",
+      "Người tuyển dụng trong mô phỏng tiếp tục nhấn mạnh việc nhẹ và thu nhập hấp dẫn."
+    ]
+  },
+  "deepfake": {
+    "clarify": "Trong mô phỏng này, người liên hệ nói đang gặp việc gấp và muốn bác tin ngay vào cuộc gọi ngắn.",
+    "delay": "Người liên hệ đang cố làm bác lo lắng và muốn bác quyết định thật nhanh ạ.",
+    "default": [
+      "Bác ơi, trong tình huống này người thân giả đang nói mạng yếu nhưng cần bác phản hồi gấp.",
+      "Người liên hệ trong mô phỏng tiếp tục dùng cảm giác khẩn cấp để thúc bác xử lý nhanh."
+    ]
+  },
+  "travel_sales": {
+    "clarify": "Bên tư vấn trong mô phỏng nói ưu đãi này rất tốt nhưng thông tin đặt chỗ vẫn chưa rõ ràng.",
+    "delay": "Người tư vấn đang tạo cảm giác chỉ còn rất ít thời gian để giữ ưu đãi.",
+    "default": [
+      "Bên em đang nói đây là suất ưu đãi cuối nên muốn bác quyết định sớm ạ.",
+      "Người tư vấn trong mô phỏng tiếp tục nhấn mạnh cơ hội giảm giá sắp hết."
+    ]
+  },
+  "gym_sales": {
+    "clarify": "Trong mô phỏng này, người tư vấn nói gói tập rất ưu đãi nhưng điều khoản chưa được giải thích rõ.",
+    "delay": "Người tư vấn đang hối bác đồng ý nhanh để nhận ưu đãi trong ngày.",
+    "default": [
+      "Bên em đang nói chương trình tập thử có hạn nên muốn bác xác nhận ngay ạ.",
+      "Người tư vấn trong mô phỏng tiếp tục nói bác chỉ cần làm nhanh vài bước để nhận ưu đãi."
+    ]
+  },
+  "wrong_transfer": {
+    "clarify": "Trong tình huống này, người liên hệ nói có một khoản tiền nhầm lẫn và muốn bác xử lý ngay.",
+    "delay": "Người liên hệ đang gây áp lực để bác giải quyết việc này thật nhanh.",
+    "default": [
+      "Người liên hệ trong mô phỏng tiếp tục nói việc chuyển nhầm cần được xử lý gấp.",
+      "Trong tình huống này, người lạ đang cố khiến bác lo lắng về một khoản tiền không rõ nguồn gốc."
+    ]
+  },
+  "ecommerce_refund": {
+    "clarify": "Bên hỗ trợ trong mô phỏng nói đơn hàng có vấn đề và hứa sẽ giúp bác xử lý nhanh.",
+    "delay": "Người liên hệ đang nói việc hoàn tiền cần làm ngay để bác không bỏ lỡ quyền lợi.",
+    "default": [
+      "Bên hỗ trợ giả trong mô phỏng tiếp tục nói đơn hàng của bác đang có lỗi cần xử lý sớm.",
+      "Người liên hệ đang dùng lời hứa hoàn tiền để thúc bác phản hồi ngay."
+    ]
+  },
+  "vneid": {
+    "clarify": "Trong mô phỏng này, người liên hệ tự xưng cán bộ và nói thông tin định danh của bác cần được xử lý gấp.",
+    "delay": "Người liên hệ đang hối bác làm ngay vì nói việc chậm trễ sẽ gây phiền phức.",
+    "default": [
+      "Người tự xưng cán bộ trong mô phỏng tiếp tục nói hồ sơ định danh của bác có vấn đề.",
+      "Trong tình huống này, người liên hệ dùng danh nghĩa chính thức để khiến bác phải phản hồi nhanh."
+    ]
+  }
+}

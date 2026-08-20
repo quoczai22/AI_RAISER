@@ -18,10 +18,14 @@ export async function completeSession(sessionId) {
 export async function getDashboard(sessionId) {
   const session = await requireCompletedSession(sessionId);
   const scenario = getScenario(session.scenarioId);
-  if (!session.score) {
+  if (!hasDisplayScore(session.score)) {
     session.score = calculateScore({ session, scenario });
   }
   return buildDashboard({ session, scenario });
+}
+
+function hasDisplayScore(score) {
+  return Array.isArray(score?.recognizedRedFlags) && Array.isArray(score?.missedRedFlags);
 }
 
 export function buildDashboard({ session, scenario }) {

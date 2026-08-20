@@ -1,5 +1,53 @@
 import { Firestore } from "@google-cloud/firestore";
 
+export function sanitizeSessionForFirestore(session) {
+  const value = session && typeof session === "object" ? session : {};
+  return JSON.parse(JSON.stringify({
+    schemaVersion: 1,
+    id: String(value.id || ""),
+    scenarioId: String(value.scenarioId || ""),
+    difficulty: String(value.difficulty || "easy"),
+    consentAt: value.consentAt || null,
+    status: String(value.status || "created"),
+    turnCount: Number.isInteger(value.turnCount) ? value.turnCount : 0,
+    createdAt: value.createdAt || null,
+    startedAt: value.startedAt || null,
+    completedAt: value.completedAt || null,
+    updatedAt: value.updatedAt || null,
+    score: sanitizeScore(value.score),
+    redFlagEvents: Array.isArray(value.redFlagEvents)
+      ? value.redFlagEvents.map((event) => ({
+        redFlagKey: String(event.redFlagKey || ""),
+        status: String(event.status || "triggered"),
+        createdAt: event.createdAt || null,
+      }))
+      : [],
+  }));
+}
+
+function sanitizeScore(score) {
+  if (!score || typeof score !== "object") return null;
+  return {
+    immunityScore: Number.isFinite(score.immunityScore) ? score.immunityScore : 0,
+    recognizedCount: Number.isInteger(score.recognizedCount) ? score.recognizedCount : 0,
+    totalCount: Number.isInteger(score.totalCount) ? score.totalCount : 0,
+    triggeredKeys: Array.isArray(score.triggeredKeys)
+      ? score.triggeredKeys.map((key) => String(key)).filter(Boolean)
+      : [],
+    createdAt: score.createdAt || null,
+  };
+}
+
+function hydrateFirestoreSession(document) {
+  const session = sanitizeSessionForFirestore(document);
+  return {
+    ...session,
+    userName: "Bạn",
+    messages: [],
+    isProcessing: false,
+  };
+}
+
 class FirestoreStore {
   constructor() {
     this.useFirestore = false;
@@ -24,7 +72,7 @@ class FirestoreStore {
       try {
         const doc = await this.collection.doc(id).get();
         if (!doc.exists) return undefined;
-        return doc.data();
+        return hydrateFirestoreSession(doc.data());
       } catch (err) {
         console.error("Firestore get error:", err.message);
         throw err;
@@ -37,8 +85,7 @@ class FirestoreStore {
   async set(id, val) {
     if (this.useFirestore) {
       try {
-        // Serialize clean JSON to prevent Firestore metadata issues with custom properties/classes
-        await this.collection.doc(id).set(JSON.parse(JSON.stringify(val)));
+        await this.collection.doc(id).set(sanitizeSessionForFirestore(val));
       } catch (err) {
         console.error("Firestore set error:", err.message);
         throw err;
@@ -91,7 +138,7 @@ class FirestoreStore {
     if (this.useFirestore) {
       try {
         const snapshot = await this.collection.get();
-        return snapshot.docs.map((doc) => doc.data());
+        return snapshot.docs.map((doc) => hydrateFirestoreSession(doc.data()));
       } catch (err) {
         console.error("Firestore values error:", err.message);
         throw err;

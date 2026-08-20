@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import safeFallbackResponseBank from "../data/safeFallbackResponseBank.json" with { type: "json" };
 import { getPositiveIntEnv } from "./env.js";
 import { getScenario } from "./scenarioService.js";
 import { requireActiveSession } from "./sessionService.js";
@@ -304,10 +305,7 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
   const shouldEnd = stop || recognized || session.turnCount >= maxTurns;
   const fallbackRedFlag = chooseFallbackRedFlag({ scenario, session, participantMessage });
 
-  const noKey = reason === "NO_GEMINI_API_KEY";
-  let reply = noKey
-    ? "Đây là phản hồi dự phòng an toàn vì Gemini chưa được cấu hình. Khi có GEMINI_API_KEY, phần này sẽ được thay bằng hội thoại AI động."
-    : "Mình tạm dùng phản hồi dự phòng an toàn vì Gemini đang phản hồi chậm hoặc gặp lỗi tạm thời. Mô phỏng vẫn tiếp tục trong giới hạn an toàn.";
+  let reply = getSafeFallbackReply({ scenario, session, participantMessage });
   if (recognized) {
     reply = "Bạn đã làm đúng khi muốn xác minh lại qua kênh chính thức. Mình sẽ dừng mô phỏng để chuyển sang phần tổng kết dấu hiệu cảnh báo.";
   } else if (stop) {
@@ -339,6 +337,20 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
     retryUsed: false,
     fallbackReason: reason,
   };
+}
+
+function getSafeFallbackReply({ scenario, session, participantMessage }) {
+  const bank = safeFallbackResponseBank[scenario.id];
+  if (!bank) {
+    return "Trong mô phỏng này, người liên hệ đang cố tạo cảm giác gấp gáp để bác phải phản hồi nhanh.";
+  }
+
+  const text = String(participantMessage.content || "").toLowerCase();
+  if (/(bận|chờ|lát|sau|mai|để sau)/i.test(text)) return bank.delay;
+  if (/(ai|là gì|vì sao|tại sao|chuyện gì|thông tin|công ty|hợp đồng|đơn hàng|giấy tờ)/i.test(text)) {
+    return bank.clarify;
+  }
+  return bank.default[Math.max(session.turnCount - 1, 0) % bank.default.length];
 }
 
 function chooseFallbackRedFlag({ scenario, session, participantMessage }) {

@@ -13,12 +13,33 @@ import { getDashboard } from "../src/services/dashboardService.js";
 import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
 import { looksLikeScamRecognition, maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
-import { sessions } from "../src/services/store.js";
+import { sanitizeSessionForFirestore, sessions } from "../src/services/store.js";
 
 
 const scenarios = listScenarios();
 loadEnvFile();
 process.env.GEMINI_API_KEY = "";
+const firestoreDocument = sanitizeSessionForFirestore({
+  id: "session-safe",
+  scenarioId: "fake_bank",
+  userName: "Cô Lan",
+  difficulty: "medium",
+  messages: [{ content: "Mã OTP của tôi là 123456" }],
+  redFlagEvents: [{ redFlagKey: "authority_pressure", status: "triggered", evidenceText: "private text" }],
+  score: {
+    immunityScore: 25,
+    recognizedCount: 1,
+    totalCount: 4,
+    triggeredKeys: ["authority_pressure"],
+    recognizedRedFlags: [{ key: "authority_pressure", explanation: "extra field" }],
+  },
+});
+assert.equal(firestoreDocument.userName, undefined);
+assert.equal(firestoreDocument.messages, undefined);
+assert.equal(firestoreDocument.redFlagEvents[0].evidenceText, undefined);
+assert.equal(firestoreDocument.redFlagEvents[0].redFlagKey, "authority_pressure");
+assert.equal(firestoreDocument.score.immunityScore, 25);
+assert.equal(firestoreDocument.score.recognizedRedFlags, undefined);
 process.env.UNIT_BAD_INT = "abc";
 process.env.UNIT_ZERO_INT = "0";
 process.env.UNIT_GOOD_INT = "12";
@@ -219,6 +240,20 @@ assert.ok(chat.reply.length > 0);
 assert.equal(chat.safety.provider, "safe_fallback");
 assert.equal(chat.safety.fallbackReason, "NO_GEMINI_API_KEY");
 assert.equal(chat.sessionStatus, "completed");
+
+const fallbackBankSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Fallback Bank" });
+await confirmConsent(fallbackBankSession.id, { consent: true });
+const fallbackBankChat = await sendChatMessage(fallbackBankSession.id, { message: "Tôi đang bận, nhắn sau nhé." });
+assert.equal(fallbackBankChat.safety.provider, "safe_fallback");
+assert.match(fallbackBankChat.reply, /thời hạn xử lý|hối bác quyết định nhanh/i);
+assert.equal(validateAiReply(fallbackBankChat.reply).safe, true);
+
+const fallbackJobSession = await createSession({ scenarioId: "fake_job", difficulty: "medium", userName: "Fallback Job" });
+await confirmConsent(fallbackJobSession.id, { consent: true });
+const fallbackJobChat = await sendChatMessage(fallbackJobSession.id, { message: "Công ty này làm gì vậy?" });
+assert.equal(fallbackJobChat.safety.provider, "safe_fallback");
+assert.match(fallbackJobChat.reply, /tuyển dụng|cơ hội|thu nhập/i);
+assert.equal(validateAiReply(fallbackJobChat.reply).safe, true);
 
 const transcript = await getSessionMessages(created.id);
 assert.equal(transcript.length, 2);

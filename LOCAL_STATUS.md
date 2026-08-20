@@ -1,147 +1,81 @@
 # LOCAL STATUS - AI Scam Inoculation
 
-Ngày cập nhật: 2026-08-20
+Ngày cập nhật: 2026-08-20 (sau TASK-031)
+Trạng thái: Đã nộp. Local MVP và snapshot GitHub sẵn sàng làm bản demo/backup.
 
-## 1. Kết luận
+## 1. Snapshot hiện hành
 
-Ứng dụng hiện đủ để demo toàn bộ luồng MVP trong môi trường local.
+- Branch: `master`, đồng bộ với `origin/master`.
+- Snapshot đã push: `13fac8d feat: harden scam training flow and sharing`.
+- Snapshot gồm React UI, chat progressive an toàn, safety masking, sharing, workflow guard, test và tài liệu trạng thái.
+- Có các thay đổi local chưa commit cho TASK-031: ngân hàng phản hồi dự phòng theo kịch bản, regression test và tài liệu trạng thái. `src/services/store.js` hiện sạch; Firestore vẫn chưa được cấu hình/xác minh.
+- Các file untracked chỉ là tài liệu/QA local: `.docx_qa/`, Word demo, QA reports và `qa-evidence/`. Chúng không nằm trong snapshot GitHub.
 
-Unit test, production build và HTTP smoke test đều đã PASS trong lần kiểm tra gần nhất. Các tích hợp cần môi trường công khai hoặc dịch vụ thật vẫn phải được xác minh riêng trước khi tuyên bố sẵn sàng nộp chính thức.
+## 2. Đã hoàn thành và kiểm chứng
 
-## 2. Đã hoàn thành
+### MVP
 
-### Kiến trúc và công nghệ
-
-- Frontend chính sử dụng React 19 và Vite 5.
-- Backend sử dụng Node.js.
-- Gemini được gọi phía máy chủ; API key không được đưa xuống trình duyệt.
-- Model sản phẩm được khóa ở `gemini-3.6-flash`.
-- Không cấu hình `temperature`, `top_p` hoặc `top_k`.
-- Sản phẩm vẫn là ứng dụng huấn luyện khả năng chống Social Engineering, không phải công cụ phát hiện lừa đảo.
-
-### Workflow MVP
-
-1. Nhập tên hiển thị.
-2. Mở trang chính.
-3. Chọn tình huống và mức độ.
-4. Xác nhận tham gia mô phỏng một lần.
-5. Chat roleplay với tình huống do Gemini tạo.
-6. Có thể bấm Dừng bất kỳ lúc nào.
-7. Xem phân tích và điểm số.
-8. Quay lại dashboard và lịch sử luyện tập.
-9. Chia sẻ kết quả nếu người dùng chủ động chọn.
-10. Mở danh mục số xác minh và nguồn hỗ trợ khi cần.
-
-### Giao diện và khả năng tiếp cận
-
-- Có giao diện responsive cho máy tính và điện thoại.
-- Workflow được khóa theo trạng thái session trên cả desktop và mobile.
-- Có chế độ Chữ to và Tương phản cao.
-- Nunito được dùng cho tiêu đề, số liệu và nhãn điều hướng.
-- Inter được dùng cho nội dung, mô tả và trường nhập liệu.
-- Thao tác chính dùng nút bấm rõ ràng, không phụ thuộc cử chỉ phức tạp.
-- Voice input đã được loại khỏi MVP vì không đủ ổn định để demo.
-- Người dùng đã thử trên điện thoại và báo hoạt động ổn; Codex chưa audit độc lập trên thiết bị vật lý.
+- Luồng: tên → dashboard → chọn tình huống/mức độ → consent → chat → kết quả/điểm → lịch sử → chia sẻ tùy chọn.
+- React + Vite ở frontend, Node.js ở backend.
+- Gemini gọi server-side, model bị khóa là `gemini-3.6-flash`.
+- Không dùng `temperature`, `top_p` hoặc `top_k`.
+- Ứng dụng là huấn luyện phản xạ chống Social Engineering, không phải công cụ phát hiện lừa đảo.
 
 ### Safety và scoring
 
-- Có validator hai chiều cho dữ liệu người dùng và phản hồi từ Gemini.
-- Không yêu cầu hoặc lưu OTP, CCCD, mật khẩu, tài khoản, thẻ hay liên kết thật.
-- OTP chỉ bị che khi có ngữ cảnh rõ như `OTP`, `mã xác nhận`, `mã xác minh` hoặc `mã bảo mật`.
-- Đã xử lý CCCD/CMND 9 và 12 số, số điện thoại Việt Nam, mật khẩu và tài khoản.
-- Taxonomy chỉ gồm: Urgency, Authority, Fear, Social Proof/Reciprocity và Scarcity.
-- Scoring là pure function, độc lập với Gemini.
-- Công thức điểm: số dấu hiệu nhận diện đúng chia cho tổng dấu hiệu trong tình huống.
+- Validator hai chiều cho input và output AI.
+- Không yêu cầu/lưu OTP, CCCD, mật khẩu, tài khoản, thẻ hoặc link thật.
+- Che OTP theo ngữ cảnh, CCCD/CMND 9-12 số, điện thoại Việt Nam, mật khẩu và số tài khoản.
+- Taxonomy phản hồi chỉ: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
+- Score deterministic: dấu hiệu nhận diện đúng / tổng dấu hiệu của tình huống.
+- Nút Dừng và cancel request có regression test.
 
-### Chia sẻ và nguồn xác minh
+### Trải nghiệm và chia sẻ
 
-- Lưu thẻ kết quả thành ảnh đã hoạt động.
-- Facebook share đã được người dùng xác nhận hoạt động.
-- Mobile có Web Share và sao chép liên kết fallback.
-- Có nhánh Zalo cho public URL và fallback trong môi trường localhost.
-- Có danh mục số xác minh, hotline và nguồn hỗ trợ an toàn.
-- Nội dung chia sẻ không chứa transcript hoặc dữ liệu nhạy cảm.
+- Responsive desktop/mobile, Chữ to và Tương phản cao.
+- Workflow guard ngăn nhảy sang bước chưa hợp lệ.
+- Lưu thẻ kết quả, Web Share/Clipboard fallback, Facebook và nhánh Zalo public URL.
+- Chat progressive chỉ phát từng từ sau khi toàn bộ output đã qua validation; UI có một bubble AI duy nhất.
+- Khi Gemini timeout/lỗi/quota, backend dùng ngân hàng phản hồi an toàn theo kịch bản thay cho một câu chung chung. Đây là nội dung biên soạn sẵn, luôn báo `provider=safe_fallback`, không giả là Gemini và không thay luồng Gemini bình thường.
+- Firestore code-ready: nếu được bật bằng cấu hình Google hợp lệ, chỉ lưu metadata buổi luyện, score định lượng/mã flag và taxonomy; không lưu tên người dùng, transcript hay mô tả score. Chưa có evidence kết nối/persistence trong AI Studio.
 
-### Progressive rendering an toàn
+### Kiểm thử gần nhất
 
-- TASK-026 đã được Codex rework và accept ngày 2026-08-20.
-- Gemini output phải hoàn tất parse, retry và validation toàn bộ trước khi được hiển thị.
-- Chỉ reply an toàn mới được chia theo từ và render tuần tự qua SSE.
-- Không còn đường Gemini live chunk đi trực tiếp tới UI.
-- Nút Dừng hủy request phía client; server ngăn dữ liệu đến muộn và giữ session ở trạng thái hoàn thành.
-- Đã bổ sung rule chặn OTP có nhãn trong AI output.
-- Đây là progressive rendering sau validation, không phải Gemini live streaming.
-- Browser automation chưa chạy được do lỗi trusted code path của plugin; UI local vẫn cần một lượt kiểm tra thủ công trước release.
+- `npm.cmd test`: PASS sau TASK-031.
+- `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: PASS sau TASK-031.
+- `npm.cmd run frontend:build`: PASS sau TASK-031 khi chạy ngoài sandbox OneDrive.
+- 10 kịch bản / 40 câu trong ngân hàng fallback: PASS `safetyValidator`.
+- Firestore serialization allowlist: PASS regression test.
+- `git diff --check`: PASS; chỉ có cảnh báo LF/CRLF của Windows.
 
-### Tài liệu
+## 3. Trạng thái Gemini hiện tại
 
-- Đã tạo `AI-Scam-Inoculation-Gioi-Thieu-Demo.docx`.
-- Tài liệu gồm vấn đề, đối tượng hướng tới, giải pháp, cách sử dụng demo, kiến trúc, công nghệ và trạng thái xác minh.
-- File đã được render thành 4 trang và kiểm tra không bị tràn hoặc cắt nội dung.
+- Gemini có thể timeout hoặc bị giới hạn quota sau nhiều lượt test, khi đó app dùng `safe_fallback`.
+- Đây là phản hồi dự phòng an toàn để demo không bị ngắt; không được gọi là Gemini live.
+- Khi Gemini trả lời thật, report phải ghi provider `gemini`; khi fallback, ghi `safe_fallback`.
+- Chủ dự án đã kiểm tra thủ công ngày 2026-08-20: Gemini live phản hồi được 2 lượt, sau đó hết quota/rate limit sau nhiều lượt test trong ngày; nút `Dừng luyện tập` hoạt động. Đây là xác nhận UAT, chưa thay thế raw probe 2-3 lượt liên tiếp không fallback.
 
-## 3. Bằng chứng kiểm thử mới nhất
+## 4. Cải tiến sau khi nộp
 
-- `npm.cmd test`: PASS.
-- `npm.cmd run frontend:build`: PASS.
-- `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`: PASS.
-- `git diff --check`: PASS; chỉ có cảnh báo chuyển line ending từ LF sang CRLF trên Windows.
-- `master` so với `origin/master`: `0 ahead / 0 behind` tại lần kiểm tra local gần nhất.
+Không cần thêm feature MVP. Các việc đáng làm, theo thứ tự ưu tiên:
 
-Build ban đầu từng bị sandbox chặn quyền đọc thư mục cha của OneDrive. Khi chạy ngoài sandbox, Vite build thành công với 46 module; đây không phải lỗi code.
+1. **Xác minh Gemini live**: khi quota hồi, chạy 2-3 lượt chat liên tiếp và lưu provider/fallback reason thật. Hiện đã có UAT 2 lượt phản hồi trước quota limit.
+2. **Xác minh public deployment**: mở link AI Studio/Cloud Run bằng một thiết bị hoặc tài khoản khác; đảm bảo workflow và secret không lộ.
+3. **Xác minh share HTTPS**: test Zalo/Facebook trên URL public thật, đặc biệt ở điện thoại.
+4. **Xác minh Firestore thật**: chỉ khi cần persistence sau restart/đa thiết bị. Hiện `.env` chưa bật Firestore và chưa có test persistence thật.
+5. **QA UI bổ sung**: quay video ngắn chứng minh text progressive hiện dần và Stop không có output đến muộn. Đây là evidence bổ sung, không chặn demo local.
+6. **Sau MVP**: baseline/lịch sử theo taxonomy, gợi ý bài luyện từ dấu hiệu yếu, link chia sẻ có thời hạn, nhắc luyện trong app và dashboard tổ chức ẩn danh.
 
-## 4. Chưa xác minh được
+## 5. Những điều không được claim
 
-1. Gemini live chạy liên tục 2-3 lượt mà không chuyển sang safe fallback do quota/rate limit.
-2. Google AI Studio public link/import hoạt động từ tài khoản hoặc thiết bị của người chấm.
-3. Zalo share hoạt động đầy đủ trên URL HTTPS công khai.
-4. Firestore thật hoạt động với credential hợp lệ và giữ dữ liệu sau khi restart.
-5. Codex chưa audit độc lập toàn bộ workflow trên điện thoại vật lý.
+- Không nói Gemini live đã ổn định khi quota/rate limit còn chặn.
+- Không nói AI Studio public/import đã xác minh nếu chưa mở bằng URL public thật.
+- Không nói Zalo đã hoạt động trên HTTPS public khi mới test local.
+- Không nói Firestore persistence đã hoàn tất khi chưa test restart với project thật.
+- Không nói Project billing/quota Gemini đã được đối chiếu khi chưa có Project ID/log console tương ứng.
+- Không nói progressive/Stop browser E2E đã có video timeline; code/test đã PASS nhưng evidence video chưa đạt.
 
-Không được báo PASS cho các mục trên nếu chưa có URL, credential hoặc bằng chứng chạy thật.
-
-## 5. Trạng thái Git
-
-- Branch hiện tại: `master`.
-- Commit gần nhất: `cf771f7 feat: implement base UI styles, hotline component, and cybersecurity propaganda source data`.
-- Có 15 file tracked đã thay đổi nhưng chưa commit/push.
-- Thống kê diff có thể tiếp tục thay đổi cho đến khi tạo release-candidate commit.
-
-Các file tracked đang thay đổi:
-
-- `LOCAL_STATUS.md`
-- `TASKS.md`
-- `TASKS_ARCHIVE.md`
-- `server.js`
-- `src/public/app.js`
-- `src/react-app/App.jsx`
-- `src/react-app/app.css`
-- `src/react-app/components/AppShell.jsx`
-- `src/react-app/components/ChatShell.jsx`
-- `src/react-app/components/ResultScorecard.jsx`
-- `src/react-app/components/ShareCard.jsx`
-- `src/react-app/components/SimulationConsent.jsx`
-- `src/services/chatOrchestrator.js`
-- `src/services/safetyValidator.js`
-- `tests/run-tests.js`
-
-Các mục chưa được Git theo dõi:
-
-- `.docx_qa/`: thư mục render kiểm tra tài liệu, không nên push.
-- `AI-Scam-Inoculation-Gioi-Thieu-Demo.docx`: tài liệu Word mới; chỉ push nếu muốn lưu cùng repo.
-- `~$-Scam-Inoculation-Gioi-Thieu-Demo.docx`: file khóa tạm do Microsoft Word tạo, tuyệt đối không push.
-
-## 6. Việc cần làm tiếp theo
-
-1. Đóng Microsoft Word để file khóa `~$...docx` được giải phóng.
-2. Thêm `.docx_qa/` và file khóa Word vào `.gitignore` nếu chưa có.
-3. Quyết định có đưa tài liệu Word chính thức vào repo hay chỉ giữ local.
-4. Review diff lần cuối rồi tạo release-candidate snapshot commit cho source, test và tài liệu cần giữ.
-5. Push snapshot lên GitHub sau khi commit được kiểm tra.
-6. Khi quota Gemini hồi, chạy 2-3 phiên Gemini live và ghi lại `provider` cùng lý do fallback nếu có.
-7. Kiểm tra Google AI Studio public link và Zalo share trên HTTPS công khai.
-8. Chỉ bật Firestore production sau khi có project và credential thật để kiểm thử persistence.
-
-## 7. Cách chạy local
+## 6. Cách chạy local
 
 ```powershell
 npm.cmd install
@@ -149,17 +83,20 @@ npm.cmd run frontend:build
 node server.js
 ```
 
-Mở trình duyệt tại:
-
-```text
-http://localhost:3000
-```
-
-Chạy kiểm thử:
+Mở desktop: `http://localhost:3000`
+Cùng Wi-Fi, mở điện thoại: `http://192.168.1.50:3000`
 
 ```powershell
 npm.cmd test
 powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1
 ```
 
-Nếu giao diện hiển thị safe fallback, luồng demo vẫn an toàn nhưng không được dùng trạng thái đó làm bằng chứng Gemini live đang hoạt động.
+Chi tiết task/review: `TASKS.md`, `TASKS_ARCHIVE.md`, `QA_REPORT_TASK_029.md`.
+
+## 7. Yêu cầu hiện tại: Google AI Studio + Firestore
+
+- Mục tiêu kế tiếp: import/chạy app trong Google AI Studio Build Mode và provision Firestore để giữ **lịch sử kết quả tối thiểu** sau refresh.
+- Code local đã sẵn sàng: Firestore document chỉ có metadata session, score định lượng/mã flag và taxonomy; local test/build PASS.
+- Chưa có Firebase Project ID, secret, Firebase rules, AI Studio preview evidence hay refresh-persistence evidence. Không được nói “đã tích hợp Firestore” trước khi có đủ evidence.
+- Không cần Cloud Run ở bước này. Chỉ triển khai/publish sau khi preview AI Studio PASS và chủ dự án đồng ý.
+- Handoff/prompt chi tiết: `AI_STUDIO_HANDOFF.md`; task kiểm chứng: TASK-032 và TASK-034 trong `TASKS.md`.
