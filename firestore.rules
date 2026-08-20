@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Security Boundary: Default deny all client reads and writes.
+    // Node.js server uses Admin SDK / IAM server-side credentials which bypass client security rules.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /sessions/{sessionId} {
+      allow read, write: if false;
+    }
+  }
+}

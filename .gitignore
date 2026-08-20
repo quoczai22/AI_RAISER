@@ -16,6 +16,9 @@ LOCAL_STATUS.md
 *.sqlite
 *.sqlite3
 *.log
+*service-account*.json
+*firebase-key*.json
+*gcp-key*.json
 tmp/
 temp/
 .cache/

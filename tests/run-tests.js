@@ -658,4 +658,63 @@ await assert.rejects(
 );
 process.env.GEMINI_MODEL = "gemini-3.6-flash";
 
+// TASK-036 Regression Tests: firestore.rules default-deny & client code isolation
+const firestoreRulesSource = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
+assert.equal(firestoreRulesSource.includes("rules_version = '2';"), true, "firestore.rules must include rules_version = '2';");
+assert.equal(firestoreRulesSource.includes("allow read, write: if false;"), true, "firestore.rules must include default deny allow read, write: if false;");
+assert.equal(firestoreRulesSource.includes("match /sessions/{sessionId}"), true, "firestore.rules must match sessions collection");
+assert.equal(firestoreRulesSource.includes("allow read, write: if true"), false, "firestore.rules MUST NOT contain allow read, write: if true");
+assert.equal(firestoreRulesSource.includes("allow read: if true"), false, "firestore.rules MUST NOT contain allow read: if true");
+assert.equal(firestoreRulesSource.includes("allow write: if true"), false, "firestore.rules MUST NOT contain allow write: if true");
+
+const reactAppFiles = [
+  "../src/react-app/App.jsx",
+  "../src/react-app/main.jsx",
+  "../src/react-app/components/AppShell.jsx",
+  "../src/react-app/components/ChatShell.jsx",
+  "../src/react-app/components/Dashboard.jsx",
+  "../src/react-app/components/EntryForm.jsx",
+  "../src/react-app/components/Hotlines.jsx",
+  "../src/react-app/components/ResultScorecard.jsx",
+  "../src/react-app/components/ScenarioPicker.jsx",
+  "../src/react-app/components/ShareCard.jsx",
+  "../src/react-app/components/SimulationConsent.jsx",
+  "../src/public/app.js",
+];
+
+for (const relPath of reactAppFiles) {
+  const content = readFileSync(new URL(relPath, import.meta.url), "utf8");
+  assert.equal(/firebase|firestore/i.test(content), false, `Client file ${relPath} MUST NOT reference firebase or firestore`);
+}
+
+// TASK-036: Test FirestoreStore error handling and fallback
+const testStore = new sessions.constructor();
+testStore.useFirestore = true;
+testStore.collection = {
+  doc: () => ({
+    set: async () => { throw new Error("Permission Denied (Security Rules Test)"); },
+    get: async () => { throw new Error("Permission Denied (Security Rules Test)"); },
+    delete: async () => { throw new Error("Permission Denied (Security Rules Test)"); },
+  }),
+};
+
+await assert.rejects(
+  () => testStore.set("test-fail-id", { id: "test-fail-id" }),
+  /Permission Denied/,
+  "Firestore set failure must throw an exception and not silently succeed"
+);
+assert.equal(testStore.inMemoryMap.has("test-fail-id"), false, "Failed Firestore write must not pollute in-memory map");
+
+await assert.rejects(
+  () => testStore.get("test-fail-id"),
+  /Permission Denied/,
+  "Firestore get failure must throw an exception"
+);
+
+const localStore = new sessions.constructor();
+assert.equal(localStore.useFirestore, false);
+await localStore.set("local-id", { id: "local-id", scenarioId: "fake_bank" });
+const retrievedLocal = await localStore.get("local-id");
+assert.equal(retrievedLocal.id, "local-id");
+
 console.log("Implementation tests passed.");

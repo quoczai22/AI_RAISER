@@ -149,6 +149,90 @@ Review độc lập phần code-ready Firestore trước khi đưa repo vào Goo
 
 > Đọc `AI_STUDIO_HANDOFF.md`, `AGENTS.md` và `LOCAL_STATUS.md` mục 7. Trả về đúng một prompt tiếng Việt, copy-ready cho Google AI Studio Build Mode. Prompt phải giữ nguyên toàn bộ MVP và Gemini server-side, chỉ provision Firestore để lưu completed-session history theo allowlist, cấm mọi dữ liệu nhạy cảm/transcript, yêu cầu dừng nếu cần owner chọn project/billing/quyền, yêu cầu test create -> complete -> refresh -> same session score, tạo `QA_REPORT_TASK_032.md`, không commit/push và không claim PASS nếu thiếu evidence. Không brainstorm và không đề xuất feature/stack khác.
 
+## TASK-035 - Rework Firestore Rules và Evidence AI Studio - SECURITY BLOCKER
+
+### Findings Codex đã xác minh từ runtime note
+
+- Runtime note xác nhận Firestore database active và có document persistence, nhưng rule được report là `allow read, write: if true` cho `sessions/{sessionId}`. Đây là **public read/write**, không phải least privilege; bất kỳ client nào có Firebase config có thể đọc/sửa/xóa document nếu đang dùng Firebase Web SDK không Auth.
+- Report có hai document/score samples mâu thuẫn cho cùng session: một sample ghi `totalCount: 2`, `triggeredKeys: ["Urgency"]`, `redFlagEvents: []`; raw output sau đó ghi `totalCount: 4`, `triggeredKeys` khác và 4 events. Không được ghi “khớp 100%” khi chưa chọn canonical evidence.
+- Source/rules/config AI Studio chưa export về GitHub, nên claim source-level không thể audit từ repo local.
+
+### Điều kiện accept
+
+1. Không có Firestore client access public. Mọi read/write session đi qua server-side identity/IAM; browser không có credential đặc quyền.
+2. `firestore.rules` default deny, gồm collection `sessions`; không có `allow read, write: if true` hoặc wildcard public.
+3. Nếu AI Studio runtime không thể dùng Firestore server-side sau default deny, dừng và báo BLOCKED; không mở Firebase Auth hay thêm feature ngoài MVP để lách rule.
+4. Một canonical evidence duy nhất cho session persistence: session ID, score, `totalCount`, `triggeredKeys`, event count phải khớp trước/sau clear cache + refresh.
+5. `QA_REPORT_TASK_032.md` sửa lại có rule source, deployment status, canonical raw output và liệt kê `CHƯA XÁC MINH ĐƯỢC` nếu không export source về GitHub.
+
+### Prompt rework cho AI Studio / Antigravity
+
+> SECURITY REWORK ONLY. Do not change the MVP UI, flow, Gemini model/server-side handling, validator, deterministic scoring, taxonomy, safe fallback, or add Firebase Authentication/Cloud Run/dependencies unless strictly required to restore server-side Firestore access. The current Firestore rule `allow read, write: if true` for `sessions/{sessionId}` is unacceptable because it exposes session documents publicly. Move all Firestore session read/write to a server-side identity/IAM path; browser code must not call Firestore directly and must not receive privileged credentials. Replace deployed `firestore.rules` with default deny for every document, including `sessions`. If the current AI Studio runtime cannot persist after default deny, STOP and report BLOCKED; do not weaken rules or add auth as a workaround. Then rerun persistence test with one canonical completed session: record session ID, score, totalCount, triggeredKeys and event count; clear in-memory cache, refresh, and prove every value matches from the active database. Fix QA_REPORT_TASK_032.md by removing contradictory samples, including actual deployed rule source, database ID, safe raw output, test outputs and file-change list. Do not claim source audit/export to GitHub unless it really occurs. Do not commit/push.
+
+## TASK-036 - Server-Side Firestore Security Preflight - ACCEPTED LOCAL
+
+### Mục tiêu
+
+Sửa và kiểm thử source trong repo trước khi đưa lại vào AI Studio: server-side Firestore only, default-deny rules, không public client access. GitHub là nguồn code chuẩn; AI Studio chỉ provision/configure/test sau khi Codex accept.
+
+### Phạm vi được phép
+
+- `src/services/store.js`, server route/service liên quan nếu bắt buộc, `firestore.rules` (tạo mới), `.gitignore`, `.env.example`, `README.md`, `tests/run-tests.js`, `QA_REPORT_TASK_036.md`.
+- Giữ `@google-cloud/firestore` server-side hoặc server identity tương đương. Không thêm Firebase Web SDK vào React/browser.
+
+### Cấm
+
+- Không đổi UI/flow/scenario/Gemini/prompt/validator/scoring/taxonomy/safe fallback/share.
+- Không thêm Firebase Authentication, Cloud Run, Firestore client SDK, credentials/config applet, project ID thật hay secret.
+- Không mở AI Studio/Firebase Console, không commit/push.
+
+### Acceptance criteria
+
+1. `firestore.rules` default deny hoàn toàn; không có public allow hay wildcard `if true`.
+2. Không có import/call Firestore ở `src/react-app/` hay browser bundle; session API vẫn qua Node server.
+3. Khi Firestore được cấu hình, write/read failure không im lặng giả thành persistence thành công.
+4. Local Map fallback vẫn chạy khi Firestore chưa cấu hình.
+5. Có regression test source-level cho rules default deny và không client Firestore import; `npm.cmd test`, HTTP smoke, production build, `git diff --check` PASS.
+6. `QA_REPORT_TASK_036.md` nêu diff, test output, các giới hạn cloud `CHƯA XÁC MINH ĐƯỢC`.
+
+### Prompt cho Antigravity
+
+> Làm TASK-036, chỉ server-side Firestore security preflight trong repo trước AI Studio. Đọc AGENTS.md, LOCAL_STATUS.md và TASK-035/036. Sửa tối thiểu để GitHub là source chuẩn: tạo `firestore.rules` default deny cho mọi document, gồm `/sessions/{sessionId}`; tuyệt đối không có `allow read, write: if true`. Giữ mọi session read/write ở Node server qua `@google-cloud/firestore`/server IAM, không Firebase Web SDK/import Firestore trong `src/react-app` hoặc browser. Không thêm Firebase Auth, Cloud Run, secret, project ID/config applet hoặc feature mới. Kiểm tra Firestore errors không bị nuốt; local Map fallback phải giữ khi không cấu hình Firestore. Bổ sung test source-level cho default-deny rules và không có client Firestore import. Chạy `npm.cmd test`, `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, `npm.cmd run frontend:build`, `git diff --check`. Tạo `QA_REPORT_TASK_036.md` có diff thật, test output, PASS/FAIL và ghi rõ AI Studio/cloud persistence là CHƯA XÁC MINH ĐƯỢC. Không mở AI Studio/Firebase Console, không commit/push.
+
+### Codex review (2026-08-20)
+
+- `firestore.rules` default deny cho wildcard và `sessions`; không có public `if true`.
+- `rg` độc lập xác nhận `src/react-app/` và `src/public/` hiện không có reference Firebase/Firestore; package chỉ dùng server-side `@google-cloud/firestore`.
+- Codex chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`: PASS. `Permission Denied` trong output test là mock để kiểm tra exception được throw, không phải lỗi runtime.
+- Giới hạn còn lại: rules chưa được deploy lại và persistence server-side sau default deny chưa được xác minh trên AI Studio. TASK-035 vẫn là blocker cloud.
+
+## TASK-037 - Deploy Security Rules và Verify Cloud Persistence - PENDING CODEX SNAPSHOT
+
+### Thứ tự bắt buộc
+
+1. Codex commit/push source TASK-036 lên GitHub. Không dùng applet/source AI Studio cũ có public rule.
+2. AI Studio cập nhật/import đúng commit hash đó.
+3. AI Studio deploy `firestore.rules` default deny và chỉ test persistence qua Node server-side identity/IAM.
+
+### Scope
+
+- Không sửa source trừ khi cloud test chứng minh blocker; trước khi sửa phải report blocker cho Codex.
+- Không dùng Firebase Web SDK/client direct access, không Firebase Auth, không Cloud Run, không secret/project ID trong Git.
+- Không thay UI/MVP/Gemini/validator/scoring/taxonomy/safe fallback.
+
+### Acceptance criteria
+
+1. AI Studio code đang dùng đúng `firestore.rules` default deny từ GitHub source mới.
+2. Browser không gọi Firestore trực tiếp; app vẫn dùng API Node.
+3. Server-side Firestore write/read thành công khi rule default deny đã deploy; nếu fail thì BLOCKED, không nới rule.
+4. Một completed session canonical: session ID, immunity score, total count, triggered keys, event count được ghi lại.
+5. Clear in-memory cache + browser refresh; đọc lại đúng toàn bộ giá trị canonical từ cùng active database.
+6. `QA_REPORT_TASK_037.md` có commit hash, Project/Database ID, deployed rule source, raw output an toàn, PASS/FAIL/BLOCKED từng bước. Không đưa API key/credential/PII vào report.
+
+### Prompt cho Antigravity / AI Studio
+
+> Làm TASK-037 sau khi Codex cung cấp commit hash source mới. Trong Google AI Studio, cập nhật/import ĐÚNG commit đó; xác nhận `firestore.rules` là default deny và không chứa public `allow ... if true`. Không sửa UI, MVP, Gemini server-side, safety, scoring, taxonomy, safe fallback; không thêm Firebase Auth, Cloud Run, Firebase Web SDK client, dependency, secret hoặc project config vào Git. Deploy đúng rules default deny. Chỉ cho Node server-side identity/IAM đọc/ghi Firestore; browser tiếp tục gọi API Node, không Firestore direct. Tạo một completed session canonical, ghi session ID, immunityScore, totalCount, triggeredKeys, event count. Xóa in-memory cache, refresh browser, đọc lại cùng session và xác nhận mọi giá trị khớp. Nếu server-side access fail sau default deny: dừng, ghi BLOCKED với raw safe error; không nới rule. Tạo `QA_REPORT_TASK_037.md` gồm commit hash, Project/Database ID, rule source đã deploy, file change list, raw output an toàn, test kết quả và mọi CHƯA XÁC MINH ĐƯỢC. Không commit/push.
+
 ## TASK-026 - Progressive rendering an toàn - ACCEPTED
 
 - Gemini không phát chunk trực tiếp ra UI. Hệ thống dùng pipeline `sendChatMessage` hiện có để parse, retry và validate toàn bộ output trước.

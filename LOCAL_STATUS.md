@@ -8,7 +8,7 @@ Trạng thái: Đã nộp. Local MVP và snapshot GitHub sẵn sàng làm bản 
 - Branch: `master`, đồng bộ với `origin/master`.
 - Snapshot đã push: `13fac8d feat: harden scam training flow and sharing`.
 - Snapshot gồm React UI, chat progressive an toàn, safety masking, sharing, workflow guard, test và tài liệu trạng thái.
-- Có các thay đổi local chưa commit cho TASK-031: ngân hàng phản hồi dự phòng theo kịch bản, regression test và tài liệu trạng thái. `src/services/store.js` hiện sạch; Firestore vẫn chưa được cấu hình/xác minh.
+- Có các thay đổi local chưa commit cho TASK-036: tạo `firestore.rules` default-deny, hardening server-side Firestore IAM, regression test chặn import client Firestore, test error throwing/fallback, và tạo `QA_REPORT_TASK_036.md`. Local tests PASS; Firebase Cloud/AI Studio persistence thật giữ `CHƯA XÁC MINH ĐƯỢC`.
 - Các file untracked chỉ là tài liệu/QA local: `.docx_qa/`, Word demo, QA reports và `qa-evidence/`. Chúng không nằm trong snapshot GitHub.
 
 ## 2. Đã hoàn thành và kiểm chứng
@@ -100,3 +100,5 @@ Chi tiết task/review: `TASKS.md`, `TASKS_ARCHIVE.md`, `QA_REPORT_TASK_029.md`.
 - Chưa có Firebase Project ID, secret, Firebase rules, AI Studio preview evidence hay refresh-persistence evidence. Không được nói “đã tích hợp Firestore” trước khi có đủ evidence.
 - Không cần Cloud Run ở bước này. Chỉ triển khai/publish sau khi preview AI Studio PASS và chủ dự án đồng ý.
 - Handoff/prompt chi tiết: `AI_STUDIO_HANDOFF.md`; task kiểm chứng: TASK-032 và TASK-034 trong `TASKS.md`.
+- AI Studio runtime note đã báo Firestore provision/persistence, nhưng Codex chưa accept: rule được report `allow read, write: if true` là public access và evidence score có mâu thuẫn. TASK-035 là security blocker; không claim Firestore integration hoàn tất trước rework/evidence canonical.
+- TASK-036 local security preflight đã PASS: repo có `firestore.rules` default deny, frontend không có Firebase/Firestore client access, test/build/smoke PASS. Chưa deploy rule này hoặc xác minh persistence trong AI Studio sau default deny.

@@ -93,7 +93,7 @@ ENABLE_FIRESTORE=false
 FRAME_ANCESTORS='self' https://aistudio.google.com https://*.googleusercontent.com https://*.run.app
 ```
 
-- **Firestore (Lưu trữ lâu dài)**: Mặc định app dùng Map in-memory để demo không bị lỗi quyền Firestore trên Cloud Run. Firestore chỉ bật khi cấu hình `FIRESTORE_PROJECT_ID`, hoặc khi set `ENABLE_FIRESTORE=true` để dùng `GOOGLE_CLOUD_PROJECT`. Khi bật, document chỉ lưu metadata buổi luyện, score dạng số/mã dấu hiệu và mã taxonomy; không lưu tên người dùng, transcript, OTP/CCCD/tài khoản/điện thoại/link thật, `evidenceText` hoặc mô tả chi tiết của score.
+- **Firestore (Lưu trữ lâu dài & Bảo mật IAM)**: Mặc định app dùng Map in-memory để demo. Firestore chỉ bật khi cấu hình `FIRESTORE_PROJECT_ID`, hoặc set `ENABLE_FIRESTORE=true`. Toàn bộ thao tác read/write Firestore đều thực hiện ở Node.js server qua IAM/Admin SDK server-side (`@google-cloud/firestore`), không import Firebase Web SDK ở trình duyệt. Mọi truy cập client trực tiếp bị chặn hoàn toàn bởi `firestore.rules` (default deny `allow read, write: if false`). Khi bật, document chỉ lưu metadata buổi luyện, score dạng số/mã dấu hiệu và mã taxonomy theo allowlist; tuyệt đối không lưu tên người dùng, transcript, OTP/CCCD/tài khoản/điện thoại/link thật, `evidenceText` hoặc mô tả chi tiết của score.
 - **AI Studio / Cloud Run iframe**: `FRAME_ANCESTORS` mặc định cho phép Google AI Studio và Cloud Run preview nhúng app. Nếu triển khai môi trường riêng, có thể siết lại biến này.
 - **Gemini AI**: Nếu chưa có `GEMINI_API_KEY`, app vẫn chạy bằng fallback an toàn để demo luồng sản phẩm. Tuy nhiên demo cuối cho AI Riser cần cấu hình Gemini thật để chứng minh tính AI-native.
 
