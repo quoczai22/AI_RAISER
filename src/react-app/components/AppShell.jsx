@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 
 const workflow = [
-  { key: 'start', label: 'Bắt đầu', icon: '▶' },
-  { key: '', label: 'Trang chính', icon: '🏠' },
-  { key: 'scenarios', label: 'Chọn tình huống', icon: '🎯' },
-  { key: 'consent', label: 'Xác nhận', icon: '✅', needsSession: true },
-  { key: 'chat', label: 'Chat luyện tập', icon: '💬', needsSession: true },
-  { key: 'result', label: 'Kết quả', icon: '📊', needsSession: true },
-  { key: 'hotlines', label: 'Số xác minh', icon: '📞' },
-  { key: 'share', label: 'Thẻ chia sẻ', icon: '📤', needsSession: true },
+  { key: 'start', label: 'Bắt đầu', icon: '▶', gate: 'always' },
+  { key: '', label: 'Trang chính', icon: '🏠', gate: 'named' },
+  { key: 'scenarios', label: 'Chọn tình huống', icon: '🎯', gate: 'named' },
+  { key: 'consent', label: 'Xác nhận', icon: '✅', gate: 'created' },
+  { key: 'chat', label: 'Chat luyện tập', icon: '💬', gate: 'active' },
+  { key: 'result', label: 'Kết quả', icon: '📊', gate: 'completed' },
+  { key: 'hotlines', label: 'Số xác minh', icon: '📞', gate: 'named' },
+  { key: 'share', label: 'Thẻ chia sẻ', icon: '📤', gate: 'completed' },
 ];
 
 function getActiveKey(route) {
@@ -35,9 +35,36 @@ function goTo(hash) {
   window.location.hash = hash;
 }
 
-export default function AppShell({ children, userName, latestSessionId, accessibility, onUpdateAccessibility }) {
+function canUseStep(item, { userName, latestSessionId, latestSessionStatus, hasCompletedSession }) {
+  if (item.gate === 'always') return true;
+  if (!userName) return false;
+  if (item.gate === 'named') return true;
+  if (!latestSessionId) return false;
+  if (item.gate === 'created') return latestSessionStatus === 'created';
+  if (item.gate === 'active') return latestSessionStatus === 'active';
+  if (item.gate === 'completed') return latestSessionStatus === 'completed' || hasCompletedSession;
+  return false;
+}
+
+function lockedReason(item) {
+  if (item.gate === 'created') return 'Chọn tình huống trước';
+  if (item.gate === 'active') return 'Xác nhận trước';
+  if (item.gate === 'completed') return 'Hoàn thành buổi luyện trước';
+  return 'Nhập tên trước';
+}
+
+export default function AppShell({
+  children,
+  userName,
+  latestSessionId,
+  latestSessionStatus,
+  hasCompletedSession,
+  accessibility,
+  onUpdateAccessibility,
+}) {
   const [route, setRoute] = useState(window.location.hash);
   const activeKey = getActiveKey(route);
+  const gateContext = { userName, latestSessionId, latestSessionStatus, hasCompletedSession };
 
   useEffect(() => {
     const handleRoute = () => setRoute(window.location.hash);
@@ -68,7 +95,7 @@ export default function AppShell({ children, userName, latestSessionId, accessib
         <nav className="sidebar-nav">
           <p>Các màn hình</p>
           {workflow.map((item, index) => {
-            const enabled = item.key === 'start' || Boolean(userName) && (!item.needsSession || latestSessionId);
+            const enabled = canUseStep(item, gateContext);
             const selected = activeKey === item.key;
             const target = targetFor(item, latestSessionId);
             return (
@@ -77,6 +104,7 @@ export default function AppShell({ children, userName, latestSessionId, accessib
                 type="button"
                 className={`sidebar-nav-item ${selected ? 'active' : ''}`}
                 disabled={!enabled}
+                title={enabled ? item.label : lockedReason(item)}
                 onClick={() => enabled && goTo(target)}
               >
                 <span className="nav-icon" aria-hidden="true">{item.icon}</span>
@@ -125,7 +153,7 @@ export default function AppShell({ children, userName, latestSessionId, accessib
 
         <nav className="mobile-step-nav" aria-label="Điều hướng nhanh">
           {workflow.map((item, index) => {
-            const enabled = item.key === 'start' || Boolean(userName) && (!item.needsSession || latestSessionId);
+            const enabled = canUseStep(item, gateContext);
             const target = targetFor(item, latestSessionId);
             return (
             <button
@@ -133,6 +161,7 @@ export default function AppShell({ children, userName, latestSessionId, accessib
               type="button"
               className={activeKey === item.key ? 'active' : ''}
               disabled={!enabled}
+              title={enabled ? item.label : lockedReason(item)}
               onClick={() => enabled && goTo(target)}
             >
               <span aria-hidden="true">{item.icon}</span>

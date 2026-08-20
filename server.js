@@ -11,7 +11,7 @@ import {
   getSession,
   getSessionMessages,
 } from "./src/services/sessionService.js";
-import { sendChatMessage } from "./src/services/chatOrchestrator.js";
+import { sendChatMessage, sendChatMessageStream } from "./src/services/chatOrchestrator.js";
 import { completeSession, getDashboard } from "./src/services/dashboardService.js";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
@@ -46,7 +46,7 @@ const securityHeaders = {
   "x-content-type-options": "nosniff",
   "referrer-policy": "no-referrer",
   "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=()",
-  "content-security-policy": `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors ${frameAncestors}`,
+  "content-security-policy": `default-src 'self'; script-src 'self' https://sp.zalo.me; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'self' https://sp.zalo.me https://zalo.me; base-uri 'none'; frame-ancestors ${frameAncestors}`,
 };
 
 Object.assign(jsonHeaders, securityHeaders);
@@ -197,6 +197,41 @@ async function handleApi(req, res) {
     }
     if (req.method === "POST") {
       const body = await readJsonBody(req);
+      const isStreamRequested =
+        body.stream === true ||
+        (req.headers.accept && req.headers.accept.includes("text/event-stream"));
+
+      if (isStreamRequested) {
+        let clientDisconnected = false;
+        res.on("close", () => {
+          if (!res.writableEnded) clientDisconnected = true;
+        });
+        res.writeHead(200, {
+          "content-type": "text/event-stream; charset=utf-8",
+          "cache-control": "no-store",
+          ...securityHeaders,
+        });
+
+        const sendSse = (event, data) => {
+          if (clientDisconnected || res.destroyed || res.writableEnded) return;
+          res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+        };
+
+        try {
+          await sendChatMessageStream(messageMatch[1], body, {
+            onChunk: (text) => sendSse("chunk", { text }),
+            onNotice: (reason) => sendSse("notice", { reason }),
+            onDone: (result) => sendSse("done", result),
+            isCancelled: () => clientDisconnected || res.destroyed || res.writableEnded,
+          });
+        } catch (err) {
+          sendSse("error", { error: err.message || "Internal error." });
+        } finally {
+          if (!res.destroyed && !res.writableEnded) res.end();
+        }
+        return;
+      }
+
       const result = await sendChatMessage(messageMatch[1], body);
       sendJson(res, 200, result);
       return;

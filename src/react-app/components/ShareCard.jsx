@@ -38,6 +38,32 @@ function roundedRect(ctx, x, y, width, height, radius) {
   ctx.closePath();
 }
 
+function isLocalShareUrl(url) {
+  return /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(url);
+}
+
+function loadZaloShareSdk() {
+  const sdkSrc = 'https://sp.zalo.me/plugins/sdk.js';
+  if (document.querySelector(`script[src="${sdkSrc}"]`)) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = sdkSrc;
+    script.async = true;
+    script.defer = true;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+}
+
+function openZaloShareWindow(url) {
+  const shareTarget = `https://zalo.me/share/dpl?src=dpl&utm_source=dpl&layout=1&media_type=link&content=${encodeURIComponent(url)}`;
+  window.open(shareTarget, '_blank', 'noopener,noreferrer,width=800,height=620');
+}
+
 function drawShareCardToCanvas(canvas, cardData, userName) {
   const ratio = 2;
   const width = 1080;
@@ -159,16 +185,34 @@ export default function ShareCard({ sessionId, userName }) {
 
   useEffect(() => {
     if (!sessionId) {
-      setError('Chưa có buổi luyện tập để tạo thẻ chia sẻ.');
+      window.location.hash = '';
       return;
     }
-    fetch(`/api/sessions/${sessionId}/dashboard`)
+
+    fetch(`/api/sessions/${sessionId}`)
       .then(res => {
-        if (!res.ok) throw new Error('Không thể tải thẻ chia sẻ.');
+        if (!res.ok) throw new Error('Session not found');
         return res.json();
       })
-      .then(data => setDashboard(data))
-      .catch(err => setError(err.message));
+      .then(sessData => {
+        if (sessData.session.status === 'created') {
+          window.location.hash = `consent/${sessionId}`;
+          return;
+        }
+        if (sessData.session.status === 'active') {
+          window.location.hash = `chat/${sessionId}`;
+          return;
+        }
+        return fetch(`/api/sessions/${sessionId}/dashboard`)
+          .then(res => {
+            if (!res.ok) throw new Error('Không thể tải thẻ chia sẻ.');
+            return res.json();
+          })
+          .then(data => setDashboard(data));
+      })
+      .catch(() => {
+        window.location.hash = '';
+      });
   }, [sessionId]);
 
   const cardData = useMemo(() => {
@@ -187,82 +231,156 @@ export default function ShareCard({ sessionId, userName }) {
     };
   }, [dashboard]);
 
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const isLocalUrl = isLocalShareUrl(shareUrl);
+
   useEffect(() => {
     if (cardData && canvasRef.current) {
       drawShareCardToCanvas(canvasRef.current, cardData, userName);
     }
   }, [cardData, userName]);
 
-  const handleCopy = () => {
-    if (!cardData?.summary) return;
-    navigator.clipboard.writeText(cardData.summary);
-    setCopied(true);
-    setShareStatus('Đã sao chép nội dung. Bạn có thể dán vào Zalo, Facebook hoặc tin nhắn.');
+  useEffect(() => {
+    if (!cardData || isLocalUrl) return;
+
+    let cancelled = false;
+    loadZaloShareSdk()
+      .then(() => {
+        if (!cancelled && window.ZaloSocialSDK?.reload) {
+          window.ZaloSocialSDK.reload();
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setShareStatus('Không tải được nút Zalo. Bạn vẫn có thể dùng "Sao chép liên kết" hoặc "Lưu ảnh về máy".');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cardData, isLocalUrl, shareUrl]);
+
+  const handleCopy = async () => {
+    const text = cardData?.summary || 'Tôi vừa luyện nhận biết lừa đảo với AI Scam Inoculation.';
+    const fullText = `${text}\n${shareUrl}`;
+
+    if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+      setCopied(false);
+      setShareStatus('Trình duyệt không hỗ trợ tự động sao chép. Bạn có thể dùng nút "Lưu ảnh về máy" hoặc copy link trên thanh địa chỉ.');
+      return false;
+    }
+
+    try {
+      await navigator.clipboard.writeText(fullText);
+      setCopied(true);
+      setShareStatus('Đã sao chép liên kết và bài học rút ra vào bộ nhớ tạm. Bạn có thể dán vào Zalo, Facebook hoặc tin nhắn.');
+      return true;
+    } catch {
+      setCopied(false);
+      setShareStatus('Không thể sao chép liên kết (trình duyệt chặn quyền). Bạn có thể dùng nút "Lưu ảnh về máy" hoặc copy link trình duyệt.');
+      return false;
+    }
   };
 
   const handleDownload = () => {
-    if (!canvasRef.current) return;
-    canvasRef.current.toBlob((blob) => {
-      if (!blob) {
-        window.open(canvasRef.current.toDataURL('image/png'), '_blank', 'noopener,noreferrer');
-        return;
-      }
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = `ai-scam-inoculation-${sessionId}.png`;
-      link.href = url;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }, 'image/png');
+    try {
+      if (!canvasRef.current) return;
+      canvasRef.current.toBlob((blob) => {
+        if (!blob) {
+          window.open(canvasRef.current.toDataURL('image/png'), '_blank', 'noopener,noreferrer');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `ai-scam-inoculation-${sessionId}.png`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setShareStatus('Đã tải ảnh kết quả về máy.');
+      }, 'image/png');
+    } catch {
+      setShareStatus('Không thể tải ảnh tự động. Bạn hãy chụp màn hình để lưu lại.');
+    }
   };
 
-  const copyShareText = async (text, url) => {
-    await navigator.clipboard.writeText(`${text}\n${url}`);
-    setCopied(true);
+  const handleNativeShare = async () => {
+    const text = cardData?.summary || 'Tôi vừa luyện nhận biết lừa đảo với AI Scam Inoculation.';
+    setShareStatus('Đang chuẩn bị chia sẻ...');
+
+    if (!navigator.share) {
+      setShareStatus('Trình duyệt không hỗ trợ chia sẻ trực tiếp. Hãy dùng nút "Sao chép liên kết" hoặc "Lưu ảnh về máy".');
+      return;
+    }
+
+    try {
+      let sharedWithFile = false;
+      if (canvasRef.current && navigator.canShare) {
+        const blob = await new Promise((resolve) => canvasRef.current.toBlob(resolve, 'image/png'));
+        const file = blob ? new File([blob], `ai-scam-inoculation-${sessionId}.png`, { type: 'image/png' }) : null;
+        if (file && navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: 'Kết quả luyện nhận biết lừa đảo', text, files: [file] });
+          sharedWithFile = true;
+        }
+      }
+      if (!sharedWithFile) {
+        await navigator.share({ title: 'Kết quả luyện nhận biết lừa đảo', text, url: shareUrl });
+      }
+      setShareStatus('Đã mở bảng chia sẻ thành công.');
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        setShareStatus('Đã hủy thao tác chia sẻ.');
+        return;
+      }
+      setShareStatus('Trình duyệt từ chối chia sẻ trực tiếp. Bạn có thể dùng nút "Sao chép liên kết" hoặc "Lưu ảnh về máy".');
+    }
   };
 
   const handleShare = async (platform) => {
     const text = cardData?.summary || 'Tôi vừa luyện nhận biết lừa đảo với AI Scam Inoculation.';
-    const url = window.location.href;
-    const isLocalUrl = /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(url);
-    setShareStatus(platform === 'facebook'
-      ? 'Đang chuẩn bị nội dung chia sẻ Facebook...'
-      : 'Đang chuẩn bị nội dung chia sẻ Zalo...');
 
-    try {
-      if (navigator.share && canvasRef.current) {
-        const blob = await new Promise((resolve) => canvasRef.current.toBlob(resolve, 'image/png'));
-        const file = blob ? new File([blob], `ai-scam-inoculation-${sessionId}.png`, { type: 'image/png' }) : null;
-        if (file && navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ title: 'Kết quả luyện nhận biết lừa đảo', text, files: [file] });
-          setShareStatus('Đã mở bảng chia sẻ. Hãy chọn Zalo, Facebook hoặc ứng dụng bạn muốn.');
-          return;
+    if (platform === 'native') {
+      await handleNativeShare();
+      return;
+    }
+
+    const copiedSuccess = await handleCopy();
+    if (platform === 'facebook') {
+      if (!isLocalUrl) {
+        if (copiedSuccess) {
+          setShareStatus('Đã sao chép nội dung và mở Facebook. Hãy dán vào bài viết của bạn.');
+        } else {
+          setShareStatus('Đã mở Facebook. Nếu tự động sao chép bị chặn, bạn hãy copy link từ thanh địa chỉ.');
         }
-        await navigator.share({ title: 'Kết quả luyện nhận biết lừa đảo', text, url });
-        setShareStatus('Đã mở bảng chia sẻ. Hãy chọn Zalo, Facebook hoặc ứng dụng bạn muốn.');
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
+      } else {
+        if (copiedSuccess) {
+          setShareStatus('Đang ở môi trường localhost. Nội dung đã được sao chép vào bộ nhớ tạm.');
+        }
+      }
+      return;
+    }
+
+    if (platform === 'zalo') {
+      if (isLocalUrl) {
+        if (copiedSuccess) {
+          setShareStatus('Zalo cần link public để mở thẻ chia sẻ. Nội dung đã được sao chép, hãy dán thủ công khi test bằng localhost.');
+        }
         return;
       }
 
-      await copyShareText(text, url);
-      if (platform === 'facebook' && !isLocalUrl) {
-        setShareStatus('Đã sao chép nội dung và mở Facebook. Nếu cửa sổ không hiện, hãy kiểm tra popup blocker.');
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
-        return;
+      if (window.ZaloSocialSDK?.reload) {
+        window.ZaloSocialSDK.reload();
       }
 
-      if (platform === 'facebook' && isLocalUrl) {
-        setShareStatus('Đang chạy localhost nên Facebook không nhận link này. Nội dung đã được sao chép, hãy dán vào bài viết Facebook khi cần.');
-        return;
+      openZaloShareWindow(shareUrl);
+      if (copiedSuccess) {
+        setShareStatus('Đã sao chép nội dung và mở Zalo. Hãy chọn bạn bè, nhóm hoặc nhật ký Zalo.');
+      } else {
+        setShareStatus('Đã mở Zalo. Nếu tự động sao chép bị chặn, bạn hãy copy link từ thanh địa chỉ.');
       }
-
-      setShareStatus('Zalo không hỗ trợ đăng tự động từ web desktop. Nội dung đã được sao chép, hãy mở Zalo và dán vào tin nhắn/bài đăng.');
-    } catch (err) {
-      setShareStatus('Trình duyệt đã chặn chia sẻ. Mình đã chuyển sang cách sao chép nội dung để bạn dán thủ công.');
-      try {
-        await copyShareText(text, url);
-      } catch {}
     }
   };
 
@@ -293,6 +411,33 @@ export default function ShareCard({ sessionId, userName }) {
 
   const learned = cardData.recognized.slice(0, 3);
   const missed = cardData.missed.slice(0, 2);
+
+  const actionButtons = (
+    <>
+      <p className="section-label">Tùy chọn chia sẻ</p>
+      {Boolean(navigator.share) ? (
+        <button type="button" className="primary" onClick={handleNativeShare}>📤 Chia sẻ nhanh (Web Share)</button>
+      ) : null}
+      <button type="button" onClick={handleCopy}>🔗 {copied ? 'Đã sao chép!' : 'Sao chép liên kết kết quả'}</button>
+      {isLocalUrl ? (
+        <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
+      ) : (
+        <div
+          className="zalo-share-button zalo-share-action"
+          data-href={shareUrl}
+          data-layout="icon-text"
+          data-color="blue"
+          data-customize="true"
+        >
+          <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
+        </div>
+      )}
+      <button type="button" onClick={handleFacebookShare}>📘 Chia sẻ lên Facebook</button>
+      <button type="button" className="download-button" onClick={handleDownload}>📷 Lưu ảnh về máy</button>
+      <button type="button" className="outline" onClick={() => window.location.hash = `dashboard/${sessionId}`}>← Quay lại kết quả</button>
+      {shareStatus ? <p className="share-copy-note" role="status">{shareStatus}</p> : null}
+    </>
+  );
 
   return (
     <section className="panel share-screen">
@@ -361,12 +506,7 @@ export default function ShareCard({ sessionId, userName }) {
           </article>
 
           <div className="share-mobile-actions">
-            <p className="section-label">Chia sẻ lên mạng xã hội</p>
-            <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
-            <button type="button" onClick={handleFacebookShare}>📘 Chia sẻ lên Facebook</button>
-            <button type="button" className="download-button" onClick={handleDownload}>📷 Lưu ảnh về máy</button>
-            <button type="button" className="outline" onClick={() => window.location.hash = `dashboard/${sessionId}`}>← Quay lại kết quả</button>
-            {shareStatus ? <p className="share-copy-note">{shareStatus}</p> : null}
+            {actionButtons}
           </div>
 
           <canvas ref={canvasRef} className="share-export-canvas" aria-hidden="true" />
@@ -377,12 +517,7 @@ export default function ShareCard({ sessionId, userName }) {
         </div>
 
         <aside className="share-actions-panel">
-          <p className="section-label">Chia sẻ lên mạng xã hội</p>
-          <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
-          <button type="button" onClick={handleFacebookShare}>📘 Chia sẻ lên Facebook</button>
-          <button type="button" className="download-button" onClick={handleDownload}>📷 Lưu ảnh về máy</button>
-          <button type="button" className="outline" onClick={() => window.location.hash = `dashboard/${sessionId}`}>← Quay lại kết quả</button>
-          {shareStatus ? <p className="share-copy-note">{shareStatus}</p> : null}
+          {actionButtons}
         </aside>
       </div>
     </section>

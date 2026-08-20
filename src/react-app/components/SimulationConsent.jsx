@@ -17,18 +17,24 @@ export default function SimulationConsent({ onConsentConfirmed }) {
 
   useEffect(() => {
     if (!sessionId) {
-      setError('Không tìm thấy mã buổi luyện tập.');
-      setLoading(false);
+      window.location.hash = 'scenarios';
       return;
     }
 
-    // Fetch session details, then fetch scenarios to match the metadata description
     fetch(`/api/sessions/${sessionId}`)
       .then(res => {
         if (!res.ok) throw new Error('Không thể tải thông tin buổi luyện tập.');
         return res.json();
       })
       .then(data => {
+        if (data.session.status === 'active') {
+          window.location.hash = `chat/${sessionId}`;
+          return;
+        }
+        if (data.session.status === 'completed') {
+          window.location.hash = `dashboard/${sessionId}`;
+          return;
+        }
         setSession(data.session);
         return fetch('/api/scenarios').then(res => {
           if (!res.ok) throw new Error('Không thể tải kịch bản.');
@@ -39,9 +45,8 @@ export default function SimulationConsent({ onConsentConfirmed }) {
           setLoading(false);
         });
       })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
+      .catch(() => {
+        window.location.hash = 'scenarios';
       });
   }, [sessionId]);
 

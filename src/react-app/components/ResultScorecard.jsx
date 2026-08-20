@@ -38,14 +38,35 @@ export default function ResultScorecard({ sessionId }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!sessionId) return;
-    fetch(`/api/sessions/${sessionId}/dashboard`)
+    if (!sessionId) {
+      window.location.hash = '';
+      return;
+    }
+
+    fetch(`/api/sessions/${sessionId}`)
       .then(res => {
-        if (!res.ok) throw new Error('Không thể tải kết quả.');
+        if (!res.ok) throw new Error('Session not found');
         return res.json();
       })
-      .then(data => setDashboard(data))
-      .catch(err => setError(err.message));
+      .then(sessData => {
+        if (sessData.session.status === 'created') {
+          window.location.hash = `consent/${sessionId}`;
+          return;
+        }
+        if (sessData.session.status === 'active') {
+          window.location.hash = `chat/${sessionId}`;
+          return;
+        }
+        return fetch(`/api/sessions/${sessionId}/dashboard`)
+          .then(res => {
+            if (!res.ok) throw new Error('Không thể tải kết quả.');
+            return res.json();
+          })
+          .then(data => setDashboard(data));
+      })
+      .catch(() => {
+        window.location.hash = '';
+      });
   }, [sessionId]);
 
   if (error) {

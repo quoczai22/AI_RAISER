@@ -453,3 +453,68 @@ function dedupeSignalsByKey(signals) {
 function now() {
   return new Date().toISOString();
 }
+
+export async function sendChatMessageStream(sessionId, input, callbacks = {}) {
+  const { onChunk, onNotice, onDone, isCancelled, chunkDelayMs = 70 } = callbacks;
+  const result = await sendChatMessage(sessionId, input);
+
+  if (isCancelled?.()) {
+    const latestSession = await sessions.get(sessionId);
+    if (latestSession) {
+      latestSession.status = "completed";
+      latestSession.completedAt = latestSession.completedAt || now();
+      latestSession.updatedAt = now();
+      await sessions.set(sessionId, latestSession);
+    }
+    return { ...result, sessionStatus: "completed" };
+  }
+
+  if (result.safety.provider === "safe_fallback" && typeof onNotice === "function" && !isCancelled?.()) {
+    onNotice(result.safety.fallbackReason);
+  }
+
+  const emission = await emitValidatedReplyChunks(result.reply, {
+    onChunk,
+    isCancelled,
+    chunkDelayMs,
+  });
+
+  if (!emission.emitted && !emission.cancelled) {
+    const error = new Error("Validated reply was blocked before progressive rendering.");
+    error.code = "AI_OUTPUT_BLOCKED";
+    throw error;
+  }
+
+  if (typeof onDone === "function" && !isCancelled?.()) {
+    onDone(result);
+  }
+  return result;
+}
+
+export async function emitValidatedReplyChunks(reply, callbacks = {}) {
+  const { onChunk, isCancelled, chunkDelayMs = 70 } = callbacks;
+  const validation = validateAiReply(reply);
+  if (!validation.safe) {
+    return { emitted: false, reasons: validation.reasons };
+  }
+
+  const chunks = splitValidatedReply(reply);
+  for (const chunk of chunks) {
+    if (isCancelled?.()) {
+      return { emitted: false, cancelled: true, reasons: [] };
+    }
+    if (typeof onChunk === "function") {
+      onChunk(chunk);
+    }
+    if (chunkDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, chunkDelayMs));
+    }
+  }
+  return { emitted: true, cancelled: false, reasons: [] };
+}
+
+function splitValidatedReply(reply) {
+  const text = String(reply || "");
+  const chunks = text.match(/\S+\s*/g);
+  return chunks && chunks.length > 0 ? chunks : text ? [text] : [];
+}

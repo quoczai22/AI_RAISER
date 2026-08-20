@@ -3,11 +3,13 @@ import React, { useState, useEffect, useRef } from 'react';
 function maskSensitiveForDisplay(value) {
   let masked = String(value || "");
   masked = masked.replace(/\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/gi, "$1 [MASKED_ACCOUNT]");
+  masked = masked.replace(/(?:\+?84|0)(?:3|5|7|8|9)(?:[\s.-]?\d){8}\b/g, "[MASKED_PHONE]");
   masked = masked.replace(/\b\d{12}\b/g, "[MASKED_CCCD]");
+  masked = masked.replace(/\b\d{9}\b/g, "[MASKED_CCCD]");
   masked = masked.replace(/\b(?:\d[ -]?){13,19}\b/g, "[MASKED_CARD]");
-  masked = masked.replace(/\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/g, "[MASKED_PHONE]");
-  masked = masked.replace(/\b\d{4,8}\b/g, "[MASKED_OTP]");
-  masked = masked.replace(/(mật khẩu|password)\s*[:=]?\s*\S+/gi, "$1 [MASKED_PASSWORD]");
+  masked = masked.replace(/\b(otp|mã otp|mã xác nhận|mã xác minh)\s*[:=]?\s*\d{4,8}\b/gi, "$1 [MASKED_OTP]");
+  masked = masked.replace(/\b(?<!\b(?:năm|giá|tiền|vnđ|đ|\$)\s*)\d{6}\b(?!\s*(?:vnđ|đ|đồng|k|tr|triệu))\b/gi, "[MASKED_OTP]");
+  masked = masked.replace(/(mật khẩu|password)\b.*/gi, "$1 [MASKED_PASSWORD]");
   return {
     masked,
     changed: masked !== String(value || ""),
@@ -39,6 +41,7 @@ export default function ChatShell() {
   const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const chatRequestControllerRef = useRef(null);
 
   const getSessionIdFromHash = () => {
     const hash = window.location.hash || '';
@@ -50,41 +53,47 @@ export default function ChatShell() {
 
   useEffect(() => {
     if (!sessionId) {
-      setError('Không tìm thấy mã buổi luyện tập.');
-      setLoading(false);
+      window.location.hash = 'scenarios';
       return;
     }
 
-    Promise.all([
-      fetch(`/api/sessions/${sessionId}`).then(res => {
-        if (!res.ok) throw new Error('Không thể tải thông tin buổi luyện tập.');
+    fetch(`/api/sessions/${sessionId}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Session not found');
         return res.json();
-      }),
-      fetch(`/api/sessions/${sessionId}/messages`).then(res => {
-        if (!res.ok) throw new Error('Không thể tải lịch sử tin nhắn.');
-        return res.json();
-      }),
-      fetch('/api/scenarios').then(res => {
-        if (!res.ok) throw new Error('Không thể tải kịch bản.');
-        return res.json();
-      }),
-      fetch('/api/runtime-status').then(res => res.json()).catch(() => ({}))
-    ])
-      .then(([sessData, msgData, scData, runtimeData]) => {
-        setSession(sessData.session);
-        setMessages(msgData.messages || []);
-        const matched = (scData.scenarios || []).find(sc => sc.id === sessData.session.scenarioId);
-        setScenario(matched);
-        if (runtimeData.maxMessageLength) {
-          setMaxMessageLength(runtimeData.maxMessageLength);
-        }
-        setLoading(false);
       })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
+      .then(sessData => {
+        if (sessData.session.status === 'created') {
+          window.location.hash = `consent/${sessionId}`;
+          return;
+        }
+        if (sessData.session.status === 'completed') {
+          window.location.hash = `dashboard/${sessionId}`;
+          return;
+        }
+        return Promise.all([
+          fetch(`/api/sessions/${sessionId}/messages`).then(res => res.json()),
+          fetch('/api/scenarios').then(res => res.json()),
+          fetch('/api/runtime-status').then(res => res.json()).catch(() => ({}))
+        ]).then(([msgData, scData, runtimeData]) => {
+          setSession(sessData.session);
+          setMessages(msgData.messages || []);
+          const matched = (scData.scenarios || []).find(sc => sc.id === sessData.session.scenarioId);
+          setScenario(matched);
+          if (runtimeData.maxMessageLength) {
+            setMaxMessageLength(runtimeData.maxMessageLength);
+          }
+          setLoading(false);
+        });
+      })
+      .catch(() => {
+        window.location.hash = 'scenarios';
       });
   }, [sessionId]);
+
+  useEffect(() => () => {
+    chatRequestControllerRef.current?.abort();
+  }, []);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -105,41 +114,111 @@ export default function ChatShell() {
 
     const displayMsg = maskSensitiveForDisplay(text);
     // Optimistic UI update
-    setMessages(prev => [...prev, { role: 'user', content: displayMsg.masked }]);
+    setMessages(prev => [
+      ...prev,
+      { role: 'user', content: displayMsg.masked },
+      { role: 'ai', content: '', streaming: true }
+    ]);
     setIsSending(true);
     setInputValue('');
+    const controller = new AbortController();
+    chatRequestControllerRef.current = controller;
 
     fetch(`/api/sessions/${sessionId}/messages`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ message: text })
+      signal: controller.signal,
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'text/event-stream',
+      },
+      body: JSON.stringify({ message: text, stream: true }),
     })
-      .then(res => {
+      .then(async (res) => {
         if (!res.ok) throw new Error('Gửi tin nhắn thất bại.');
-        return res.json();
-      })
-      .then(data => {
-        if (data.safety?.maskedSensitiveInput) {
-          setSafetyNotices(prev => [...prev, "Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư."]);
-        }
-        if (data.safety?.provider === 'safe_fallback') {
-          setSafetyNotices(prev => [...prev, fallbackNotice(data.safety?.fallbackReason)]);
-        }
-        setMessages(prev => [...prev, { role: 'ai', content: data.reply }]);
-        setIsSending(false);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let currentEvent = 'message';
 
-        if (data.sessionStatus === 'completed') {
-          handleStop();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('event:')) {
+              currentEvent = trimmed.slice(6).trim();
+            } else if (trimmed.startsWith('data:')) {
+              const rawData = trimmed.slice(5).trim();
+              if (!rawData) continue;
+              try {
+                const data = JSON.parse(rawData);
+                if (currentEvent === 'chunk' && data.text) {
+                  setMessages(prev => {
+                    const next = [...prev];
+                    const lastIdx = next.length - 1;
+                    if (lastIdx >= 0 && next[lastIdx].role === 'ai') {
+                      next[lastIdx] = {
+                        ...next[lastIdx],
+                        content: (next[lastIdx].content || '') + data.text,
+                      };
+                    }
+                    return next;
+                  });
+                } else if (currentEvent === 'notice' && data.reason) {
+                  setSafetyNotices(prev => [...prev, fallbackNotice(data.reason)]);
+                } else if (currentEvent === 'done') {
+                  if (data.safety?.maskedSensitiveInput) {
+                    setSafetyNotices(prev => [...prev, "Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư."]);
+                  }
+                  setMessages(prev => {
+                    const next = [...prev];
+                    const lastIdx = next.length - 1;
+                    if (lastIdx >= 0 && next[lastIdx].role === 'ai') {
+                      next[lastIdx] = {
+                        ...next[lastIdx],
+                        content: data.reply,
+                        streaming: false,
+                      };
+                    }
+                    return next;
+                  });
+                  setIsSending(false);
+                  chatRequestControllerRef.current = null;
+                  if (data.sessionStatus === 'completed') {
+                    handleStop();
+                  }
+                } else if (currentEvent === 'error') {
+                  setSafetyNotices(prev => [...prev, data.error || 'Lỗi xử lý']);
+                  setIsSending(false);
+                  chatRequestControllerRef.current = null;
+                }
+              } catch (e) {
+                // ignore invalid SSE data JSON
+              }
+            }
+          }
         }
       })
-      .catch(err => {
-        setSafetyNotices(prev => [...prev, err.message]);
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          setSafetyNotices(prev => [...prev, err.message]);
+        }
+        setMessages(prev => prev.filter(m => !m.streaming));
         setIsSending(false);
+        chatRequestControllerRef.current = null;
       });
   };
 
   const handleStop = () => {
     if (!sessionId) return;
+    chatRequestControllerRef.current?.abort();
+    chatRequestControllerRef.current = null;
+    setMessages(prev => prev.filter(m => !m.streaming));
+    setIsSending(false);
     fetch(`/api/sessions/${sessionId}/complete`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' }
@@ -154,7 +233,7 @@ export default function ChatShell() {
           const history = JSON.parse(localStorage.getItem('aisi_history') || '[]');
           const updated = [data, ...history.filter(h => h.id !== data.id)];
           localStorage.setItem('aisi_history', JSON.stringify(updated));
-        } catch {}
+        } catch { }
         window.location.hash = `dashboard/${sessionId}`;
       })
       .catch(err => {
@@ -255,15 +334,11 @@ export default function ChatShell() {
                   )
                 }}
               >
-                <div className="bubble-content">{message.content}</div>
+                <div className="bubble-content">
+                  {message.streaming && !message.content ? 'AI đang trả lời...' : message.content}
+                </div>
               </div>
             ))}
-
-            {isSending ? (
-              <div className="bubble ai typing" style={{ fontStyle: 'italic', color: 'var(--muted-foreground)', background: 'rgba(255,255,255,0.7)', border: '2px solid var(--border)', borderRadius: '12px', borderTopLeftRadius: '2px', padding: '12px 16px', alignSelf: 'flex-start', fontSize: '0.95rem' }}>
-                AI đang trả lời...
-              </div>
-            ) : null}
 
             {safetyNotices.map((notice, idx) => (
               <div key={idx} className="notice danger-note" style={{ borderRadius: 'var(--radius)', marginTop: '8px', padding: '10px 14px', fontSize: '0.85rem' }}>

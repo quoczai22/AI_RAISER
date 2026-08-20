@@ -39,6 +39,7 @@ export default function App() {
       return '';
     }
   });
+  const [latestSessionStatus, setLatestSessionStatus] = useState('');
   const [history, setHistory] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('aisi_history') || '[]');
@@ -62,6 +63,36 @@ export default function App() {
       localStorage.setItem('aisi_accessibility', JSON.stringify(accessibility));
     } catch {}
   }, [accessibility]);
+
+  useEffect(() => {
+    try {
+      setHistory(JSON.parse(localStorage.getItem('aisi_history') || '[]'));
+    } catch {
+      setHistory([]);
+    }
+
+    if (!latestSessionId) {
+      setLatestSessionStatus('');
+      return;
+    }
+
+    let cancelled = false;
+    fetch(`/api/sessions/${latestSessionId}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Session not found');
+        return res.json();
+      })
+      .then(data => {
+        if (!cancelled) setLatestSessionStatus(data.session.status || '');
+      })
+      .catch(() => {
+        if (!cancelled) setLatestSessionStatus('');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [route, latestSessionId]);
 
   const handleUpdateAccessibility = (key, value) => {
     setAccessibility(prev => ({
@@ -102,6 +133,7 @@ export default function App() {
       })
       .then(data => {
         setLatestSessionId(data.session.id);
+        setLatestSessionStatus(data.session.status || 'created');
         try {
           localStorage.setItem('aisi_last_session_id', data.session.id);
         } catch {}
@@ -113,6 +145,7 @@ export default function App() {
   };
 
   const handleConsentConfirmed = (session) => {
+    setLatestSessionStatus(session.status || 'active');
     window.location.hash = `chat/${session.id}`;
   };
 
@@ -135,6 +168,11 @@ export default function App() {
     }
 
     if (route.startsWith('#consent')) {
+      const sessionId = route.split('/')[1];
+      if (!sessionId) {
+        window.location.hash = 'scenarios';
+        return <ScenarioPicker userName={userName} onStartTraining={handleStartTraining} />;
+      }
       return (
         <SimulationConsent
           onConsentConfirmed={handleConsentConfirmed}
@@ -143,18 +181,43 @@ export default function App() {
     }
 
     if (route.startsWith('#chat')) {
+      const sessionId = route.split('/')[1];
+      if (!sessionId) {
+        window.location.hash = 'scenarios';
+        return <ScenarioPicker userName={userName} onStartTraining={handleStartTraining} />;
+      }
       return (
         <ChatShell />
       );
     }
 
     if (route.startsWith('#dashboard/')) {
-        const sessionId = route.split('/')[1];
-        return <ResultScorecard sessionId={sessionId} />;
+      const sessionId = route.split('/')[1];
+      if (!sessionId) {
+        window.location.hash = '';
+        return (
+          <Dashboard
+            userName={userName}
+            history={history}
+            onResetName={handleResetName}
+          />
+        );
       }
+      return <ResultScorecard sessionId={sessionId} />;
+    }
 
     if (route.startsWith('#share/')) {
       const sessionId = route.split('/')[1];
+      if (!sessionId) {
+        window.location.hash = '';
+        return (
+          <Dashboard
+            userName={userName}
+            history={history}
+            onResetName={handleResetName}
+          />
+        );
+      }
       return <ShareCard sessionId={sessionId} userName={userName} />;
     }
 
@@ -175,6 +238,8 @@ export default function App() {
     <AppShell
       userName={userName}
       latestSessionId={latestSessionId}
+      latestSessionStatus={latestSessionStatus}
+      hasCompletedSession={history.length > 0 || latestSessionStatus === 'completed'}
       accessibility={accessibility}
       onUpdateAccessibility={handleUpdateAccessibility}
     >

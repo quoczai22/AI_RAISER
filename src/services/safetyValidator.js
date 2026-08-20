@@ -5,8 +5,18 @@ const sensitivePatterns = [
     placeholder: "$1 [MASKED_ACCOUNT]",
   },
   {
-    key: "cccd",
+    key: "phone",
+    pattern: /(?:\+?84|0)(?:3|5|7|8|9)(?:[\s.-]?\d){8}\b/g,
+    placeholder: "[MASKED_PHONE]",
+  },
+  {
+    key: "cccd_12",
     pattern: /\b\d{12}\b/g,
+    placeholder: "[MASKED_CCCD]",
+  },
+  {
+    key: "cccd_9",
+    pattern: /\b\d{9}\b/g,
     placeholder: "[MASKED_CCCD]",
   },
   {
@@ -15,34 +25,33 @@ const sensitivePatterns = [
     placeholder: "[MASKED_CARD]",
   },
   {
-    key: "phone",
-    pattern: /\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/g,
-    placeholder: "[MASKED_PHONE]",
-  },
-  {
-    key: "otp",
-    pattern: /\b\d{4,8}\b/g,
-    placeholder: "[MASKED_OTP]",
+    key: "otp_labeled",
+    pattern: /\b(otp|mã otp|mã xác nhận|mã xác minh|mã bảo mật)\b[^.\n]{0,20}?\b\d{4,8}\b/gi,
+    placeholder: "$1 [MASKED_OTP]",
   },
   {
     key: "password",
-    pattern: /(mật khẩu|password)\s*[:=]?\s*\S+/gi,
+    pattern: /(mật khẩu|password)\b.*/gi,
     placeholder: "$1 [MASKED_PASSWORD]",
   },
 ];
 
 const blockedOutputRules = [
   {
+    key: "otp_labeled",
+    pattern: /\b(otp|mã otp|mã xác nhận|mã xác minh|mã bảo mật)\b[^.\n]{0,20}?\b\d{4,8}\b/i,
+  },
+  {
     key: "url",
     pattern: /https?:\/\/\S+|\b(?:www\.)\S+/i,
   },
   {
     key: "phone",
-    pattern: /\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/,
+    pattern: /(?:\+?84|0)(?:3|5|7|8|9)(?:[\s.-]?\d){8}\b/,
   },
   {
     key: "cccd",
-    pattern: /\b\d{12}\b/,
+    pattern: /\b(\d{12}|\d{9})\b/,
   },
   {
     key: "card_or_account",
@@ -73,12 +82,12 @@ export function maskSensitiveInput(input) {
 
   for (const item of sensitivePatterns) {
     masked = masked.replace(item.pattern, (match, prefix) => {
-      detected.add(item.key);
-      if (item.key === "account" && prefix) {
-        return `${prefix} [MASKED_ACCOUNT]`;
-      }
-      if (item.key === "password" && prefix) {
-        return `${prefix} [MASKED_PASSWORD]`;
+      let normalizedKey = item.key;
+      if (item.key.startsWith("cccd")) normalizedKey = "cccd";
+      if (item.key.startsWith("otp")) normalizedKey = "otp";
+      detected.add(normalizedKey);
+      if (prefix && (item.key === "account" || item.key === "otp_labeled" || item.key === "password")) {
+        return `${prefix} [MASKED_${normalizedKey.toUpperCase()}]`;
       }
       return item.placeholder;
     });

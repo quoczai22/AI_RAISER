@@ -1237,3 +1237,87 @@ Sau khi hoàn tất: cập nhật TASK-011 thành `done-pending-review`, ghi dif
 ## Archive Note - TASK-015/TASK-016 Reviews 2026-08-06
 
 Chi tiết rework, các prompt cũ và review mapping hotline đã được rút gọn khỏi `TASKS.md`. Kết quả hiện hành: React Resource Hub đã bỏ mapping NCSC/113; server mặc định phục vụ React build; build, unit và HTTP smoke pass; browser mặc định đã kiểm tra được luồng Dashboard -> Resource Hub -> quay lại. Viewport chính xác `390x844` và `1440x900` vẫn chưa được Codex xác minh độc lập.
+
+## Archive Note - TASK-023 Prompt & Rework History
+
+### Prompt Cho Antigravity - TASK-023
+
+```text
+Đọc AGENTS.md, LOCAL_STATUS.md và TASKS.md. Sửa duy nhất lỗi OTP masking trong `src/services/safetyValidator.js` và bổ sung test liên quan trong `tests/run-tests.js`; không sửa UI, không đổi kiến trúc, không thêm feature, không tự commit/push.
+
+Mục tiêu:
+- Chỉ mask OTP khi có nhãn/ngữ cảnh rõ như OTP, mã OTP, mã xác nhận, mã xác minh, mã bảo mật.
+- Không mask mã đơn hàng, mã biên nhận, năm, giá tiền hoặc chuỗi 6 chữ số không có ngữ cảnh OTP.
+- Vẫn giữ masking CCCD 9/12 số, điện thoại đầu 03/05/07/08/09, password và tài khoản như hiện tại.
+
+Acceptance criteria:
+1. `Mã OTP: 123456` và `Mã xác nhận 123456` được mask.
+2. `Mã đơn hàng 123456`, `Số biên nhận 123456` và `123456` không bị mask OTP.
+3. `Năm 2026`, `500000 VNĐ` không bị mask.
+4. Không làm hỏng các test safety hiện có.
+5. Chạy `npm.cmd test`, `npm.cmd run frontend:build` và `git diff --check` đều PASS.
+6. Ghi diff ngắn, test case/input-output cụ thể và limitation dưới TASK-023. Không tự push trước Codex review.
+```
+
+### Codex Review Trước TASK-023R1 - Đã Được Khắc Phục
+
+- PASS: `Mã OTP: 123456` được mask.
+- PASS: `Mã xác nhận 123456` được mask.
+- PASS: `Mã đơn hàng 123456`, `Số biên nhận 123456`, `123456`, `Năm 2026` và `500000 VNĐ` không bị mask.
+- CHƯA ĐẠT: `Mã bảo mật 123456` chưa được mask dù nằm trong mục tiêu prompt.
+
+### Prompt Rework Cho Antigravity - TASK-023R1
+
+```text
+Rework rất hẹp cho TASK-023, chỉ sửa `src/services/safetyValidator.js` và bổ sung test trong `tests/run-tests.js`; không sửa UI, không đổi kiến trúc, không tự commit/push.
+
+Thêm ngữ cảnh `mã bảo mật` vào rule OTP để `Mã bảo mật 123456` được mask. Giữ nguyên các kết quả đã PASS: mã đơn hàng, mã biên nhận, chuỗi 123456 đứng riêng, năm và giá tiền không bị mask.
+
+Chạy `npm.cmd test`, `npm.cmd run frontend:build` và `git diff --check`. Bàn giao input/output cụ thể dưới TASK-023, không tự push trước Codex review.
+```
+
+## Archive Note - TASK-024/TASK-025 Reviews 2026-08-16
+
+- TASK-024 đã chuẩn hóa context OTP và trạng thái tracking: `.obsidian/` bị ignore; `MOC.md`, `docs/obsidian/` và `UI Redesign for Scam Training App/` đang được Git track.
+- TASK-025 ban đầu bị reject vì hai heading trùng, code fence chưa đóng và bảng mapping không khớp diff thật.
+- Codex đã đọc lại toàn bộ diff, sửa bảng mapping, chạy test/build/HTTP smoke/diff check và secret scan; tất cả PASS.
+- Release candidate gồm 14 file modified, chưa commit/push.
+- Gemini live liên tục, AI Studio public, Zalo public HTTPS và Firestore thật vẫn chưa xác minh.
+- Prompt, bảng mapping chi tiết và lịch sử rework trước khi compact được lưu trong lịch sử Git/worktree tại thời điểm review; file active chỉ giữ kết quả hiện hành.
+## TASK-026 - Streaming safety review và rework (2026-08-20)
+
+Implementation đầu tiên bị Codex reject vì validate prefix rồi phát `delta` ra UI. Dữ liệu nguy hiểm bị tách qua nhiều chunks có thể đã xuất hiện trước khi validator nhận ra mẫu hoàn chỉnh; `safe_override` chỉ thay thế nội dung sau khi lộ. Test ban đầu chỉ kiểm tra có chunk, chưa kiểm tra OTP, điện thoại, URL hoặc cancel.
+
+Rework được triển khai thành progressive rendering sau full validation:
+
+- Tái sử dụng `sendChatMessage` làm pipeline duy nhất cho parse, retry, shape validation và output safety.
+- Xóa `streamGenerateContent`, `extractReplyFromPartialJson` và đường Gemini chunk trực tiếp.
+- Chỉ chia reply đã validate thành chunks để render tuần tự.
+- Client dùng `AbortController`; server kiểm tra disconnect/cancel và bảo đảm session kết thúc.
+- Thêm output rule `otp_labeled` và regression tests cho OTP, điện thoại, URL, cancel, fallback, model lock.
+
+Kết quả: unit test, production build, HTTP smoke và `git diff --check` PASS. Task accepted với giới hạn: không phải Gemini live streaming.
+
+### Nguồn evidence pitch đã xác minh
+
+- [VOV: thiệt hại lừa đảo trực tuyến năm 2025 hơn 8.000 tỷ đồng, dẫn số liệu Bộ Công an](https://vov.vn/phap-luat/thiet-hai-tu-lua-dao-truc-tuyen-len-toi-8000-ty-dong-trong-nam-2025-post1286479.vov)
+- [VOV: Phó Cục trưởng A05 về thiệt hại và thao túng tâm lý có tổ chức](https://vov.gov.vn/cuc-pho-a05-sau-moi-vu-lua-dao-truc-tuyen-khong-chi-co-mot-nan-nhan-mat-tien-dtnew-1144575)
+- [NCA: 34,13% người dùng gặp sự cố mã độc; 62.952 mã độc di động mới](https://nca.org.vn/news/detail/an-ninh-mang-nguoi-dung-ca-nhan-2025-giam-lua-dao-tang-thach-thuc-1767769688440?l=vi)
+- [LSVN dẫn NCA: mạo danh công an, giả trúng thưởng, giả shipper phổ biến; khảo sát 60.300 người](https://lsvn.vn/mao-danh-cong-an-la-hinh-thuc-lua-dao-pho-bien-nhat-nam-2025-a168055.html)
+- [Báo Chính phủ: A05 ghi nhận hơn 1.500 vụ và hơn 1.660 tỷ đồng thiệt hại trong 8 tháng đầu 2025](https://baochinhphu.vn/cong-bo-chien-dich-truyen-thong-toan-dan-chong-lua-dao-102251022174641456.htm)
+- [Bộ Công an: khoảng 17.200 vụ từ 2022 đến tháng 10/2025](https://www.bocongan.gov.vn/bai-viet/chung-tay-phong-chong-toi-pham-lua-dao-chiem-doat-tai-san-tren-khong-gian-mang-1767000704)
+
+## Archive Note - TASK-028/TASK-029 QA Progressive UI (2026-08-20)
+
+- TASK-028 evidence WebP bị reject: một file lỗi dữ liệu, một file chỉ có `Generating recording...`; MP4 thử nghiệm là 0 byte. Không dùng các file này làm bằng chứng.
+- Codex sửa UI: progressive delay mặc định 70 ms mỗi từ; placeholder nằm trong cùng bubble streaming; bỏ bubble typing trùng. Full-output validation trước chunk và cancel không đổi.
+- Regression test, HTTP smoke và production build đều PASS. Ảnh `qa-evidence/task-029/01_single_ai_bubble_placeholder.png` xác minh một bubble AI là PASS.
+- Hai hành vi browser E2E còn không có timeline đủ: text tăng dần và Stop khi loading không có output muộn. Chúng giữ `CHƯA XÁC MINH ĐƯỢC` cho đến khi có MP4 H.264/GIF hợp lệ hoặc chủ dự án kiểm thử trực tiếp.
+- Báo cáo chi tiết giữ tại `QA_REPORT_TASK_028.md` và `QA_REPORT_TASK_029.md`; chỉ context còn hiệu lực được giữ trong `TASKS.md`.
+
+## Archive Note - TASK-027 Manual QA History (2026-08-20)
+
+- Full workflow, safe fallback, masking, accessibility, workflow guard và share local đã được QA báo PASS.
+- Các ảnh ban đầu không chứng minh progressive text/Stop timeline; Codex không chấp nhận claim PASS chỉ dựa trên screenshot tĩnh.
+- Gemini live và Zalo public HTTPS giữ `CHƯA XÁC MINH ĐƯỢC`.
+- TASK-029 là task active thay thế, chỉ giữ hai evidence E2E còn mở.

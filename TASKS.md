@@ -1,110 +1,113 @@
 # TASKS - AI Scam Inoculation
 
-File này chỉ giữ context và task đang hoạt động. Lịch sử chi tiết nằm tại `TASKS_ARCHIVE.md`.
+File này chỉ giữ context và trạng thái đang còn hiệu lực. Lịch sử chi tiết nằm trong `TASKS_ARCHIVE.md`.
 
-## Context Hiện Tại
+## Context Cốt Lõi
 
 - Sản phẩm là training/inoculation, không phải scam detection; không đổi scope MVP.
-- Frontend chính: React + Vite; backend Node.js; Gemini server-side.
-- Gemini sản phẩm cuối chỉ dùng `gemini-3.6-flash`; không temperature/top_p/top_k.
+- Frontend React + Vite, backend Node.js, Gemini gọi server-side.
+- AI sản phẩm chỉ dùng `gemini-3.6-flash`; không `temperature`, `top_p`, `top_k`.
 - Taxonomy chỉ: Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
+- Score là pure function: red flags nhận diện đúng / tổng red flags.
 - Không lưu/yêu cầu OTP, CCCD, mật khẩu, tài khoản hoặc link thật.
-- Không tin báo cáo tự khai; phải đọc diff/source/test/browser thật.
-- Chưa kiểm chứng phải ghi `CHƯA XÁC MINH ĐƯỢC`.
-- Operational note: Gemini live đang vượt quota/rate limit; tạm hoãn kiểm chứng hội thoại AI thật, không tạo thêm request cho đến khi quota hồi hoặc có project test phù hợp.
+- Không tin báo cáo tự khai; chỉ PASS khi có source/test/browser evidence thật.
 
-## Đã Accept
+## Trạng Thái Release Candidate
 
-- TASK-011: React Frontend Migration Sprint 1.
-- TASK-012: Scenario Picker And Consent.
-- TASK-013: Chat Flow.
-- TASK-014: Result Scorecard.
+- Local MVP: PASS.
+- `npm.cmd test`: PASS.
+- Production build: PASS.
+- HTTP smoke test: PASS.
+- `git diff --check`: PASS.
+- Secret scan: PASS.
+- Worktree: 14 file modified, chưa commit/push.
+- TASK-025 release candidate audit: `accepted`.
 
-Giới hạn chung: Gemini live nhiều lượt/API key thật vẫn `CHƯA XÁC MINH ĐƯỢC`.
+## Các Phần Đã Accept
 
-## TASK-015 - React Resource Hub / Hotline
+- React migration, scenario picker, consent, chat và result scorecard.
+- Resource Hub/hotline và đường chạy React mặc định.
+- Workflow guards cho desktop/mobile và direct hash route.
+- Web Share, Clipboard fallback, lưu ảnh, Facebook và Zalo source integration.
+- OTP chỉ mask khi có ngữ cảnh rõ; CCCD 9/12 số, điện thoại 03/05/07/08/09, mật khẩu và tài khoản được bảo vệ.
+- TASKS/LOCAL_STATUS đã được chuẩn hóa và audit theo diff thật.
 
-Trạng thái: `done-pending-review`.
+Chi tiết tương ứng: TASK-011 đến TASK-025 trong `TASKS_ARCHIVE.md`.
 
-Đã kiểm chứng: React hiển thị hotline `111`, nhãn `Website cảnh báo: canhbao.khonggianmang.vn`, hướng dẫn xác minh; không còn mapping `113` với NCSC; mở từ Dashboard và quay lại được; build, unit test và HTTP smoke test pass.
+## Chưa Xác Minh Được
 
-Giới hạn: viewport chính xác `390x844` và `1440x900` chưa được Codex xác minh độc lập.
+1. Gemini live 2-3 lượt liên tiếp không fallback do quota/rate limit.
+2. Google AI Studio public link/import chạy được.
+3. Zalo share trên public HTTPS URL.
+4. Firestore thật với credential và persistence sau restart.
+5. Codex chưa audit độc lập trên điện thoại thật; người dùng đã test và báo ổn.
 
-## TASK-016 - Chuẩn Hóa Đường Chạy Demo
+Không báo PASS cho các mục này nếu chưa có URL, credential hoặc evidence thật.
 
-Trạng thái: `done-pending-review`.
+## Bước Tiếp Theo
 
-Đã kiểm chứng bằng source/test/browser:
+1. Chủ dự án xác nhận release-candidate snapshot commit.
+2. Commit 14 file hiện tại bằng một snapshot commit vì source, test và tài liệu đang liên kết trong cùng worktree.
+3. Push sau khi commit được kiểm tra.
+4. Chỉ mở task Gemini/AI Studio/Zalo/Firestore khi có môi trường thật.
 
-- `server.js` mặc định chọn `dist/` nếu có; chỉ dùng static legacy khi `USE_REACT=false`.
-- README hướng dẫn `npm.cmd run frontend:build` rồi `node server.js`.
-- Không còn `113`, `tel:113` hoặc `Công an khẩn cấp: 113` trong UI source (`rg -n "113" src/` trả về 0 kết quả).
-- `npm.cmd run frontend:build`, `node tests/run-tests.js` và HTTP smoke test pass.
-- Trình duyệt mặc định phục vụ React UI, mở Dashboard, Resource Hub (`#hotlines`) và quay lại trang chính thành công.
+Hiện không có task code mới cho Antigravity.
 
-Giới hạn còn lại:
-- Viewport chính xác `390x844` và `1440x900`: `CHƯA XÁC MINH ĐƯỢC` (do công cụ browser tự động trong môi trường sandbox không ép trực tiếp được `window.innerWidth` về đúng 390px và 1440px).
-- Gemini live với API key thật trong thực tế: `CHƯA XÁC MINH ĐƯỢC`.
+## TASK-026 - Progressive rendering an toàn - ACCEPTED
 
-## TASK-017 - Tổng Kiểm Chứng Các Mục Chưa Xác Minh
+- Gemini không phát chunk trực tiếp ra UI. Hệ thống dùng pipeline `sendChatMessage` hiện có để parse, retry và validate toàn bộ output trước.
+- Chỉ reply đã qua `safetyValidator` mới được chia theo từ và hiển thị tuần tự qua SSE.
+- Đã xóa đường `streamGenerateContent` và parser JSON dở dang.
+- Fallback đi qua cùng cổng validation trước khi emit.
+- Nút Dừng dùng `AbortController`; server không emit dữ liệu đến muộn và bảo đảm session kết thúc sau cancel.
+- Bổ sung rule chặn OTP có nhãn trong AI output.
+- Regression tests chặn OTP, điện thoại và URL trước callback; kiểm tra cancel, fallback và model lock.
+- `npm.cmd test`: PASS.
+- Production build: PASS.
+- HTTP smoke test: PASS.
+- `git diff --check`: PASS, chỉ có cảnh báo LF/CRLF của Windows.
+- Giới hạn: đây là progressive rendering sau full validation, không phải Gemini live streaming.
+- Browser automation chưa chạy được do plugin browser từ chối trusted code path; cần kiểm tra cảm giác hiển thị và nút Dừng trên UI local trước release.
 
-### Trạng Thái
+Chi tiết review và nguồn pitch của TASK-026 được lưu trong `TASKS_ARCHIVE.md`.
 
-`done-pending-review`
+## Archive Reference - TASK-027 QA thủ công
 
-### Báo Cáo Antigravity Rework Audit (2026-08-06)
+TASK-027 đã được thay bởi TASK-029. Kết quả còn hiệu lực: full workflow và local fallback QA đã PASS; progressive text, Stop E2E, Gemini live và Zalo public HTTPS không được claim PASS khi thiếu evidence. Chi tiết ở `TASKS_ARCHIVE.md` và `QA_REPORT_TASK_027.md`.
 
-| STT | Scope Test Item | Trạng Thái | Bằng Chứng Thực Tế (Evidence) | Giới Hạn / Ghi Chú |
-|---|---|---|---|---|
-| 1 | **Viewport 390x844 & 1440x900 (React UI & Accessibility)** | `CHƯA XÁC MINH ĐƯỢC` | URL: `http://localhost:3088/#hotlines`. Bật Chữ to + Tương phản cao. Screenshot: `desktop_accessibility_1785991980869.png` (`innerWidth`=1424, `scrollWidth`=1409); `mobile_accessibility_1785991991217.png` (`innerWidth`=500, `scrollWidth`=500). | Sandbox Playwright đo được `innerWidth` 1424px và 500px, không cưỡng chế được chính xác tuyệt đối `1440px` và `390px`. |
-| 2 | **Thiết bị điện thoại thật** | `User đã test và báo ổn; Codex CHƯA XÁC MINH ĐƯỢC` | Người dùng đã truy cập link LAN bằng điện thoại và báo luồng hoạt động ổn. | Codex không có bằng chứng điều khiển trực tiếp trên thiết bị thật; cần giữ lại video/ảnh nếu muốn audit độc lập. |
-| 3 | **Gemini Live (gemini-3.6-flash & server-side API key)** | `CHƯA XÁC MINH ĐƯỢC` | Script: `powershell.exe -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1 -DelaySeconds 10` → Trả về `provider: safe_fallback`, `fallbackReason: GEMINI_HTTP_429`. | AI Studio Free Tier trả về `GEMINI_HTTP_429` (Quota Exceeded) nên hệ thống tự chuyển sang safe_fallback. |
-| 4 | **Safety Validator 2 chiều & Stop Button** | `PASS` | Command: `node tests/run-tests.js` → Test `maskSensitiveInput` (masking OTP, CCCD, STK, Phone), `validateAiReply` (chặn URL/OTP/CCCD/STK thật), nút Stop chấm dứt session lập tức. | Đã được kiểm chứng 100% bằng unit test tự động. |
-| 5 | **Prompt / Schema Validation / Fallback / Model Lock** | `PASS` | Command: `node tests/run-tests.js` → Kiểm tra `generateGeminiJson` schema validation, retry khi malformed output, fallback safe_fallback khi API lỗi; model bị khóa `gemini-3.6-flash`, không dùng temperature/top_p/top_k. | Đã bảo mật đúng AGENTS.md. |
-| 6 | **Scoring Engine & Taxonomy 5 nhóm** | `PASS` | Command: `node tests/run-tests.js` → Score = red flags đúng / tổng red flags (pure function); taxonomy chuẩn 5 nhóm: `Urgency`, `Authority`, `Fear`, `Social Proof/Reciprocity`, `Scarcity`. | Pure function độc lập với AI. |
-| 7 | **Firestore thật (Session Persistence)** | `CHƯA XÁC MINH ĐƯỢC` | Chưa cấu hình credential/project ID Firestore thật. | Hệ thống tự động fallback an toàn về Map in-memory. |
-| 8 | **Concurrency & Race Condition Lock** | `PASS` | Command: `node tests/run-tests.js` → `s.isProcessing = true` chặn request thứ hai song song với thông báo `already being processed`. | Giới hạn single-process in-memory lock (chưa dùng distributed Redis lock). |
-| 9 | **API Key Safety (No Client Leak)** | `PASS` | Redacted pattern check: `rg -n "GEMINI_API_KEY\|apiKey\|AIza\|secret\|private_key" src/ dist/ README.md TASKS.md Testing.md RiskReport.md` (Không leak key/secret); `Invoke-WebRequest http://localhost:3085/api/runtime-status` (Chỉ trả về `{"geminiConfigured":true,"geminiModel":"gemini-3.6-flash"}`, không lộ secret name/value). | Tuyệt đối không lưu/ghi/search key thật hay key prefix trong tài liệu/log. |
-| 10 | **AI Studio Submission (Google AI Studio Link)** | `CHƯA XÁC MINH ĐƯỢC` | Chưa xuất bản Google AI Studio public project link. | Cần tạo project public trên Google AI Studio để nộp bài chính; Cloud Run/gcloud chỉ là bonus. |
-| 11 | **Static Legacy & Default React Route & Cleanup Hotline 113** | `PASS` | Command: `node server.js` (Mặc định phục vụ `dist/` React UI); `USE_REACT=false node server.js` (Phục vụ `src/public/`); `rg -n "113" src/` (Trả về 0 kết quả). | Đã loại bỏ hoàn toàn số 113 sai. |
+## TASK-029 - Xác minh UI E2E còn mở - PARTIALLY ACCEPTED
 
-### Ghim Kiểm Tra Sau
+### Trạng thái đã kiểm chứng
 
-- API/Gemini live: tạm hoãn vì quota/rate limit đã vượt. Không tạo thêm request cho đến khi quota hồi hoặc có project test phù hợp.
-- Điều kiện đóng mục: Gemini `gemini-3.6-flash` trả lời động tối thiểu 2-3 lượt, không fallback, không lộ key và có evidence đã che thông tin nhạy cảm.
+- Code progressive đã sửa: một bubble AI, placeholder ở trong bubble đó, full-output validation trước chunk và delay 70 ms/từ.
+- Ảnh `qa-evidence/task-029/01_single_ai_bubble_placeholder.png` xác minh single bubble: PASS.
+- `npm.cmd test`, HTTP smoke và production build: PASS.
+- Gemini live và Zalo public HTTPS vẫn không thuộc task này, giữ `CHƯA XÁC MINH ĐƯỢC`.
 
-### Prompt Cho Antigravity - TASK-017 Rework
+### Còn mở
 
+1. Browser E2E: một clip thấy text AI thật tăng dần.
+2. Browser E2E: một clip thấy bấm `Dừng luyện tập` lúc loading và sau đó không có output AI muộn.
 
-```text
-Đọc AGENTS.md và TASKS.md. Rework TASK-017 vì báo cáo trước có claim chưa đủ bằng chứng và đã nhắc tới prefix giống API key. Nhiệm vụ này CHỈ TEST/VERIFY và sửa phần báo cáo trong TASKS.md; không sửa source app, không đổi kiến trúc, không tự commit/push.
+Không có lỗi code mới. Hai mục này chỉ là evidence thủ công, không chặn local MVP demo.
 
-Luật bắt buộc:
-- Không ghi API key thật, prefix key, tên file key, hoặc bất kỳ chuỗi bí mật nào vào TASKS.md/log/screenshot.
-- Không dùng `tests/test-key.js` vì file này không tồn tại.
-- Chỉ ghi PASS khi có command/source/browser evidence tự chạy được. Nếu evidence không đúng kích thước/không đủ phạm vi, ghi CHƯA XÁC MINH ĐƯỢC.
-- Nếu Gemini trả provider=safe_fallback, GEMINI_HTTP_429, timeout hoặc thiếu key, ghi Gemini live là CHƯA XÁC MINH ĐƯỢC.
+### Phạm vi nếu cần xác minh lại
 
-Scope test lại:
-1. Browser QA React ở đúng viewport 390x844 và 1440x900: dashboard, scenario+level, consent, chat, Stop, result/score, history/share, Resource Hub, Chữ to, Tương phản cao. Ghi URL, actual window.innerWidth/innerHeight, documentElement.clientWidth, scrollWidth, overflow, screenshot path nếu có.
-2. Test trên điện thoại thật nếu có URL truy cập được. Nếu không test được phone thật, ghi CHƯA XÁC MINH ĐƯỢC.
-3. Gemini live với server-side API key và model gemini-3.6-flash: chạy nhiều lượt chat động. Nếu provider=safe_fallback, GEMINI_HTTP_429, timeout hoặc thiếu key thì ghi đúng lý do, không báo Gemini đạt.
-4. Safety validator 2 chiều: thử OTP/CCCD/mật khẩu/tài khoản/link thật/số điện thoại thật ở input và kiểm output không tạo dữ liệu cấm. Stop luôn hoạt động.
-5. Prompt/schema/repair/fallback: xác minh JSON schema, validator, retry/fallback khi malformed output; không dùng temperature/top_p/top_k.
-6. Scoring: kiểm score là red flags đúng / tổng red flags, pure function, taxonomy chỉ Urgency, Authority, Fear, Social Proof/Reciprocity, Scarcity.
-7. Firestore thật: nếu có FIRESTORE_PROJECT_ID/credentials, tạo session -> restart server -> history còn tồn tại. Nếu không có credentials, ghi CHƯA XÁC MINH ĐƯỢC.
-8. Concurrency/lock: thử hai chat request gần đồng thời và TTL lock. Nếu không test được nhiều process, ghi giới hạn.
-9. API key safety: kiểm bằng pattern redacted như `rg -n "GEMINI_API_KEY|apiKey|AIza|secret|private_key" src/ dist/ README.md TASKS.md Testing.md RiskReport.md`, tuyệt đối không search hoặc ghi key thật/prefix key vào tài liệu. /api/runtime-status không lộ secret.
-10. AI Studio submission: kiểm có public AI Studio project link/import path chưa. Nếu chưa test import/deploy được, ghi CHƯA XÁC MINH ĐƯỢC. Cloud Run/gcloud chỉ bonus.
-11. Confirm node server.js default serve React dist, legacy chỉ USE_REACT=false, và không còn hotline 113 sai.
+- Chỉ tạo `QA_REPORT_TASK_029.md` và `qa-evidence/task-029/`.
+- Không sửa source/config/test, không commit/push.
+- Nếu có evidence, dùng MP4 H.264 5-15 giây và kiểm tra bằng `ffprobe`.
+- Không quay được thì giữ `CHƯA XÁC MINH ĐƯỢC`, không suy đoán PASS.
 
-Lệnh test gợi ý: npm.cmd run frontend:build; node tests/run-tests.js; powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1; powershell.exe -ExecutionPolicy Bypass -File tests/live-gemini-probe.ps1 -DelaySeconds 10; browser/manual QA.
+### Prompt cho Antigravity
 
-Bàn giao trong TASKS.md dưới TASK-017: bảng PASS/FAIL/CHƯA XÁC MINH ĐƯỢC, mỗi dòng có evidence command/URL/file/screenshot và limitation. Không tự push.
-```
+> Chỉ QA evidence, không sửa code/config/test và không commit/push. Dùng Chrome mở http://localhost:3000 sau Ctrl+F5. Nếu quay được, tạo 2 MP4 H.264 5-15 giây trong `qa-evidence/task-029/`: clip 1 thấy text thật trong một bubble AI tăng dần; clip 2 thấy bấm Dừng khi loading rồi dashboard/kết quả giữ >=3 giây không có bubble AI mới. Chạy ffprobe để xác minh codec h264 và duration. Cập nhật `QA_REPORT_TASK_029.md` với URL, viewport, thời điểm, provider thật và evidence. Nếu không có clip hợp lệ, giữ hai mục `CHƯA XÁC MINH ĐƯỢC`; không ghi PASS, không tạo file rỗng/WebP lỗi.
 
-## Quy Trình Bàn Giao
+## Backlog Sau MVP
 
-Sau mỗi task: ghi diff/test/browser evidence ngắn, đặt `done-pending-review`, thêm prompt ngay bên dưới, không tự push. Codex review source thật trước khi accept/commit.
+- Baseline và lịch sử điểm theo 5 taxonomy.
+- Gợi ý bài luyện từ nhóm dấu hiệu còn yếu; scoring vẫn deterministic.
+- Link chia sẻ riêng tư, chỉ đọc, có thời hạn và không chứa transcript.
+- Nhắc luyện định kỳ trong app; chưa gửi Zalo tự động.
+- Dashboard thống kê ẩn danh cho tổ chức.
 
-Sau khi accept: rút gọn task như file này; lịch sử chuyển vào `TASKS_ARCHIVE.md`.
+Không biến người thân thành actor chính, không giám sát âm thầm và không đưa backlog vào MVP trước khi nộp.

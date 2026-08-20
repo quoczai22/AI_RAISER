@@ -8,7 +8,7 @@ import {
   getSession,
   requireStoredSession,
 } from "../src/services/sessionService.js";
-import { sendChatMessage } from "../src/services/chatOrchestrator.js";
+import { emitValidatedReplyChunks, sendChatMessage, sendChatMessageStream } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
 import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
@@ -28,6 +28,7 @@ assert.equal(getPositiveIntEnv("UNIT_GOOD_INT", 7), 12);
 const publicAppSource = readFileSync(new URL("../src/public/app.js", import.meta.url), "utf8");
 const publicCssSource = readFileSync(new URL("../src/public/app.css", import.meta.url), "utf8");
 const publicIndexSource = readFileSync(new URL("../src/public/index.html", import.meta.url), "utf8");
+const reactChatSource = readFileSync(new URL("../src/react-app/components/ChatShell.jsx", import.meta.url), "utf8");
 assert.equal(publicAppSource.includes('|| "social engineering"'), false);
 assert.equal(publicAppSource.includes("aisi_accessibility"), true);
 assert.equal(publicAppSource.includes("large-text-toggle"), true);
@@ -136,9 +137,37 @@ await assert.rejects(
   /Message must be 1000 characters or fewer/,
 );
 
-const masked = maskSensitiveInput("mã của tôi là 123456");
-assert.equal(masked.changed, true);
-assert.equal(masked.masked.includes("[MASKED_OTP]"), true);
+const case1 = maskSensitiveInput("Mã đơn hàng 123456");
+assert.equal(case1.changed, false, "Mã đơn hàng 123456 must NOT be masked");
+assert.equal(case1.masked, "Mã đơn hàng 123456");
+
+const case2 = maskSensitiveInput("Số biên nhận 123456");
+assert.equal(case2.changed, false, "Số biên nhận 123456 must NOT be masked");
+assert.equal(case2.masked, "Số biên nhận 123456");
+
+const case3 = maskSensitiveInput("Mã OTP của bạn là 123456");
+assert.equal(case3.changed, true, "Mã OTP của bạn là 123456 MUST be masked");
+assert.equal(case3.masked, "Mã OTP [MASKED_OTP]");
+
+const case4 = maskSensitiveInput("Mã xác nhận 123456");
+assert.equal(case4.changed, true, "Mã xác nhận 123456 MUST be masked");
+assert.equal(case4.masked, "Mã xác nhận [MASKED_OTP]");
+
+const case5 = maskSensitiveInput("Mã bảo mật 123456");
+assert.equal(case5.changed, true, "Mã bảo mật 123456 MUST be masked");
+assert.equal(case5.masked, "Mã bảo mật [MASKED_OTP]");
+
+const case6 = maskSensitiveInput("123456");
+assert.equal(case6.changed, false, "123456 standalone must NOT be masked");
+assert.equal(case6.masked, "123456");
+
+const case7 = maskSensitiveInput("Năm 2026");
+assert.equal(case7.changed, false, "Năm 2026 must NOT be masked");
+assert.equal(case7.masked, "Năm 2026");
+
+const case8 = maskSensitiveInput("500000 VNĐ");
+assert.equal(case8.changed, false, "500000 VNĐ must NOT be masked");
+assert.equal(case8.masked, "500000 VNĐ");
 
 const maskedCccd = maskSensitiveInput("CCCD của tôi là 012345678901");
 assert.equal(maskedCccd.changed, true);
@@ -248,7 +277,7 @@ assert.equal(otpDashboard.recognizedRedFlags[0].key, "request_for_sensitive_info
 
 const leakedOtpSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
 await confirmConsent(leakedOtpSession.id, { consent: true });
-const leakedOtpChat = await sendChatMessage(leakedOtpSession.id, { message: "Mã của tôi là 123456" });
+const leakedOtpChat = await sendChatMessage(leakedOtpSession.id, { message: "Mã OTP: 123456" });
 assert.equal(leakedOtpChat.safety.maskedSensitiveInput, true);
 assert.equal(leakedOtpChat.sessionStatus, "active");
 assert.equal(leakedOtpChat.detectedEvents[0].status, "triggered");
@@ -509,11 +538,88 @@ await sendChatMessage(chatSession.id, { message: "Hello." });
 const afterChatData = await sessions.get(chatSession.id);
 assert.equal(afterChatData.messages.length, 2, "sendChatMessage must explicitly persist the session updates");
 
-// Verify model lock
+// Progressive rendering runs only after full-reply validation.
+for (const unsafeReply of [
+  "Mã OTP: 123456",
+  "Hãy gọi 0901234567",
+  "Mở https://example.com ngay",
+]) {
+  const unsafeChunks = [];
+  const unsafeResult = await emitValidatedReplyChunks(unsafeReply, {
+    onChunk: (text) => unsafeChunks.push(text),
+    chunkDelayMs: 0,
+  });
+  assert.equal(unsafeResult.emitted, false, `${unsafeReply} must be blocked before any chunk is emitted`);
+  assert.deepEqual(unsafeChunks, [], `${unsafeReply} must never reach the UI callback`);
+}
+
+const safeChunks = [];
+const safeReply = "Hãy dừng lại và xác minh qua kênh chính thức.";
+const safeResult = await emitValidatedReplyChunks(safeReply, {
+  onChunk: (text) => safeChunks.push(text),
+  chunkDelayMs: 0,
+});
+assert.equal(safeResult.emitted, true);
+assert.equal(safeChunks.join(""), safeReply);
+
+let cancelRequested = false;
+const cancelledChunks = [];
+const cancelledResult = await emitValidatedReplyChunks("Đây là nội dung an toàn nhưng sẽ bị dừng.", {
+  onChunk: (text) => {
+    cancelledChunks.push(text);
+    cancelRequested = true;
+  },
+  isCancelled: () => cancelRequested,
+  chunkDelayMs: 0,
+});
+assert.equal(cancelledResult.cancelled, true);
+assert.equal(cancelledChunks.length, 1, "No later chunk may be emitted after cancellation");
+assert.equal(reactChatSource.includes("new AbortController()"), true);
+assert.equal(reactChatSource.includes("chatRequestControllerRef.current?.abort()"), true);
+
+const cancelledStreamSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "CancelUser" });
+await confirmConsent(cancelledStreamSession.id, { consent: true });
+let cancelledStreamChunkCount = 0;
+let cancelledStreamDone = false;
+await sendChatMessageStream(cancelledStreamSession.id, { message: "Dừng phiên đang gửi." }, {
+  onChunk: () => { cancelledStreamChunkCount += 1; },
+  onDone: () => { cancelledStreamDone = true; },
+  isCancelled: () => true,
+  chunkDelayMs: 0,
+});
+assert.equal(cancelledStreamChunkCount, 0);
+assert.equal(cancelledStreamDone, false);
+assert.equal((await getSession(cancelledStreamSession.id)).status, "completed");
+
+const streamSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "StreamUser" });
+await confirmConsent(streamSession.id, { consent: true });
+let chunkReceived = "";
+let doneReceived = null;
+await sendChatMessageStream(streamSession.id, { message: "Xin chào mô phỏng." }, {
+  onChunk: (text) => { chunkReceived += text; },
+  onDone: (res) => { doneReceived = res; },
+  chunkDelayMs: 0,
+});
+assert.ok(chunkReceived.length > 0, "onChunk must receive text during streaming");
+assert.ok(doneReceived && doneReceived.reply, "onDone must receive final result");
+assert.equal(chunkReceived, doneReceived.reply, "Only the fully validated final reply may be progressively rendered");
+assert.equal(doneReceived.safety.provider, "safe_fallback");
+assert.equal(
+  reactChatSource.includes("message.streaming && !message.content ? 'AI đang trả lời...' : message.content"),
+  true,
+  "The pending label must share the streaming bubble and disappear as soon as text arrives",
+);
+assert.equal(
+  reactChatSource.includes('{isSending ? (\n              <div className="bubble ai typing"'),
+  false,
+  "The UI must not render a second typing bubble beside the progressive reply",
+);
+
+// Verify model lock remains enforced after the progressive-rendering change.
 process.env.GEMINI_MODEL = "forbidden-model-name";
 await assert.rejects(
   () => generateGeminiJson({ systemInstruction: "", prompt: "", schema: {} }),
-  /Forbidden model/
+  /Forbidden model/,
 );
 process.env.GEMINI_MODEL = "gemini-3.6-flash";
 

@@ -133,11 +133,13 @@ function escapeHtml(value) {
 function maskSensitiveForDisplay(value) {
   let masked = String(value || "");
   masked = masked.replace(/\b(số tài khoản|stk|tài khoản)\s*[:=]?\s*(?:\d[\s.-]?){6,19}\b/gi, "$1 [MASKED_ACCOUNT]");
+  masked = masked.replace(/(?:\+?84|0)(?:3|5|7|8|9)(?:[\s.-]?\d){8}\b/g, "[MASKED_PHONE]");
   masked = masked.replace(/\b\d{12}\b/g, "[MASKED_CCCD]");
+  masked = masked.replace(/\b\d{9}\b/g, "[MASKED_CCCD]");
   masked = masked.replace(/\b(?:\d[ -]?){13,19}\b/g, "[MASKED_CARD]");
-  masked = masked.replace(/\b(?:\+?84|0)(?:\d[\s.-]?){8,10}\b/g, "[MASKED_PHONE]");
-  masked = masked.replace(/\b\d{4,8}\b/g, "[MASKED_OTP]");
-  masked = masked.replace(/(mật khẩu|password)\s*[:=]?\s*\S+/gi, "$1 [MASKED_PASSWORD]");
+  masked = masked.replace(/\b(otp|mã otp|mã xác nhận|mã xác minh)\s*[:=]?\s*\d{4,8}\b/gi, "$1 [MASKED_OTP]");
+  masked = masked.replace(/\b(?<!\b(?:năm|giá|tiền|vnđ|đ|\$)\s*)\d{6}\b(?!\s*(?:vnđ|đ|đồng|k|tr|triệu))\b/gi, "[MASKED_OTP]");
+  masked = masked.replace(/(mật khẩu|password)\b.*/gi, "$1 [MASKED_PASSWORD]");
   return {
     masked,
     changed: masked !== String(value || ""),
