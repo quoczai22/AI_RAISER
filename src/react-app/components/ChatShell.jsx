@@ -353,9 +353,9 @@ export default function ChatShell() {
             <textarea
               id="chat-input"
               maxLength={maxMessageLength}
-              autocomplete="off"
-              autocapitalize="none"
-              spellcheck="false"
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
               placeholder="Nhập tin nhắn..."
               aria-label="Nhập tin nhắn"
               value={inputValue}
