@@ -1,5 +1,16 @@
 import { Firestore } from "@google-cloud/firestore";
 
+export function getFirestoreConfig(env = process.env) {
+  const projectId = String(
+    env.FIRESTORE_PROJECT_ID ||
+    (env.ENABLE_FIRESTORE === "true" ? env.GOOGLE_CLOUD_PROJECT : "")
+  ).trim();
+  const databaseId = String(env.FIRESTORE_DATABASE_ID || "").trim();
+
+  if (!projectId) return null;
+  return databaseId ? { projectId, databaseId } : { projectId };
+}
+
 export function sanitizeSessionForFirestore(session) {
   const value = session && typeof session === "object" ? session : {};
   return JSON.parse(JSON.stringify({
@@ -53,14 +64,16 @@ class FirestoreStore {
     this.useFirestore = false;
     this.inMemoryMap = new Map();
 
-    const projectId = process.env.FIRESTORE_PROJECT_ID ||
-      (process.env.ENABLE_FIRESTORE === "true" ? process.env.GOOGLE_CLOUD_PROJECT : "");
-    if (projectId) {
+    const firestoreConfig = getFirestoreConfig();
+    if (firestoreConfig) {
       try {
-        this.db = new Firestore({ projectId });
+        this.db = new Firestore(firestoreConfig);
         this.collection = this.db.collection("sessions");
         this.useFirestore = true;
-        console.log(`Firestore initialized with project ID: ${projectId}`);
+        console.log(
+          `Firestore initialized with project ID: ${firestoreConfig.projectId}, ` +
+          `database: ${firestoreConfig.databaseId || "(default)"}`
+        );
       } catch (err) {
         console.warn("Failed to initialize Firestore, falling back to in-memory store:", err.message);
       }

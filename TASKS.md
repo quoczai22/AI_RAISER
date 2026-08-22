@@ -307,6 +307,36 @@ Tạo evidence local cuối cùng cho source GitHub trước khi import vào Goo
 - Source code không có diff; worktree hiện chỉ có thay đổi tài liệu/trạng thái và QA/Word/evidence untracked. Trước import, chủ dự án cần chọn snapshot GitHub sạch chứa Markdown cần giữ; không tự thêm toàn bộ QA/Word/evidence untracked.
 - TASK-039: **ACCEPTED LOCAL**. Gemini live ổn định, public URL AI Studio, Firestore persistence cloud, Facebook/Zalo trên HTTPS public: **CHƯA XÁC MINH ĐƯỢC**.
 
+## TASK-040 - Firestore Server Config Alignment - IN PROGRESS
+
+### Mục tiêu
+
+Loại bỏ việc backend vô tình dùng runtime project/database mặc định trong AI Studio. Server phải nhận rõ `FIRESTORE_PROJECT_ID` và optional `FIRESTORE_DATABASE_ID` qua môi trường server-side, không đưa ID thật hay credential vào Git.
+
+### Phạm vi
+
+- Chỉ: `src/services/store.js`, `.env.example`, `README.md`, `tests/run-tests.js`, `LOCAL_STATUS.md`, `TASKS.md`.
+- Không đổi Firestore rules, IAM, cloud config, UI, Gemini, validator, scoring, fallback hoặc dependency.
+
+### Acceptance criteria
+
+1. Không có project ID thì giữ Map in-memory.
+2. Có project ID thì tạo Firestore server-side đúng project; có database ID thì dùng named database đó, để trống thì dùng `(default)`.
+3. Không có Firebase Web SDK/browser access hay secret/ID thật trong Git.
+4. Unit test, HTTP smoke, production build và `git diff --check` PASS.
+
+### Prompt cho Antigravity
+
+> Làm QA/review TASK-040, không sửa code/config, không mở AI Studio/Firebase/Cloud Console và không commit/push. Đọc `src/services/store.js`, `.env.example`, `README.md`, `tests/run-tests.js`. Xác nhận `FIRESTORE_PROJECT_ID` và optional `FIRESTORE_DATABASE_ID` chỉ được đọc server-side; thiếu project ID phải giữ Map fallback, named database phải được truyền vào `@google-cloud/firestore`, không có project/database ID thật, Firebase Web SDK hay browser direct access. Chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`. Báo cáo diff ngắn, output thật và mọi mục CHƯA XÁC MINH ĐƯỢC cloud. Không commit/push.
+
+### Codex implementation review (2026-08-22)
+
+- Đã thêm `getFirestoreConfig`: server ưu tiên `FIRESTORE_PROJECT_ID`, nhận optional `FIRESTORE_DATABASE_ID`; chỉ khi database ID để trống mới dùng `(default)`.
+- Không có project ID thì tiếp tục Map in-memory; không đổi rule/IAM/cloud setting hay browser boundary.
+- Bổ sung test config thuần, `.env.example` và README; không có ID/credential thật trong source.
+- Codex chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`: PASS.
+- Cloud vẫn `CHƯA XÁC MINH ĐƯỢC`: cần owner xác định một database ID hiện hành, cấu hình 2 biến trong **server environment AI Studio** rồi chạy canonical persistence test. Không đoán ID từ các report cũ.
+
 ## TASK-026 - Progressive rendering an toàn - ACCEPTED
 
 - Gemini không phát chunk trực tiếp ra UI. Hệ thống dùng pipeline `sendChatMessage` hiện có để parse, retry và validate toàn bộ output trước.

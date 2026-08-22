@@ -13,12 +13,22 @@ import { getDashboard } from "../src/services/dashboardService.js";
 import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
 import { looksLikeScamRecognition, maskSensitiveInput, validateAiReply } from "../src/services/safetyValidator.js";
-import { sanitizeSessionForFirestore, sessions } from "../src/services/store.js";
+import { getFirestoreConfig, sanitizeSessionForFirestore, sessions } from "../src/services/store.js";
 
 
 const scenarios = listScenarios();
 loadEnvFile();
 process.env.GEMINI_API_KEY = "";
+assert.deepEqual(getFirestoreConfig({}), null);
+assert.deepEqual(getFirestoreConfig({ FIRESTORE_PROJECT_ID: "project-a" }), { projectId: "project-a" });
+assert.deepEqual(
+  getFirestoreConfig({ FIRESTORE_PROJECT_ID: " project-a ", FIRESTORE_DATABASE_ID: " named-db " }),
+  { projectId: "project-a", databaseId: "named-db" }
+);
+assert.deepEqual(
+  getFirestoreConfig({ ENABLE_FIRESTORE: "true", GOOGLE_CLOUD_PROJECT: "runtime-project" }),
+  { projectId: "runtime-project" }
+);
 const firestoreDocument = sanitizeSessionForFirestore({
   id: "session-safe",
   scenarioId: "fake_bank",
