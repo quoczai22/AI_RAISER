@@ -356,7 +356,7 @@ Giữ Resource Hub/Số xác minh là công cụ hỗ trợ người dùng, khô
 ### Phạm vi
 
 - Chỉ `src/react-app/components/Hotlines.jsx`, `TASKS.md`, `LOCAL_STATUS.md` nếu cần.
-- Nguồn mới phải là link trực tiếp, mô tả thuần Việt ngắn và không chứa số điện thoại tự đoán.
+- Nguồn mới phải là link trực tiếp, mô tả thuần Việt ngắn. Chỉ thêm số điện thoại theo địa phương khi có link nguồn cơ quan chính thức ngay trên thẻ đó.
 
 ### Cấm
 
@@ -365,12 +365,12 @@ Giữ Resource Hub/Số xác minh là công cụ hỗ trợ người dùng, khô
 ### Acceptance criteria
 
 1. Có đúng 7 thẻ trong `onlineChecks`; mọi link dùng `target="_blank"` và `rel="noopener noreferrer"`.
-2. Giữ nguyên 7 item danh mục cảnh báo theo địa phương.
+2. Giữ nguyên 7 item danh mục cảnh báo theo địa phương. Chỉ Hải Phòng và Đà Nẵng có contact địa phương đã được source chính thức xác minh; không suy diễn số cho các địa phương khác.
 3. Test và production build PASS.
 
 ### Prompt cho Antigravity
 
-> Chỉ review/QA TASK-041, không sửa source/config và không commit/push. Đọc `src/react-app/components/Hotlines.jsx` và data catalog địa phương. Xác nhận `onlineChecks` có đúng 7 thẻ, tất cả link mở tab mới an toàn, mô tả ngắn thuần Việt; xác nhận catalog địa phương vẫn đúng 7 item và không có iframe/browser embed. Chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`. Báo cáo số lượng, output test và mọi lỗi link/build, không tự kết luận link ngoài còn hoạt động nếu không mở kiểm tra.
+> Chỉ review/QA TASK-041, không sửa source/config và không commit/push. Đọc `src/react-app/components/Hotlines.jsx`, app CSS và data catalog địa phương. Xác nhận `onlineChecks` có đúng 7 thẻ, tất cả link mở tab mới an toàn, mô tả ngắn thuần Việt; catalog giữ đúng 7 item, chỉ Hải Phòng/Đà Nẵng có số liên hệ địa phương và mỗi số có source URL chính thức. Xác nhận không iframe/browser embed, không suy diễn số cho tỉnh khác. Chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`. Báo cáo số lượng, output test và mọi lỗi link/build, không tự kết luận link ngoài còn hoạt động nếu không mở kiểm tra.
 
 ### Codex review (2026-08-22)
 
@@ -378,6 +378,8 @@ Giữ Resource Hub/Số xác minh là công cụ hỗ trợ người dùng, khô
 - Các link mới là nguồn tham khảo mở tab mới; không có iframe hoặc browser embed.
 - `npm.cmd test`, HTTP smoke, production build và `git diff --check`: PASS.
 - Độ sẵn sàng theo thời gian của từng website ngoài vẫn cần người dùng/browser xác minh khi Public; không ảnh hưởng local build.
+- Bổ sung duy nhất hai contact địa phương có nguồn cơ quan chính thức: Hải Phòng `0766 05 05 05` và Đà Nẵng `0694 260 319`; mỗi contact có link nguồn ngay trên thẻ. Không có số được suy diễn cho 5 địa phương còn lại.
+- TASK-041: **ACCEPTED LOCAL**.
 
 ## TASK-026 - Progressive rendering an toàn - ACCEPTED
 

@@ -25,6 +25,21 @@ const scamTypeLabels = {
   'Social Engineering': 'Thao túng tâm lý',
 };
 
+const verifiedLocalContacts = {
+  'VN-HP': {
+    label: 'Công an Hải Phòng - An ninh mạng',
+    phone: '0766 05 05 05',
+    href: 'tel:0766050505',
+    sourceUrl: 'https://congan.haiphong.gov.vn/Tin-An-ninh-trat-tu/Phong-An-ninh-mang-va-phong-chong-toi-pham-su-dung-cong-nghe-cao-Canh-bao-thu-doan-gia-danh-nhan-vien-nha-mang-di-dong-184974.html',
+  },
+  'VN-DN': {
+    label: 'Công an Đà Nẵng - An ninh mạng',
+    phone: '0694 260 319',
+    href: 'tel:0694260319',
+    sourceUrl: 'https://danang.gov.vn/web/dng/-/chu-tich-ubnd-thanh-pho-da-nang-co-thu-keu-goi-toan-dan-tham-gia-tuyen-truyen-dau-tranh-phong-chong-toi-pham-tren-khong-gian-mang',
+  },
+};
+
 const groupedCatalog = propagandaCatalog.reduce((groups, item) => {
   const region = item.region;
   if (!groups[region]) groups[region] = [];
@@ -183,8 +198,10 @@ export default function Hotlines() {
             <article className="verification-region-card" key={region}>
               <h3>{regionLabels[region] || region}</h3>
               <ul>
-                {items.map((item) => (
-                  <li key={item.location_id}>
+                {items.map((item) => {
+                  const localContact = verifiedLocalContacts[item.location_id];
+                  return (
+                    <li key={item.location_id}>
                     <div className="catalog-article-icon" aria-hidden="true">📰</div>
                     <div className="catalog-article-body">
                       <strong>{provinceByCatalogId[item.location_id]?.name || item.location_id}</strong>
@@ -205,6 +222,16 @@ export default function Hotlines() {
                         </small>
                       )}
                       <small>{item.propaganda_document_id}</small>
+                      {localContact && (
+                        <div className="catalog-local-contact">
+                          <a href={localContact.href} aria-label={`Gọi ${localContact.label}: ${localContact.phone}`}>
+                            📞 {localContact.label}: {localContact.phone}
+                          </a>
+                          <a href={localContact.sourceUrl} target="_blank" rel="noopener noreferrer">
+                            Nguồn số
+                          </a>
+                        </div>
+                      )}
                     </div>
                     <div className="catalog-card-actions">
                       <b>{item.status === 'ACTIVE' ? 'Nguồn tham khảo' : item.status}</b>
@@ -220,8 +247,9 @@ export default function Hotlines() {
                         </a>
                       )}
                     </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             </article>
           ))}

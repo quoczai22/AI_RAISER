@@ -2740,6 +2740,30 @@ body.high-contrast .toggle-row input:checked {
   overflow-wrap: anywhere;
 }
 
+.catalog-local-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+
+.catalog-local-contact a {
+  color: #126b43;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.catalog-local-contact a:last-child {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.catalog-local-contact a:hover {
+  text-decoration: underline;
+}
+
 .verification-region-card b {
   padding: 6px 8px;
   border-radius: 999px;
