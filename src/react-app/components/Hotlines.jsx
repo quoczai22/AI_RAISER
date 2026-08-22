@@ -71,6 +71,38 @@ const onlineChecks = [
     icon: '🏛️',
   },
   {
+    title: 'Không gian mạng Việt Nam',
+    description: 'Theo dõi cảnh báo và thông tin an toàn không gian mạng từ cơ quan chuyên trách.',
+    href: 'https://khonggianmang.vn/',
+    label: 'khonggianmang.vn',
+    button: 'Mở',
+    icon: '🛡️',
+  },
+  {
+    title: 'Quy định chống cuộc gọi rác',
+    description: 'Đọc quy định về chống tin nhắn rác, email rác và cuộc gọi rác.',
+    href: 'https://cspl.mic.gov.vn/Pages/TinTuc/138202/Nghi-dinh-so-91-2020-Nd-CP-ve-chong-tin-nhan-rac--thu-dien-tu-rac--cuoc-goi-rac.html',
+    label: 'cspl.mic.gov.vn',
+    button: 'Đọc',
+    icon: '⚖️',
+  },
+  {
+    title: 'Nhận diện lừa đảo trực tuyến',
+    description: 'Xem chiến dịch hướng dẫn nhận biết và phòng tránh lừa đảo trực tuyến.',
+    href: 'https://mic.gov.vn/cuc-an-toan-thong-tin-va-meta-phat-dong-chien-dich-nhan-dien-lua-dao-19724071714384132.htm',
+    label: 'mic.gov.vn',
+    button: 'Đọc',
+    icon: '🔎',
+  },
+  {
+    title: 'Cảnh giác thủ đoạn mới',
+    description: 'Đọc cảnh báo chính thức về các thủ đoạn lừa đảo trực tuyến mới.',
+    href: 'https://mic.gov.vn/canh-giac-truoc-nhung-thu-doan-lua-dao-moi-197241230143647271.htm',
+    label: 'mic.gov.vn',
+    button: 'Đọc',
+    icon: '📰',
+  },
+  {
     title: 'Xác minh ngân hàng',
     description: 'Gọi số in mặt sau thẻ ngân hàng hoặc tìm số trên website chính thức.',
     warning: 'Không gọi số từ tin nhắn, email, Zalo người lạ.',
@@ -113,7 +145,7 @@ export default function Hotlines() {
         </div>
 
         <div className="verification-column">
-          <h2>Xác minh trực tuyến</h2>
+          <h2>Nguồn tham khảo chính thức</h2>
           <div className="verification-card-list">
             {onlineChecks.map((item) => (
               <article className="online-check-card" key={item.title}>

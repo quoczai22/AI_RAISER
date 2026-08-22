@@ -239,6 +239,16 @@ Sửa và kiểm thử source trong repo trước khi đưa lại vào AI Studio
 - Không accept cloud persistence: canonical session/allowlist chỉ được xem là evidence local/server attempt cho đến khi read/write thật vào database active thành công sau default deny.
 - Có lệch project: database Firestore trước đó report ở `gen-lang-client-0936873228`, nhưng server runtime attempt dùng `ais-asia-east1-779d7537e66b415`. Không tự bật API/billing hay cấp IAM cho project nào khi chưa có owner confirmation.
 
+### Cloud evidence recheck (2026-08-22)
+
+- Runtime log report đã trỏ đúng `gen-lang-client-0936873228` và named database `ai-studio-airaiser-5eff3d82-fcb2-4a70-9917-52c580ed5631` sau owner-approved IAM/config.
+- Canonical session `b60cf6cf-3d64-41f5-bb5a-7c0b687345f2` có session ID, score `25`, total `4`, 2 triggered keys và 2 red-flag events được report là khớp sau `inMemoryMap.clear()` và Firestore read-back. Đây là **PASS server-side persistence evidence**; allowlist không lộ PII trong report.
+- Chưa accept toàn bộ browser-refresh criterion: report không nêu thao tác refresh Preview/browser thật. Giữ mục này `CHƯA XÁC MINH ĐƯỢC` cho đến khi có một lần refresh UI và lịch sử/score đọc lại đúng.
+
+### Prompt recheck cho Antigravity
+
+> Chỉ QA browser evidence cho TASK-037, không sửa code/config/rules/IAM, không commit/push. Trên Preview AI Studio đã kết nối Firestore, tạo hoặc mở completed session `b60cf6cf-3d64-41f5-bb5a-7c0b687345f2`; ghi score/total/triggered key count trước refresh. Thực hiện browser refresh thật (Ctrl+R hoặc Reload Preview), mở lịch sử/dashboard và xác nhận session/score còn tồn tại. Cập nhật `QA_REPORT_TASK_037.md` với thao tác refresh, giá trị trước/sau và PASS/FAIL. Nếu session không hiện do UI chỉ giữ metadata an toàn, ghi BLOCKED/CHƯA XÁC MINH ĐƯỢC, không sửa source hay nới bảo mật.
+
 ## TASK-038 - Căn Chỉnh Firestore Project và Server IAM - PENDING OWNER CONFIRMATION
 
 ### Mục tiêu
@@ -336,6 +346,38 @@ Loại bỏ việc backend vô tình dùng runtime project/database mặc địn
 - Bổ sung test config thuần, `.env.example` và README; không có ID/credential thật trong source.
 - Codex chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`: PASS.
 - Cloud vẫn `CHƯA XÁC MINH ĐƯỢC`: cần owner xác định một database ID hiện hành, cấu hình 2 biến trong **server environment AI Studio** rồi chạy canonical persistence test. Không đoán ID từ các report cũ.
+
+## TASK-041 - Nguồn Tham Khảo Chính Thức - IN PROGRESS
+
+### Mục tiêu
+
+Giữ Resource Hub/Số xác minh là công cụ hỗ trợ người dùng, không thành web browser. Phần nguồn phía trên có đúng 7 thẻ mở tab mới; danh mục cảnh báo 7 địa phương phía dưới không thay đổi.
+
+### Phạm vi
+
+- Chỉ `src/react-app/components/Hotlines.jsx`, `TASKS.md`, `LOCAL_STATUS.md` nếu cần.
+- Nguồn mới phải là link trực tiếp, mô tả thuần Việt ngắn và không chứa số điện thoại tự đoán.
+
+### Cấm
+
+- Không nhúng iframe/web browsing trong app, không sửa catalog 7 địa phương, workflow, Gemini, safety/scoring hoặc Firestore.
+
+### Acceptance criteria
+
+1. Có đúng 7 thẻ trong `onlineChecks`; mọi link dùng `target="_blank"` và `rel="noopener noreferrer"`.
+2. Giữ nguyên 7 item danh mục cảnh báo theo địa phương.
+3. Test và production build PASS.
+
+### Prompt cho Antigravity
+
+> Chỉ review/QA TASK-041, không sửa source/config và không commit/push. Đọc `src/react-app/components/Hotlines.jsx` và data catalog địa phương. Xác nhận `onlineChecks` có đúng 7 thẻ, tất cả link mở tab mới an toàn, mô tả ngắn thuần Việt; xác nhận catalog địa phương vẫn đúng 7 item và không có iframe/browser embed. Chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`. Báo cáo số lượng, output test và mọi lỗi link/build, không tự kết luận link ngoài còn hoạt động nếu không mở kiểm tra.
+
+### Codex review (2026-08-22)
+
+- `onlineChecks`: 7 thẻ; catalog địa phương: 7 item, giữ nguyên.
+- Các link mới là nguồn tham khảo mở tab mới; không có iframe hoặc browser embed.
+- `npm.cmd test`, HTTP smoke, production build và `git diff --check`: PASS.
+- Độ sẵn sàng theo thời gian của từng website ngoài vẫn cần người dùng/browser xác minh khi Public; không ảnh hưởng local build.
 
 ## TASK-026 - Progressive rendering an toàn - ACCEPTED
 
