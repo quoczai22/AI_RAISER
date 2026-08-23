@@ -29,6 +29,7 @@ export default function Dashboard({ userName, history, onResetName }) {
   };
 
   const recentHistory = history.slice(0, 4);
+  const latestResultId = history[0]?.id || history[0]?.sessionId || '';
 
   return (
     <section className="dashboard-screen">
@@ -103,7 +104,7 @@ export default function Dashboard({ userName, history, onResetName }) {
             <button
               className="figma-action-card"
               type="button"
-              onClick={() => window.location.hash = completedSessions ? `dashboard/${history[0].id}` : ''}
+              onClick={() => window.location.hash = latestResultId ? `dashboard/${latestResultId}` : ''}
               aria-label="Xem kết quả gần đây."
             >
               <span className="action-card-icon muted">📊</span>
@@ -149,7 +150,7 @@ export default function Dashboard({ userName, history, onResetName }) {
             {recentHistory.length ? (
               <div className="history-list">
                 {recentHistory.map((item, idx) => (
-                  <article className="history-card" key={item.id || idx}>
+                  <article className="history-card" key={item.id || item.sessionId || idx}>
                     <div>
                       <h3>{item.scenarioTitle || item.scenarioId || 'Buổi luyện tập'}</h3>
                       <strong>{scoreLabel(item.immunityScore)}</strong>

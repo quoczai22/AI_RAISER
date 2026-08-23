@@ -675,6 +675,24 @@ assert.equal(firestoreRulesSource.includes("allow read, write: if false;"), true
 assert.equal(firestoreRulesSource.includes("match /sessions/{sessionId}"), true, "firestore.rules must match sessions collection");
 assert.equal(firestoreRulesSource.includes("allow read, write: if true"), false, "firestore.rules MUST NOT contain allow read, write: if true");
 assert.equal(firestoreRulesSource.includes("allow read: if true"), false, "firestore.rules MUST NOT contain allow read: if true");
+
+const chatShellSource = readFileSync(new URL("../src/react-app/components/ChatShell.jsx", import.meta.url), "utf8");
+const dashboardSource = readFileSync(new URL("../src/react-app/components/Dashboard.jsx", import.meta.url), "utf8");
+assert.equal(
+  chatShellSource.includes("const historyItem = { ...data, id: data.sessionId };"),
+  true,
+  "Completed dashboard history must normalize id from sessionId"
+);
+assert.equal(
+  dashboardSource.includes("const latestResultId = history[0]?.id || history[0]?.sessionId || ''"),
+  true,
+  "Dashboard must support normalized and legacy sessionId history"
+);
+assert.equal(
+  dashboardSource.includes("dashboard/${history[0].id}"),
+  false,
+  "Dashboard must never route to an undefined history id"
+);
 assert.equal(firestoreRulesSource.includes("allow write: if true"), false, "firestore.rules MUST NOT contain allow write: if true");
 
 const reactAppFiles = [

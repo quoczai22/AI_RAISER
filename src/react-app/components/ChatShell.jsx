@@ -231,7 +231,11 @@ export default function ChatShell() {
         // Save to local storage history
         try {
           const history = JSON.parse(localStorage.getItem('aisi_history') || '[]');
-          const updated = [data, ...history.filter(h => h.id !== data.id)];
+          const historyItem = { ...data, id: data.sessionId };
+          const updated = [
+            historyItem,
+            ...history.filter((item) => (item.id || item.sessionId) !== historyItem.id),
+          ];
           localStorage.setItem('aisi_history', JSON.stringify(updated));
         } catch { }
         window.location.hash = `dashboard/${sessionId}`;
