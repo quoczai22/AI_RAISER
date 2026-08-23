@@ -833,6 +833,8 @@ const shareCardCode = readFileSync(new URL("../src/react-app/components/ShareCar
 const protectedSessionMessage = "Kết quả này chỉ mở được trên thiết bị đã thực hiện buổi luyện tập.";
 assert.ok(resultScorecardCode.includes(protectedSessionMessage), "Result scorecard must explain missing session access");
 assert.ok(shareCardCode.includes(protectedSessionMessage), "Share card must explain missing session access");
+assert.ok(shareCardCode.includes("url.hash = '';"), "Shared links must not expose a private session route");
+assert.ok(shareCardCode.includes("fullscreenApplet"), "AI Studio shared links must open the app fullscreen");
 
 console.log("Implementation tests passed.");
 process.exit(0);

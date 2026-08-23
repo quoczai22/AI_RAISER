@@ -43,6 +43,24 @@ function isLocalShareUrl(url) {
   return /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(url);
 }
 
+function getPublicAppUrl() {
+  if (typeof window === 'undefined') return '';
+
+  const url = new URL(window.location.href);
+  url.hash = '';
+
+  // A session result is private to the browser that created it. Shared links
+  // must open the public app instead of AI Studio's Chat/Remix surface.
+  if (url.hostname === 'aistudio.google.com') {
+    url.hostname = 'ai.studio';
+  }
+  if (url.hostname === 'ai.studio') {
+    url.searchParams.set('fullscreenApplet', 'true');
+  }
+
+  return url.toString();
+}
+
 function loadZaloShareSdk() {
   const sdkSrc = 'https://sp.zalo.me/plugins/sdk.js';
   if (document.querySelector(`script[src="${sdkSrc}"]`)) {
@@ -239,7 +257,7 @@ export default function ShareCard({ sessionId, userName }) {
     };
   }, [dashboard]);
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareUrl = getPublicAppUrl();
   const isLocalUrl = isLocalShareUrl(shareUrl);
 
   useEffect(() => {
@@ -282,7 +300,7 @@ export default function ShareCard({ sessionId, userName }) {
     try {
       await navigator.clipboard.writeText(fullText);
       setCopied(true);
-      setShareStatus('Đã sao chép liên kết và bài học rút ra vào bộ nhớ tạm. Bạn có thể dán vào Zalo, Facebook hoặc tin nhắn.');
+      setShareStatus('Đã sao chép liên kết ứng dụng và bài học rút ra vào bộ nhớ tạm. Bạn có thể dán vào Zalo, Facebook hoặc tin nhắn.');
       return true;
     } catch {
       setCopied(false);
@@ -426,7 +444,7 @@ export default function ShareCard({ sessionId, userName }) {
       {Boolean(navigator.share) ? (
         <button type="button" className="primary" onClick={handleNativeShare}>📤 Chia sẻ nhanh (Web Share)</button>
       ) : null}
-      <button type="button" onClick={handleCopy}>🔗 {copied ? 'Đã sao chép!' : 'Sao chép liên kết kết quả'}</button>
+      <button type="button" onClick={handleCopy}>🔗 {copied ? 'Đã sao chép!' : 'Sao chép liên kết ứng dụng'}</button>
       {isLocalUrl ? (
         <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
       ) : (
