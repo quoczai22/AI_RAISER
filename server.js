@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { getPositiveIntEnv, loadEnvFile } from "./src/services/env.js";
 import { listScenarios } from "./src/services/scenarioService.js";
 import {
+  assertSessionCapability,
   confirmConsent,
   createSession,
   getSession,
@@ -168,8 +169,8 @@ async function handleApi(req, res) {
   if (path === "/api/sessions") {
     if (req.method === "POST") {
       const body = await readJsonBody(req);
-      const session = await createSession(body);
-      sendJson(res, 201, { session });
+      const { capability, ...publicSummary } = await createSession(body);
+      sendJson(res, 201, { session: publicSummary, capability });
       return;
     }
     sendMethodNotAllowed(res, "POST");
@@ -179,6 +180,7 @@ async function handleApi(req, res) {
   const consentMatch = path.match(/^\/api\/sessions\/([^/]+)\/consent$/);
   if (consentMatch) {
     if (req.method === "POST") {
+      await assertSessionCapability(consentMatch[1], req.headers["x-session-capability"]);
       const body = await readJsonBody(req);
       const session = await confirmConsent(consentMatch[1], body);
       sendJson(res, 200, { session });
@@ -190,6 +192,7 @@ async function handleApi(req, res) {
 
   const messageMatch = path.match(/^\/api\/sessions\/([^/]+)\/messages$/);
   if (messageMatch) {
+    await assertSessionCapability(messageMatch[1], req.headers["x-session-capability"]);
     if (req.method === "GET") {
       const messages = await getSessionMessages(messageMatch[1]);
       sendJson(res, 200, { messages });
@@ -243,6 +246,7 @@ async function handleApi(req, res) {
   const sessionMatch = path.match(/^\/api\/sessions\/([^/]+)$/);
   if (sessionMatch) {
     if (req.method === "GET") {
+      await assertSessionCapability(sessionMatch[1], req.headers["x-session-capability"]);
       const session = await getSession(sessionMatch[1]);
       sendJson(res, 200, { session });
       return;
@@ -254,6 +258,7 @@ async function handleApi(req, res) {
   const completeMatch = path.match(/^\/api\/sessions\/([^/]+)\/complete$/);
   if (completeMatch) {
     if (req.method === "POST") {
+      await assertSessionCapability(completeMatch[1], req.headers["x-session-capability"]);
       const dashboard = await completeSession(completeMatch[1]);
       sendJson(res, 200, dashboard);
       return;
@@ -265,6 +270,7 @@ async function handleApi(req, res) {
   const dashboardMatch = path.match(/^\/api\/sessions\/([^/]+)\/dashboard$/);
   if (dashboardMatch) {
     if (req.method === "GET") {
+      await assertSessionCapability(dashboardMatch[1], req.headers["x-session-capability"]);
       const dashboard = await getDashboard(dashboardMatch[1]);
       sendJson(res, 200, dashboard);
       return;

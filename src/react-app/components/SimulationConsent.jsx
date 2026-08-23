@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getSessionCapability } from '../sessionCapability';
 
 export default function SimulationConsent({ onConsentConfirmed }) {
   const [session, setSession] = useState(null);
@@ -21,7 +22,8 @@ export default function SimulationConsent({ onConsentConfirmed }) {
       return;
     }
 
-    fetch(`/api/sessions/${sessionId}`)
+    const capability = getSessionCapability(sessionId);
+    fetch(`/api/sessions/${sessionId}`, { headers: capability ? { 'x-session-capability': capability } : {} })
       .then(res => {
         if (!res.ok) throw new Error('Không thể tải thông tin buổi luyện tập.');
         return res.json();
@@ -52,9 +54,10 @@ export default function SimulationConsent({ onConsentConfirmed }) {
 
   const handleStart = () => {
     if (checked && sessionId) {
+      const capability = getSessionCapability(sessionId);
       fetch(`/api/sessions/${sessionId}/consent`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(capability ? { 'x-session-capability': capability } : {}) },
         body: JSON.stringify({ consent: true })
       })
         .then(res => {

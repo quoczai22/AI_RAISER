@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getSessionCapability } from '../sessionCapability';
 
 function maskSensitiveForDisplay(value) {
   let masked = String(value || "");
@@ -57,7 +58,8 @@ export default function ChatShell() {
       return;
     }
 
-    fetch(`/api/sessions/${sessionId}`)
+    const authHeaders = { 'x-session-capability': getSessionCapability(sessionId) };
+    fetch(`/api/sessions/${sessionId}`, { headers: authHeaders })
       .then(res => {
         if (!res.ok) throw new Error('Session not found');
         return res.json();
@@ -72,7 +74,7 @@ export default function ChatShell() {
           return;
         }
         return Promise.all([
-          fetch(`/api/sessions/${sessionId}/messages`).then(res => res.json()),
+          fetch(`/api/sessions/${sessionId}/messages`, { headers: authHeaders }).then(res => res.json()),
           fetch('/api/scenarios').then(res => res.json()),
           fetch('/api/runtime-status').then(res => res.json()).catch(() => ({}))
         ]).then(([msgData, scData, runtimeData]) => {
@@ -123,6 +125,7 @@ export default function ChatShell() {
     setInputValue('');
     const controller = new AbortController();
     chatRequestControllerRef.current = controller;
+    const capability = getSessionCapability(sessionId);
 
     fetch(`/api/sessions/${sessionId}/messages`, {
       method: 'POST',
@@ -130,6 +133,7 @@ export default function ChatShell() {
       headers: {
         'content-type': 'application/json',
         'accept': 'text/event-stream',
+        'x-session-capability': capability,
       },
       body: JSON.stringify({ message: text, stream: true }),
     })
@@ -221,7 +225,7 @@ export default function ChatShell() {
     setIsSending(false);
     fetch(`/api/sessions/${sessionId}/complete`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' }
+      headers: { 'content-type': 'application/json', 'x-session-capability': getSessionCapability(sessionId) }
     })
       .then(res => {
         if (!res.ok) throw new Error('Không thể hoàn thành buổi luyện tập.');

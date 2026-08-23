@@ -9,6 +9,7 @@ import ChatShell from './components/ChatShell';
 import './app.css';
 import Hotlines from './components/Hotlines';
 import ShareCard from './components/ShareCard';
+import { getSessionCapability, setSessionCapability } from './sessionCapability';
 
 export default function App() {
   const [userName, setUserName] = useState(() => {
@@ -77,7 +78,8 @@ export default function App() {
     }
 
     let cancelled = false;
-    fetch(`/api/sessions/${latestSessionId}`)
+    const capability = getSessionCapability(latestSessionId);
+    fetch(`/api/sessions/${latestSessionId}`, { headers: capability ? { 'x-session-capability': capability } : {} })
       .then(res => {
         if (!res.ok) throw new Error('Session not found');
         return res.json();
@@ -132,12 +134,15 @@ export default function App() {
         return res.json();
       })
       .then(data => {
-        setLatestSessionId(data.session.id);
-        setLatestSessionStatus(data.session.status || 'created');
+        const sess = data.session;
+        const cap = data.capability;
+        setSessionCapability(sess.id, cap);
+        setLatestSessionId(sess.id);
+        setLatestSessionStatus(sess.status || 'created');
         try {
-          localStorage.setItem('aisi_last_session_id', data.session.id);
+          localStorage.setItem('aisi_last_session_id', sess.id);
         } catch {}
-        window.location.hash = `consent/${data.session.id}`;
+        window.location.hash = `consent/${sess.id}`;
       })
       .catch(err => {
         alert(err.message);

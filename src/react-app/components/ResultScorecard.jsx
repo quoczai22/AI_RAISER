@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getSessionCapability } from '../sessionCapability';
 
 const taxonomyOrder = ['urgency', 'authority', 'fear', 'social proof/reciprocity', 'scarcity'];
 const taxonomyLabel = {
@@ -43,7 +44,8 @@ export default function ResultScorecard({ sessionId }) {
       return;
     }
 
-    fetch(`/api/sessions/${sessionId}`)
+    const authHeaders = { 'x-session-capability': getSessionCapability(sessionId) };
+    fetch(`/api/sessions/${sessionId}`, { headers: authHeaders })
       .then(res => {
         if (!res.ok) throw new Error('Session not found');
         return res.json();
@@ -57,7 +59,7 @@ export default function ResultScorecard({ sessionId }) {
           window.location.hash = `chat/${sessionId}`;
           return;
         }
-        return fetch(`/api/sessions/${sessionId}/dashboard`)
+        return fetch(`/api/sessions/${sessionId}/dashboard`, { headers: authHeaders })
           .then(res => {
             if (!res.ok) throw new Error('Không thể tải kết quả.');
             return res.json();

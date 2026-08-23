@@ -16,6 +16,7 @@ export function sanitizeSessionForFirestore(session) {
   return JSON.parse(JSON.stringify({
     schemaVersion: 1,
     id: String(value.id || ""),
+    sessionCapabilityHash: String(value.sessionCapabilityHash || ""),
     scenarioId: String(value.scenarioId || ""),
     difficulty: String(value.difficulty || "easy"),
     consentAt: value.consentAt || null,
@@ -60,11 +61,11 @@ function hydrateFirestoreSession(document) {
 }
 
 class FirestoreStore {
-  constructor() {
+  constructor(env = process.env) {
     this.useFirestore = false;
     this.inMemoryMap = new Map();
 
-    const firestoreConfig = getFirestoreConfig();
+    const firestoreConfig = getFirestoreConfig(env);
     if (firestoreConfig) {
       try {
         this.db = new Firestore(firestoreConfig);
@@ -84,8 +85,18 @@ class FirestoreStore {
     if (this.useFirestore) {
       try {
         const doc = await this.collection.doc(id).get();
-        if (!doc.exists) return undefined;
-        return hydrateFirestoreSession(doc.data());
+        if (!doc.exists) {
+          const memorySession = this.inMemoryMap.get(id);
+          return memorySession ? JSON.parse(JSON.stringify(memorySession)) : undefined;
+        }
+        const memorySession = this.inMemoryMap.get(id);
+        const hydrated = hydrateFirestoreSession(doc.data());
+        return {
+          ...hydrated,
+          userName: memorySession?.userName || hydrated.userName,
+          messages: memorySession?.messages || hydrated.messages,
+          isProcessing: Boolean(memorySession?.isProcessing),
+        };
       } catch (err) {
         console.error("Firestore get error:", err.message);
         throw err;

@@ -1,10 +1,44 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { getPositiveIntEnv } from "./env.js";
 import { getScenario } from "./scenarioService.js";
 import { sessions } from "./store.js";
 
 function now() {
   return new Date().toISOString();
+}
+
+export function hashCapability(capability) {
+  return createHash("sha256").update(String(capability || "").trim()).digest("hex");
+}
+
+export function generateCapability() {
+  return randomBytes(32).toString("hex");
+}
+
+export function verifySessionCapability(session, capability) {
+  const expected = Buffer.from(String(session?.sessionCapabilityHash || ""), "hex");
+  const actual = Buffer.from(hashCapability(capability), "hex");
+  return Boolean(expected.length && expected.length === actual.length && timingSafeEqual(expected, actual));
+}
+
+export async function assertSessionCapability(sessionId, capability) {
+  if (!capability || typeof capability !== "string" || !capability.trim()) {
+    const error = new Error("Session capability is required.");
+    error.status = 403;
+    throw error;
+  }
+  const session = await sessions.get(sessionId);
+  if (!session) {
+    const error = new Error("Session not found.");
+    error.status = 404;
+    throw error;
+  }
+  if (!verifySessionCapability(session, capability)) {
+    const error = new Error("Forbidden: Invalid session capability.");
+    error.status = 403;
+    throw error;
+  }
+  return session;
 }
 
 export async function createSession(input) {
@@ -16,8 +50,10 @@ export async function createSession(input) {
 
   const scenario = getScenario(input.scenarioId);
   const difficulty = normalizeDifficulty(input.difficulty);
+  const capability = generateCapability();
   const session = {
     id: randomUUID(),
+    sessionCapabilityHash: hashCapability(capability),
     scenarioId: scenario.id,
     userName: normalizeUserName(input.userName),
     difficulty,
@@ -32,7 +68,7 @@ export async function createSession(input) {
 
   await sessions.set(session.id, session);
   await pruneSessionStore({ keepSessionId: session.id });
-  return summarizeSession(session);
+  return { ...summarizeSession(session), capability };
 }
 
 export async function confirmConsent(sessionId, input) {

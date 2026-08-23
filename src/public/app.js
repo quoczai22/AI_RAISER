@@ -85,10 +85,13 @@ function acknowledgeTap() {
 }
 
 async function api(path, options = {}) {
+  const sessionId = state.session?.id || (path.match(/\/api\/sessions\/([^/]+)/) || [])[1];
+  const capability = sessionId ? safeStorageGet(`aisi_cap_${sessionId}`) : null;
   const response = await fetch(path, {
     ...options,
     headers: {
       "content-type": "application/json",
+      ...(capability ? { "x-session-capability": capability } : {}),
       ...(options.headers || {}),
     },
   });
@@ -494,6 +497,10 @@ async function createTrainingSession(difficulty) {
       }),
     });
     state.session = payload.session;
+    const cap = payload.capability;
+    if (cap && state.session?.id) {
+      safeStorageSet(`aisi_cap_${state.session.id}`, cap);
+    }
     location.hash = `consent/${state.session.id}`;
     renderSimulationConsent();
   } catch (error) {

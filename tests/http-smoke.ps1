@@ -177,9 +177,92 @@ try {
     -Body '{"scenarioId":"fake_bank","difficulty":"medium","userName":"Co Lan"}'
 
   $sessionId = $session.session.id
+  $capability = $session.capability
+  if (-not $capability -or $capability.Length -ne 64) {
+    throw "Expected 64-char session capability in POST /api/sessions response."
+  }
+  if ($session.session.capability -or $session.session.sessionCapabilityHash) {
+    throw "Session publicSummary must not contain capability or sessionCapabilityHash."
+  }
+
+  $authHeaders = @{ "x-session-capability" = $capability }
+  $wrongAuthHeaders = @{ "x-session-capability" = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" }
+
+  # Test isolation: All 6 endpoints must return 403 on missing capability
+  $unauthEndpoints = @(
+    @{ Name = "GET session"; Method = "Get"; Uri = "$baseUrl/api/sessions/$sessionId" },
+    @{ Name = "GET messages"; Method = "Get"; Uri = "$baseUrl/api/sessions/$sessionId/messages" },
+    @{ Name = "POST consent"; Method = "Post"; Uri = "$baseUrl/api/sessions/$sessionId/consent"; Body = '{"consent":true}'; ContentType = "application/json" },
+    @{ Name = "POST messages"; Method = "Post"; Uri = "$baseUrl/api/sessions/$sessionId/messages"; Body = '{"message":"hello"}'; ContentType = "application/json" },
+    @{ Name = "POST complete"; Method = "Post"; Uri = "$baseUrl/api/sessions/$sessionId/complete" },
+    @{ Name = "GET dashboard"; Method = "Get"; Uri = "$baseUrl/api/sessions/$sessionId/dashboard" }
+  )
+
+  foreach ($ep in $unauthEndpoints) {
+    # 1. Missing capability header -> 403
+    try {
+      $params = @{
+        Uri = $ep.Uri
+        Method = $ep.Method
+        UseBasicParsing = $true
+      }
+      if ($ep.Body) {
+        $params.Body = $ep.Body
+        $params.ContentType = $ep.ContentType
+      }
+      Invoke-WebRequest @params | Out-Null
+      throw "Expected $($ep.Name) without capability to be rejected with 403."
+    }
+    catch {
+      if ($_.Exception.Response.StatusCode.value__ -ne 403) {
+        throw "Expected $($ep.Name) without capability to return 403, got $($_.Exception.Response.StatusCode.value__)."
+      }
+    }
+
+    # 2. Wrong capability header -> 403
+    try {
+      $params = @{
+        Uri = $ep.Uri
+        Method = $ep.Method
+        Headers = $wrongAuthHeaders
+        UseBasicParsing = $true
+      }
+      if ($ep.Body) {
+        $params.Body = $ep.Body
+        $params.ContentType = $ep.ContentType
+      }
+      Invoke-WebRequest @params | Out-Null
+      throw "Expected $($ep.Name) with wrong capability to be rejected with 403."
+    }
+    catch {
+      if ($_.Exception.Response.StatusCode.value__ -ne 403) {
+        throw "Expected $($ep.Name) with wrong capability to return 403, got $($_.Exception.Response.StatusCode.value__)."
+      }
+    }
+  }
+
+  # Test isolation: Non-existent session with capability must return 404
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/non-existent-session-id" -Method Get -Headers $authHeaders -UseBasicParsing | Out-Null
+    throw "Expected non-existent session to return 404."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 404) {
+      throw "Expected non-existent session to return 404, got $($_.Exception.Response.StatusCode.value__)."
+    }
+  }
+
+  # Flow execution with VALID capability: GET -> consent -> chat -> complete -> dashboard
+  $sessionDetails = Invoke-RestMethod -Uri "$baseUrl/api/sessions/$sessionId" -Headers $authHeaders
+  if ($sessionDetails.session.id -ne $sessionId) {
+    throw "Expected session id match on GET /api/sessions/:id."
+  }
+  if ($sessionDetails.session.capability -or $sessionDetails.capability -or $sessionDetails.session.sessionCapabilityHash) {
+    throw "GET /api/sessions/:id must never expose raw capability or hash."
+  }
 
   try {
-    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Method Get -UseBasicParsing | Out-Null
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Method Get -Headers $authHeaders -UseBasicParsing | Out-Null
     throw "Expected dashboard before consent to be rejected."
   }
   catch {
@@ -189,7 +272,7 @@ try {
   }
 
   try {
-    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/messages" -Method Get -UseBasicParsing | Out-Null
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/messages" -Method Get -Headers $authHeaders -UseBasicParsing | Out-Null
     throw "Expected messages before consent to be rejected."
   }
   catch {
@@ -201,6 +284,7 @@ try {
   $active = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions/$sessionId/consent" `
     -Method Post `
+    -Headers $authHeaders `
     -ContentType "application/json" `
     -Body '{"consent":true}'
 
@@ -209,7 +293,7 @@ try {
   }
 
   try {
-    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Method Get -UseBasicParsing | Out-Null
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Method Get -Headers $authHeaders -UseBasicParsing | Out-Null
     throw "Expected active dashboard access before completion to be rejected."
   }
   catch {
@@ -221,6 +305,7 @@ try {
   $chat = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions/$sessionId/messages" `
     -Method Post `
+    -Headers $authHeaders `
     -ContentType "application/json" `
     -Body '{"message":"I will call hotline to check."}'
 
@@ -228,7 +313,7 @@ try {
     throw "Expected chat reply."
   }
 
-  $messages = Invoke-RestMethod -Uri "$baseUrl/api/sessions/$sessionId/messages"
+  $messages = Invoke-RestMethod -Uri "$baseUrl/api/sessions/$sessionId/messages" -Headers $authHeaders
   if ($messages.messages.Count -lt 2) {
     throw "Expected stored chat transcript."
   }
@@ -239,6 +324,7 @@ try {
 
   $dashboard = Invoke-RestMethod `
     -Uri "$baseUrl/api/sessions/$sessionId/complete" `
+    -Headers $authHeaders `
     -Method Post
 
   if ($dashboard.totalCount -lt 1) {
@@ -253,10 +339,28 @@ try {
     throw "Expected share summary."
   }
 
+  # Test GET /api/sessions/:id/dashboard with valid capability
+  $dashGet = Invoke-RestMethod -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Headers $authHeaders
+  if ($dashGet.immunityScore -ne $dashboard.immunityScore) {
+    throw "Expected GET dashboard immunityScore to match completion dashboard."
+  }
+
+  # Test GET dashboard without capability is 403
+  try {
+    Invoke-WebRequest -Uri "$baseUrl/api/sessions/$sessionId/dashboard" -Method Get -UseBasicParsing | Out-Null
+    throw "Expected completed dashboard without capability to be rejected with 403."
+  }
+  catch {
+    if ($_.Exception.Response.StatusCode.value__ -ne 403) {
+      throw "Expected completed dashboard without capability to return 403."
+    }
+  }
+
   try {
     Invoke-WebRequest `
       -Uri "$baseUrl/api/sessions/$sessionId/messages" `
       -Method Post `
+      -Headers $authHeaders `
       -ContentType "application/json" `
       -Body '{"message":"one more"}' `
       -UseBasicParsing | Out-Null
@@ -272,6 +376,7 @@ try {
     Invoke-WebRequest `
       -Uri "$baseUrl/api/sessions/$sessionId/consent" `
       -Method Post `
+      -Headers $authHeaders `
       -ContentType "application/json" `
       -Body '{"consent":true}' `
       -UseBasicParsing | Out-Null

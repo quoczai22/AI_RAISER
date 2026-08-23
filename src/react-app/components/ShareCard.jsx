@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getSessionCapability } from '../sessionCapability';
 
 function monthLabel() {
   const now = new Date();
@@ -189,7 +190,8 @@ export default function ShareCard({ sessionId, userName }) {
       return;
     }
 
-    fetch(`/api/sessions/${sessionId}`)
+    const authHeaders = { 'x-session-capability': getSessionCapability(sessionId) };
+    fetch(`/api/sessions/${sessionId}`, { headers: authHeaders })
       .then(res => {
         if (!res.ok) throw new Error('Session not found');
         return res.json();
@@ -203,7 +205,7 @@ export default function ShareCard({ sessionId, userName }) {
           window.location.hash = `chat/${sessionId}`;
           return;
         }
-        return fetch(`/api/sessions/${sessionId}/dashboard`)
+        return fetch(`/api/sessions/${sessionId}/dashboard`, { headers: authHeaders })
           .then(res => {
             if (!res.ok) throw new Error('Không thể tải thẻ chia sẻ.');
             return res.json();

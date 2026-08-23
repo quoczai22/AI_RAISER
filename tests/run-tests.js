@@ -2,11 +2,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { getScenario, listScenarios } from "../src/services/scenarioService.js";
 import {
+  assertSessionCapability,
   confirmConsent,
   createSession,
+  generateCapability,
   getSessionMessages,
   getSession,
+  hashCapability,
   requireStoredSession,
+  verifySessionCapability,
 } from "../src/services/sessionService.js";
 import { emitValidatedReplyChunks, sendChatMessage, sendChatMessageStream } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
@@ -16,6 +20,7 @@ import { looksLikeScamRecognition, maskSensitiveInput, validateAiReply } from ".
 import { getFirestoreConfig, sanitizeSessionForFirestore, sessions } from "../src/services/store.js";
 
 
+console.log("Stage 1: Basic assertions");
 const scenarios = listScenarios();
 loadEnvFile();
 process.env.GEMINI_API_KEY = "";
@@ -118,6 +123,8 @@ assert.equal(
   false,
 );
 
+console.log("Stage 2: Session & Consent");
+await sessions.clear();
 await assert.rejects(
   () => confirmConsent("missing", { consent: true }),
   /Session not found/
@@ -168,6 +175,7 @@ await assert.rejects(
   /Message must be 1000 characters or fewer/,
 );
 
+console.log("Stage 3: Chat & Safety");
 const case1 = maskSensitiveInput("Mã đơn hàng 123456");
 assert.equal(case1.changed, false, "Mã đơn hàng 123456 must NOT be masked");
 assert.equal(case1.masked, "Mã đơn hàng 123456");
@@ -328,15 +336,25 @@ assert.equal(leakedOtpChat.sessionStatus, "active");
 assert.equal(leakedOtpChat.detectedEvents[0].status, "triggered");
 
 const originalFetch = globalThis.fetch;
+function setGeminiMock(handler) {
+  globalThis.fetch = async (url, ...args) => {
+    const urlStr = typeof url === "string" ? url : url?.url || "";
+    if (urlStr.includes("generativelanguage.googleapis.com")) {
+      return handler(url, ...args);
+    }
+    return originalFetch(url, ...args);
+  };
+}
+
 try {
   process.env.GEMINI_API_KEY = "unit-test-key";
-  globalThis.fetch = async () => new Response("upstream overloaded", { status: 500 });
+  setGeminiMock(async () => new Response("upstream overloaded", { status: 500 }));
   await assert.rejects(
     () => generateGeminiJson({ systemInstruction: "test", prompt: "test", schema: {} }),
     (error) => error.code === "GEMINI_HTTP_500",
   );
 
-  globalThis.fetch = async () =>
+  setGeminiMock(async () =>
     new Response(
       JSON.stringify({
         candidates: [
@@ -348,14 +366,14 @@ try {
         ],
       }),
       { status: 200, headers: { "content-type": "application/json" } },
-    );
+    ));
   await assert.rejects(
     () => generateGeminiJson({ systemInstruction: "test", prompt: "test", schema: {} }),
     (error) => error.code === "GEMINI_INVALID_JSON",
   );
 
   let repairCallCount = 0;
-  globalThis.fetch = async () => {
+  setGeminiMock(async () => {
     repairCallCount += 1;
     const unsafeSelfAssessment = repairCallCount === 1;
     return new Response(
@@ -396,7 +414,7 @@ try {
       }),
       { status: 200, headers: { "content-type": "application/json" } },
     );
-  };
+  });
 
   const repairSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
   await confirmConsent(repairSession.id, { consent: true });
@@ -405,7 +423,7 @@ try {
   assert.equal(repairChat.safety.retryUsed, true);
   assert.equal(repairCallCount, 2);
 
-  globalThis.fetch = async () =>
+  setGeminiMock(async () =>
     new Response(
       JSON.stringify({
         candidates: [
@@ -441,7 +459,7 @@ try {
         ],
       }),
       { status: 200, headers: { "content-type": "application/json" } },
-    );
+    ));
 
   const badShapeSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
   await confirmConsent(badShapeSession.id, { consent: true });
@@ -449,7 +467,7 @@ try {
   assert.equal(badShapeChat.sessionStatus, "active");
   assert.equal(badShapeChat.detectedEvents[0].status, "triggered");
 
-  globalThis.fetch = async () =>
+  setGeminiMock(async () =>
     new Response(
       JSON.stringify({
         candidates: [
@@ -490,7 +508,7 @@ try {
         ],
       }),
       { status: 200, headers: { "content-type": "application/json" } },
-    );
+    ));
 
   const duplicateSignalSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
   await confirmConsent(duplicateSignalSession.id, { consent: true });
@@ -500,7 +518,7 @@ try {
   assert.equal(duplicateSignalChat.detectedEvents[0].status, "recognized");
 
   process.env.GEMINI_API_KEY = "unit-test-key";
-  globalThis.fetch = async () =>
+  setGeminiMock(async () =>
     new Response(
       JSON.stringify({
         candidates: [
@@ -536,7 +554,7 @@ try {
         ],
       }),
       { status: 200, headers: { "content-type": "application/json" } },
-    );
+    ));
 
   const geminiSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "Cô Lan" });
   await confirmConsent(geminiSession.id, { consent: true });
@@ -668,6 +686,7 @@ await assert.rejects(
 );
 process.env.GEMINI_MODEL = "gemini-3.6-flash";
 
+console.log("Stage 4: Regression tests");
 // TASK-036 Regression Tests: firestore.rules default-deny & client code isolation
 const firestoreRulesSource = readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
 assert.equal(firestoreRulesSource.includes("rules_version = '2';"), true, "firestore.rules must include rules_version = '2';");
@@ -675,24 +694,6 @@ assert.equal(firestoreRulesSource.includes("allow read, write: if false;"), true
 assert.equal(firestoreRulesSource.includes("match /sessions/{sessionId}"), true, "firestore.rules must match sessions collection");
 assert.equal(firestoreRulesSource.includes("allow read, write: if true"), false, "firestore.rules MUST NOT contain allow read, write: if true");
 assert.equal(firestoreRulesSource.includes("allow read: if true"), false, "firestore.rules MUST NOT contain allow read: if true");
-
-const chatShellSource = readFileSync(new URL("../src/react-app/components/ChatShell.jsx", import.meta.url), "utf8");
-const dashboardSource = readFileSync(new URL("../src/react-app/components/Dashboard.jsx", import.meta.url), "utf8");
-assert.equal(
-  chatShellSource.includes("const historyItem = { ...data, id: data.sessionId };"),
-  true,
-  "Completed dashboard history must normalize id from sessionId"
-);
-assert.equal(
-  dashboardSource.includes("const latestResultId = history[0]?.id || history[0]?.sessionId || ''"),
-  true,
-  "Dashboard must support normalized and legacy sessionId history"
-);
-assert.equal(
-  dashboardSource.includes("dashboard/${history[0].id}"),
-  false,
-  "Dashboard must never route to an undefined history id"
-);
 assert.equal(firestoreRulesSource.includes("allow write: if true"), false, "firestore.rules MUST NOT contain allow write: if true");
 
 const reactAppFiles = [
@@ -739,10 +740,93 @@ await assert.rejects(
   "Firestore get failure must throw an exception"
 );
 
-const localStore = new sessions.constructor();
+const localStore = new sessions.constructor({});
 assert.equal(localStore.useFirestore, false);
 await localStore.set("local-id", { id: "local-id", scenarioId: "fake_bank" });
 const retrievedLocal = await localStore.get("local-id");
 assert.equal(retrievedLocal.id, "local-id");
 
+console.log("Stage 5: TASK-042 Capability tests");
+// TASK-042: Anonymous session capability & isolation tests
+const testCap = generateCapability();
+assert.equal(typeof testCap, "string");
+assert.equal(testCap.length, 64, "Capability must be 32 random bytes in hex (64 chars)");
+const testCapHash = hashCapability(testCap);
+assert.equal(testCapHash.length, 64, "Capability hash must be 64 char sha256 hex");
+
+const dummySession = {
+  id: "session-cap-test",
+  sessionCapabilityHash: testCapHash,
+};
+assert.equal(verifySessionCapability(dummySession, testCap), true, "Valid capability must verify");
+assert.equal(verifySessionCapability(dummySession, "wrong-capability-string"), false, "Wrong capability must fail");
+assert.equal(verifySessionCapability(dummySession, ""), false, "Empty capability must fail");
+assert.equal(verifySessionCapability(dummySession, null), false, "Null capability must fail");
+assert.equal(verifySessionCapability({}, testCap), false, "Session without hash must fail");
+
+// Test createSession creates capability and returns it only once
+const capSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "CapUser" });
+assert.ok(capSession.capability, "createSession must return raw capability");
+assert.equal(capSession.capability.length, 64);
+const { capability: rawCap, ...publicSummary } = capSession;
+assert.equal(publicSummary.capability, undefined, "publicSummary must NOT contain capability");
+assert.equal(publicSummary.sessionCapabilityHash, undefined, "publicSummary must NOT contain sessionCapabilityHash");
+
+const storedCapSession = await requireStoredSession(capSession.id);
+assert.equal(storedCapSession.capability, undefined, "Stored session must NOT store raw capability");
+assert.ok(storedCapSession.sessionCapabilityHash, "Stored session MUST store capability hash");
+assert.equal(storedCapSession.sessionCapabilityHash, hashCapability(capSession.capability));
+
+const readSession = await getSession(capSession.id);
+assert.equal(readSession.capability, undefined, "getSession summary must NOT include raw capability");
+assert.equal(readSession.sessionCapabilityHash, undefined, "getSession summary must NOT include hash");
+
+// Verify frontend only reads data.capability and has no fallback to session capability
+const reactAppCode = readFileSync(new URL("../src/react-app/App.jsx", import.meta.url), "utf8");
+const legacyAppCode = readFileSync(new URL("../src/public/app.js", import.meta.url), "utf8");
+
+assert.ok(reactAppCode.includes("const cap = data.capability;"), "App.jsx must contain exactly 'const cap = data.capability;'");
+
+// Regex must fail if there is any (sess|session)?.capability or (data|sess|session).session?.capability
+const forbiddenAccessRegex = /\b(sess|session)\??\.capability\b|\bdata\??\.session\??\.capability\b/;
+assert.equal(forbiddenAccessRegex.test(reactAppCode), false, "App.jsx must not have (sess|session)?.capability or data.session.capability access");
+assert.equal(forbiddenAccessRegex.test(legacyAppCode), false, "app.js must not have (sess|session)?.capability or data.session.capability access");
+
+// Test assertSessionCapability behavior
+await assert.rejects(
+  () => assertSessionCapability(capSession.id, ""),
+  (err) => err.status === 403,
+  "Missing capability must throw 403"
+);
+await assert.rejects(
+  () => assertSessionCapability(capSession.id, "invalid_cap_hex_string_12345678901234567890123456789012345678901234"),
+  (err) => err.status === 403,
+  "Wrong capability must throw 403"
+);
+await assert.rejects(
+  () => assertSessionCapability("non_existent_session_id", "valid_looking_cap_hex_string_123456789012345678901234567890123456"),
+  (err) => err.status === 404,
+  "Non-existent session with capability must throw 404"
+);
+const asserted = await assertSessionCapability(capSession.id, capSession.capability);
+assert.equal(asserted.id, capSession.id, "Valid capability must assert successfully");
+
+// TASK-043: History navigation must never construct #dashboard/undefined.
+const chatShellCode = readFileSync(new URL("../src/react-app/components/ChatShell.jsx", import.meta.url), "utf8");
+const dashboardCode = readFileSync(new URL("../src/react-app/components/Dashboard.jsx", import.meta.url), "utf8");
+assert.ok(
+  chatShellCode.includes("const historyItem = { ...data, id: data.sessionId }"),
+  "Completed session history must normalize sessionId to id"
+);
+assert.ok(
+  dashboardCode.includes("history[0]?.id || history[0]?.sessionId"),
+  "Dashboard must accept both id and sessionId history shapes"
+);
+assert.equal(
+  dashboardCode.includes("dashboard/${history[0].id}"),
+  false,
+  "Dashboard must not navigate with an unchecked history id"
+);
+
 console.log("Implementation tests passed.");
+process.exit(0);
