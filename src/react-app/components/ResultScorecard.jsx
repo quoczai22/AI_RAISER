@@ -40,11 +40,17 @@ export default function ResultScorecard({ sessionId }) {
 
   useEffect(() => {
     if (!sessionId) {
-      window.location.hash = '';
+      setError('Không tìm thấy buổi luyện tập để xem kết quả.');
       return;
     }
 
-    const authHeaders = { 'x-session-capability': getSessionCapability(sessionId) };
+    const capability = getSessionCapability(sessionId);
+    if (!capability) {
+      setError('Kết quả này chỉ mở được trên thiết bị đã thực hiện buổi luyện tập.');
+      return;
+    }
+
+    const authHeaders = { 'x-session-capability': capability };
     fetch(`/api/sessions/${sessionId}`, { headers: authHeaders })
       .then(res => {
         if (!res.ok) throw new Error('Session not found');
@@ -66,8 +72,8 @@ export default function ResultScorecard({ sessionId }) {
           })
           .then(data => setDashboard(data));
       })
-      .catch(() => {
-        window.location.hash = '';
+      .catch(error => {
+        setError(error.message || 'Không thể tải kết quả buổi luyện tập.');
       });
   }, [sessionId]);
 

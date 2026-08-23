@@ -186,11 +186,17 @@ export default function ShareCard({ sessionId, userName }) {
 
   useEffect(() => {
     if (!sessionId) {
-      window.location.hash = '';
+      setError('Không tìm thấy buổi luyện tập để chia sẻ.');
       return;
     }
 
-    const authHeaders = { 'x-session-capability': getSessionCapability(sessionId) };
+    const capability = getSessionCapability(sessionId);
+    if (!capability) {
+      setError('Kết quả này chỉ mở được trên thiết bị đã thực hiện buổi luyện tập.');
+      return;
+    }
+
+    const authHeaders = { 'x-session-capability': capability };
     fetch(`/api/sessions/${sessionId}`, { headers: authHeaders })
       .then(res => {
         if (!res.ok) throw new Error('Session not found');
@@ -212,8 +218,8 @@ export default function ShareCard({ sessionId, userName }) {
           })
           .then(data => setDashboard(data));
       })
-      .catch(() => {
-        window.location.hash = '';
+      .catch(error => {
+        setError(error.message || 'Không thể tải thẻ chia sẻ.');
       });
   }, [sessionId]);
 

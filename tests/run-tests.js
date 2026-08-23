@@ -828,5 +828,11 @@ assert.equal(
   "Dashboard must not navigate with an unchecked history id"
 );
 
+const resultScorecardCode = readFileSync(new URL("../src/react-app/components/ResultScorecard.jsx", import.meta.url), "utf8");
+const shareCardCode = readFileSync(new URL("../src/react-app/components/ShareCard.jsx", import.meta.url), "utf8");
+const protectedSessionMessage = "Kết quả này chỉ mở được trên thiết bị đã thực hiện buổi luyện tập.";
+assert.ok(resultScorecardCode.includes(protectedSessionMessage), "Result scorecard must explain missing session access");
+assert.ok(shareCardCode.includes(protectedSessionMessage), "Share card must explain missing session access");
+
 console.log("Implementation tests passed.");
 process.exit(0);
