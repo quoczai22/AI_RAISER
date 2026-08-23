@@ -2195,6 +2195,18 @@ body.high-contrast .toggle-row input:checked {
   display: none;
 }
 
+/* Zalo SDK needs a wrapper, unlike the other direct action buttons. */
+.share-actions-panel .zalo-share-action,
+.share-mobile-actions .zalo-share-action {
+  display: block;
+  width: 100%;
+}
+
+.share-actions-panel .zalo-share-action > button,
+.share-mobile-actions .zalo-share-action > button {
+  width: 100%;
+}
+
 .analysis-screen {
   min-height: 100vh;
   background: var(--background);
