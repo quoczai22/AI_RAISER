@@ -211,7 +211,7 @@ export default function App() {
       return <ResultScorecard sessionId={sessionId} />;
     }
 
-    if (route.startsWith('#share/')) {
+    if (route.startsWith('#aisi-share/')) {
       const sessionId = route.split('/')[1];
       if (!sessionId) {
         window.location.hash = '';

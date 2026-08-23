@@ -135,7 +135,7 @@ export default function ResultScorecard({ sessionId }) {
           <button type="button" onClick={() => window.location.hash = 'scenarios'}>
             🎯 Luyện tập tiếp
           </button>
-          <button type="button" className="secondary" onClick={() => window.location.hash = `share/${sessionId}`}>
+          <button type="button" className="secondary" onClick={() => window.location.hash = `aisi-share/${sessionId}`}>
             📤 Chia sẻ kết quả
           </button>
           <button type="button" className="outline" onClick={() => window.location.hash = ''}>

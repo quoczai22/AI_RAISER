@@ -18,7 +18,7 @@ function getActiveKey(route) {
   if (route.startsWith('#chat')) return 'chat';
   if (route.startsWith('#dashboard/')) return 'result';
   if (route.startsWith('#hotlines')) return 'hotlines';
-  if (route.startsWith('#share')) return 'share';
+  if (route.startsWith('#aisi-share')) return 'share';
   return '';
 }
 
@@ -27,7 +27,7 @@ function targetFor(item, latestSessionId) {
   if (item.key === 'consent') return latestSessionId ? `consent/${latestSessionId}` : '';
   if (item.key === 'chat') return latestSessionId ? `chat/${latestSessionId}` : '';
   if (item.key === 'result') return latestSessionId ? `dashboard/${latestSessionId}` : '';
-  if (item.key === 'share') return latestSessionId ? `share/${latestSessionId}` : '';
+  if (item.key === 'share') return latestSessionId ? `aisi-share/${latestSessionId}` : '';
   return item.key;
 }
 

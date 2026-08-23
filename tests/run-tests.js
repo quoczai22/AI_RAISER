@@ -835,6 +835,8 @@ assert.ok(resultScorecardCode.includes(protectedSessionMessage), "Result scoreca
 assert.ok(shareCardCode.includes(protectedSessionMessage), "Share card must explain missing session access");
 assert.ok(shareCardCode.includes("url.hash = '';"), "Shared links must not expose a private session route");
 assert.ok(shareCardCode.includes("fullscreenApplet"), "AI Studio shared links must open the app fullscreen");
+assert.ok(resultScorecardCode.includes("aisi-share/${sessionId}"), "Result share action must avoid AI Studio's reserved share route");
+assert.ok(!resultScorecardCode.includes("`share/${sessionId}`"), "Result share action must not use the reserved share route");
 
 console.log("Implementation tests passed.");
 process.exit(0);
