@@ -837,6 +837,8 @@ assert.ok(shareCardCode.includes("url.hash = '';"), "Shared links must not expos
 assert.ok(shareCardCode.includes("fullscreenApplet"), "AI Studio shared links must open the app fullscreen");
 assert.ok(resultScorecardCode.includes("aisi-share/${sessionId}"), "Result share action must avoid AI Studio's reserved share route");
 assert.ok(!resultScorecardCode.includes("`share/${sessionId}`"), "Result share action must not use the reserved share route");
+assert.equal(shareCardCode.includes("ZaloSocialSDK"), false, "Share card must not depend on the unstable Zalo SDK");
+assert.equal(shareCardCode.includes("sp.zalo.me/plugins/sdk.js"), false, "Share card must not load the Zalo SDK script");
 
 console.log("Implementation tests passed.");
 process.exit(0);

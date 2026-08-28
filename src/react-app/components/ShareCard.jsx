@@ -61,23 +61,6 @@ function getPublicAppUrl() {
   return url.toString();
 }
 
-function loadZaloShareSdk() {
-  const sdkSrc = 'https://sp.zalo.me/plugins/sdk.js';
-  if (document.querySelector(`script[src="${sdkSrc}"]`)) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = sdkSrc;
-    script.async = true;
-    script.defer = true;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
-}
-
 function openZaloShareWindow(url) {
   const shareTarget = `https://zalo.me/share/dpl?src=dpl&utm_source=dpl&layout=1&media_type=link&content=${encodeURIComponent(url)}`;
   window.open(shareTarget, '_blank', 'noopener,noreferrer,width=800,height=620');
@@ -266,27 +249,6 @@ export default function ShareCard({ sessionId, userName }) {
     }
   }, [cardData, userName]);
 
-  useEffect(() => {
-    if (!cardData || isLocalUrl) return;
-
-    let cancelled = false;
-    loadZaloShareSdk()
-      .then(() => {
-        if (!cancelled && window.ZaloSocialSDK?.reload) {
-          window.ZaloSocialSDK.reload();
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setShareStatus('Không tải được nút Zalo. Bạn vẫn có thể dùng "Sao chép liên kết" hoặc "Lưu ảnh về máy".');
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [cardData, isLocalUrl, shareUrl]);
-
   const handleCopy = async () => {
     const text = cardData?.summary || 'Tôi vừa luyện nhận biết lừa đảo với AI Scam Inoculation.';
     const fullText = `${text}\n${shareUrl}`;
@@ -397,10 +359,6 @@ export default function ShareCard({ sessionId, userName }) {
         return;
       }
 
-      if (window.ZaloSocialSDK?.reload) {
-        window.ZaloSocialSDK.reload();
-      }
-
       openZaloShareWindow(shareUrl);
       if (copiedSuccess) {
         setShareStatus('Đã sao chép nội dung và mở Zalo. Hãy chọn bạn bè, nhóm hoặc nhật ký Zalo.');
@@ -445,19 +403,7 @@ export default function ShareCard({ sessionId, userName }) {
         <button type="button" className="primary" onClick={handleNativeShare}>📤 Chia sẻ nhanh (Web Share)</button>
       ) : null}
       <button type="button" onClick={handleCopy}>🔗 {copied ? 'Đã sao chép!' : 'Sao chép liên kết ứng dụng'}</button>
-      {isLocalUrl ? (
-        <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
-      ) : (
-        <div
-          className="zalo-share-button zalo-share-action"
-          data-href={shareUrl}
-          data-layout="icon-text"
-          data-color="blue"
-          data-customize="true"
-        >
-          <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
-        </div>
-      )}
+      <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
       <button type="button" onClick={handleFacebookShare}>📘 Chia sẻ lên Facebook</button>
       <button type="button" className="download-button" onClick={handleDownload}>📷 Lưu ảnh về máy</button>
       <button type="button" className="outline" onClick={() => window.location.hash = `dashboard/${sessionId}`}>← Quay lại kết quả</button>
