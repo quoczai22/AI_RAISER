@@ -66,6 +66,18 @@ function openZaloShareWindow(url) {
   window.open(shareTarget, '_blank', 'noopener,noreferrer,width=800,height=620');
 }
 
+function isMobileDevice() {
+  if (typeof navigator === 'undefined') return false;
+  if (typeof navigator.userAgentData?.mobile === 'boolean') {
+    return navigator.userAgentData.mobile;
+  }
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+}
+
+function openZaloWeb() {
+  window.open('https://chat.zalo.me/', '_blank', 'noopener,noreferrer');
+}
+
 function drawShareCardToCanvas(canvas, cardData, userName) {
   const ratio = 2;
   const width = 1080;
@@ -359,11 +371,21 @@ export default function ShareCard({ sessionId, userName }) {
         return;
       }
 
-      openZaloShareWindow(shareUrl);
+      if (isMobileDevice()) {
+        openZaloShareWindow(shareUrl);
+        if (copiedSuccess) {
+          setShareStatus('Đã sao chép nội dung và mở Zalo. Hãy chọn bạn bè, nhóm hoặc nhật ký Zalo.');
+        } else {
+          setShareStatus('Đã mở Zalo. Nếu tự động sao chép bị chặn, bạn hãy copy link từ thanh địa chỉ.');
+        }
+        return;
+      }
+
+      openZaloWeb();
       if (copiedSuccess) {
-        setShareStatus('Đã sao chép nội dung và mở Zalo. Hãy chọn bạn bè, nhóm hoặc nhật ký Zalo.');
+        setShareStatus('Đã sao chép nội dung và mở Zalo Web. Hãy chọn cuộc trò chuyện rồi dán nội dung để gửi.');
       } else {
-        setShareStatus('Đã mở Zalo. Nếu tự động sao chép bị chặn, bạn hãy copy link từ thanh địa chỉ.');
+        setShareStatus('Đã mở Zalo Web. Hãy sao chép link ứng dụng từ thanh địa chỉ rồi dán vào cuộc trò chuyện.');
       }
     }
   };
