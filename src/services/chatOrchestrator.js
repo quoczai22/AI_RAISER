@@ -12,7 +12,9 @@ import {
   validateAiReply,
 } from "./safetyValidator.js";
 
-const maxTurns = getPositiveIntEnv("MAX_CHAT_TURNS", 8);
+function getMaxTurns() {
+  return getPositiveIntEnv("MAX_CHAT_TURNS", 5);
+}
 const maxMessageLength = getPositiveIntEnv("MAX_MESSAGE_LENGTH", 1000);
 
 const geminiOutputSchema = {
@@ -177,7 +179,7 @@ export async function sendChatMessage(sessionId, input) {
     if (
       !safeToShow ||
       modelResult.simulationState?.shouldEnd ||
-      session.turnCount >= maxTurns ||
+      session.turnCount >= getMaxTurns() ||
       isStopRequest(masked.masked)
     ) {
       session.status = "completed";
@@ -228,17 +230,28 @@ async function generateModelReply({ session, scenario, participantMessage, repai
   }
 }
 
-function buildPrompt({ session, scenario, participantMessage, repairReason }) {
-  const history = session.messages.slice(-10).map((message) => ({
+export function buildPrompt({ session, scenario, participantMessage, repairReason }) {
+  const history = session.messages.slice(-6).map((message) => ({
     role: message.role,
     content: message.content,
   }));
 
+  const trimmedScenario = {
+    id: scenario.id,
+    title: scenario.title,
+    description: scenario.description,
+    tactics: scenario.tactics,
+    redFlags: (scenario.redFlags || []).map((flag) => ({
+      key: flag.key,
+      label: flag.label,
+    })),
+  };
+
   return JSON.stringify({
-    scenario,
+    scenario: trimmedScenario,
     sessionState: {
       turnCount: session.turnCount,
-      maxTurns,
+      maxTurns: getMaxTurns(),
       status: session.status,
       difficulty: session.difficulty,
       triggeredRedFlags: session.redFlagEvents.map((event) => event.redFlagKey),
@@ -302,7 +315,7 @@ function normalizeSafetyAssessment(value) {
 function fallbackReply({ session, scenario, participantMessage, reason }) {
   const recognized = looksLikeScamRecognition(participantMessage.content);
   const stop = isStopRequest(participantMessage.content);
-  const shouldEnd = stop || recognized || session.turnCount >= maxTurns;
+  const shouldEnd = stop || recognized || session.turnCount >= getMaxTurns();
   const fallbackRedFlag = chooseFallbackRedFlag({ scenario, session, participantMessage });
 
   let reply = getSafeFallbackReply({ scenario, session, participantMessage });

@@ -12,7 +12,7 @@ import {
   requireStoredSession,
   verifySessionCapability,
 } from "../src/services/sessionService.js";
-import { emitValidatedReplyChunks, sendChatMessage, sendChatMessageStream } from "../src/services/chatOrchestrator.js";
+import { buildPrompt, emitValidatedReplyChunks, sendChatMessage, sendChatMessageStream } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
 import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
@@ -842,6 +842,84 @@ assert.equal(shareCardCode.includes("sp.zalo.me/plugins/sdk.js"), false, "Share 
 assert.equal(shareCardCode.includes("handleShare('zalo')"), false, "Share card must not offer a misleading Zalo action");
 assert.equal(shareCardCode.includes("zalo.me/share"), false, "Share card must not open the unsupported Zalo share endpoint");
 assert.equal(shareCardCode.includes("chat.zalo.me"), false, "Share card must not open Zalo Web without completing a share");
+
+console.log("Stage 6: TASK-044 Gemini Quota & Fallback Tests");
+
+// 1. Session ends after default MAX_CHAT_TURNS (5)
+const t44Session = await createSession({ scenarioId: "fake_bank", difficulty: "easy", userName: "T44User" });
+await confirmConsent(t44Session.id, { consent: true });
+let lastRes = null;
+for (let turn = 1; turn <= 5; turn++) {
+  lastRes = await sendChatMessage(t44Session.id, { message: `Câu hỏi lượt ${turn}` });
+}
+assert.equal(lastRes.turnCount, 5, "Session must reach turnCount 5");
+assert.equal(lastRes.sessionStatus, "completed", "Session must complete at max turns 5");
+
+// 2. No Gemini request call after session completed/stopped
+await assert.rejects(
+  () => sendChatMessage(t44Session.id, { message: "Tin nhắn thừa sau khi xong" }),
+  (err) => err.status === 409,
+  "Sending message after completion must return 409 and not invoke Gemini"
+);
+
+// 3. Fallback provider & reasons: safe_fallback must be returned with correct fallbackReason
+assert.equal(lastRes.safety.provider, "safe_fallback", "Fallback provider must be safe_fallback");
+assert.equal(lastRes.safety.provider === "gemini", false, "Fallback response must never claim provider=gemini");
+assert.equal(typeof lastRes.safety.fallbackReason, "string");
+assert.ok(lastRes.safety.fallbackReason.length > 0, "fallbackReason must describe the actual fallback cause");
+
+// 4. Context truncation in buildPrompt
+const promptSession = await sessions.get(t44Session.id);
+const promptScenario = getScenario(promptSession.scenarioId);
+const promptString = buildPrompt({
+  session: promptSession,
+  scenario: promptScenario,
+  participantMessage: { content: "Kiểm tra context" },
+  repairReason: "",
+});
+const promptObj = JSON.parse(promptString);
+assert.ok(promptObj.conversationHistory.length <= 6, "Conversation history in Gemini prompt must be at most 6 messages (3 turns)");
+assert.equal(promptObj.scenario.learningPoints, undefined, "Trimmed scenario must omit learningPoints");
+assert.equal(promptObj.scenario.tips, undefined, "Trimmed scenario must omit tips");
+assert.ok(promptObj.scenario.id && promptObj.scenario.title && promptObj.scenario.description, "Trimmed scenario must preserve essential identification and redFlags");
+assert.equal(promptObj.sessionState.turnCount, 5, "sessionState turnCount must be present");
+assert.equal(promptObj.sessionState.difficulty, "easy", "sessionState difficulty must be present");
+
+// 5. No transcript / chat content in Firestore
+const firestoreData = sanitizeSessionForFirestore(promptSession);
+assert.equal(firestoreData.messages, undefined, "Firestore document MUST NOT contain messages");
+assert.equal(firestoreData.transcript, undefined, "Firestore document MUST NOT contain transcript");
+assert.equal(firestoreData.reply, undefined, "Firestore document MUST NOT contain fallback reply text");
+
+console.log("Stage 7: TASK-046 3-Tier Loading Notice Tests");
+
+const updatedChatShellCode = readFileSync(new URL("../src/react-app/components/ChatShell.jsx", import.meta.url), "utf8");
+
+// Tier 1 assertion: immediate response state
+assert.ok(
+  updatedChatShellCode.includes("message.streaming && !message.content ? 'AI đang trả lời...' : message.content"),
+  "Tier 1: ChatShell must immediately render 'AI đang trả lời...' for empty streaming messages"
+);
+
+// Tier 2 assertion: frontend timer notice & cleanup
+assert.ok(
+  updatedChatShellCode.includes("Có thể đang có nhiều người luyện tập cùng lúc. Bạn vui lòng chờ trong giây lát."),
+  "Tier 2: ChatShell must include slow loading notice text"
+);
+assert.ok(
+  updatedChatShellCode.includes("slowTimerRef.current = setTimeout"),
+  "Tier 2: ChatShell must set a timer for slow loading notice"
+);
+assert.ok(
+  updatedChatShellCode.includes("clearSlowTimer()"),
+  "Tier 2: ChatShell must define clearSlowTimer helper for cleanup"
+);
+
+// Tier 3 assertion: Fallback notice & provider
+assert.ok(
+  updatedChatShellCode.includes("Đang dùng phản hồi mẫu an toàn."),
+  "Tier 3: ChatShell fallback notices must explicitly state 'Đang dùng phản hồi mẫu an toàn.'"
+);
 
 console.log("Implementation tests passed.");
 process.exit(0);

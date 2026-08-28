@@ -19,15 +19,15 @@ function maskSensitiveForDisplay(value) {
 
 function fallbackNotice(reason) {
   if (reason === "NO_GEMINI_API_KEY") {
-    return "AI chưa sẵn sàng. Đang dùng tin nhắn mẫu an toàn.";
+    return "AI chưa sẵn sàng. Đang dùng phản hồi mẫu an toàn.";
   }
   if (reason === "GEMINI_TIMEOUT") {
-    return "AI trả lời chậm. Tạm dùng tin nhắn mẫu an toàn để không bị gián đoạn.";
+    return "AI phản hồi chậm. Đang dùng phản hồi mẫu an toàn.";
   }
   if (reason === "GEMINI_HTTP_429") {
-    return "AI đang bận. Tạm dùng tin nhắn mẫu an toàn.";
+    return "AI đang bận (giới hạn truy cập). Đang dùng phản hồi mẫu an toàn.";
   }
-  return "AI gặp lỗi tạm thời. Tạm dùng tin nhắn mẫu an toàn.";
+  return "AI gặp lỗi tạm thời. Đang dùng phản hồi mẫu an toàn.";
 }
 
 export default function ChatShell() {
@@ -37,12 +37,21 @@ export default function ChatShell() {
   const [safetyNotices, setSafetyNotices] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [slowNotice, setSlowNotice] = useState('');
   const [maxMessageLength, setMaxMessageLength] = useState(1000);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
   const chatRequestControllerRef = useRef(null);
+  const slowTimerRef = useRef(null);
+
+  const clearSlowTimer = () => {
+    if (slowTimerRef.current) {
+      clearTimeout(slowTimerRef.current);
+      slowTimerRef.current = null;
+    }
+  };
 
   const getSessionIdFromHash = () => {
     const hash = window.location.hash || '';
@@ -94,6 +103,7 @@ export default function ChatShell() {
   }, [sessionId]);
 
   useEffect(() => () => {
+    clearSlowTimer();
     chatRequestControllerRef.current?.abort();
   }, []);
 
@@ -101,7 +111,7 @@ export default function ChatShell() {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isSending, safetyNotices]);
+  }, [messages, isSending, safetyNotices, slowNotice]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -113,6 +123,9 @@ export default function ChatShell() {
       setSafetyNotices(prev => [...prev, `Tin nhắn tối đa ${maxMessageLength} ký tự.`]);
       return;
     }
+
+    clearSlowTimer();
+    setSlowNotice('');
 
     const displayMsg = maskSensitiveForDisplay(text);
     // Optimistic UI update
@@ -126,6 +139,10 @@ export default function ChatShell() {
     const controller = new AbortController();
     chatRequestControllerRef.current = controller;
     const capability = getSessionCapability(sessionId);
+
+    slowTimerRef.current = setTimeout(() => {
+      setSlowNotice('Có thể đang có nhiều người luyện tập cùng lúc. Bạn vui lòng chờ trong giây lát.');
+    }, 6000);
 
     fetch(`/api/sessions/${sessionId}/messages`, {
       method: 'POST',
@@ -161,6 +178,8 @@ export default function ChatShell() {
               try {
                 const data = JSON.parse(rawData);
                 if (currentEvent === 'chunk' && data.text) {
+                  clearSlowTimer();
+                  setSlowNotice('');
                   setMessages(prev => {
                     const next = [...prev];
                     const lastIdx = next.length - 1;
@@ -175,6 +194,8 @@ export default function ChatShell() {
                 } else if (currentEvent === 'notice' && data.reason) {
                   setSafetyNotices(prev => [...prev, fallbackNotice(data.reason)]);
                 } else if (currentEvent === 'done') {
+                  clearSlowTimer();
+                  setSlowNotice('');
                   if (data.safety?.maskedSensitiveInput) {
                     setSafetyNotices(prev => [...prev, "Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư."]);
                   }
@@ -196,6 +217,8 @@ export default function ChatShell() {
                     handleStop();
                   }
                 } else if (currentEvent === 'error') {
+                  clearSlowTimer();
+                  setSlowNotice('');
                   setSafetyNotices(prev => [...prev, data.error || 'Lỗi xử lý']);
                   setIsSending(false);
                   chatRequestControllerRef.current = null;
@@ -208,6 +231,8 @@ export default function ChatShell() {
         }
       })
       .catch((err) => {
+        clearSlowTimer();
+        setSlowNotice('');
         if (err.name !== 'AbortError') {
           setSafetyNotices(prev => [...prev, err.message]);
         }
@@ -219,6 +244,8 @@ export default function ChatShell() {
 
   const handleStop = () => {
     if (!sessionId) return;
+    clearSlowTimer();
+    setSlowNotice('');
     chatRequestControllerRef.current?.abort();
     chatRequestControllerRef.current = null;
     setMessages(prev => prev.filter(m => !m.streaming));
@@ -347,6 +374,12 @@ export default function ChatShell() {
                 </div>
               </div>
             ))}
+
+            {slowNotice ? (
+              <div className="notice slow-note" style={{ borderRadius: 'var(--radius)', marginTop: '8px', padding: '10px 14px', fontSize: '0.85rem', background: '#FEF3C7', color: '#92400E', borderLeft: '4px solid #F59E0B' }}>
+                {slowNotice}
+              </div>
+            ) : null}
 
             {safetyNotices.map((notice, idx) => (
               <div key={idx} className="notice danger-note" style={{ borderRadius: 'var(--radius)', marginTop: '8px', padding: '10px 14px', fontSize: '0.85rem' }}>
