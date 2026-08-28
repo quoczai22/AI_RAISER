@@ -839,9 +839,9 @@ assert.ok(resultScorecardCode.includes("aisi-share/${sessionId}"), "Result share
 assert.ok(!resultScorecardCode.includes("`share/${sessionId}`"), "Result share action must not use the reserved share route");
 assert.equal(shareCardCode.includes("ZaloSocialSDK"), false, "Share card must not depend on the unstable Zalo SDK");
 assert.equal(shareCardCode.includes("sp.zalo.me/plugins/sdk.js"), false, "Share card must not load the Zalo SDK script");
-assert.ok(shareCardCode.includes("isMobileDevice()"), "Zalo sharing must distinguish mobile from desktop");
-assert.ok(shareCardCode.includes("https://chat.zalo.me/"), "Desktop Zalo sharing must open Zalo Web");
-assert.ok(shareCardCode.includes("openZaloShareWindow(shareUrl)"), "Mobile Zalo sharing must preserve the direct share flow");
+assert.equal(shareCardCode.includes("handleShare('zalo')"), false, "Share card must not offer a misleading Zalo action");
+assert.equal(shareCardCode.includes("zalo.me/share"), false, "Share card must not open the unsupported Zalo share endpoint");
+assert.equal(shareCardCode.includes("chat.zalo.me"), false, "Share card must not open Zalo Web without completing a share");
 
 console.log("Implementation tests passed.");
 process.exit(0);

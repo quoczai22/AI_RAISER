@@ -61,23 +61,6 @@ function getPublicAppUrl() {
   return url.toString();
 }
 
-function openZaloShareWindow(url) {
-  const shareTarget = `https://zalo.me/share/dpl?src=dpl&utm_source=dpl&layout=1&media_type=link&content=${encodeURIComponent(url)}`;
-  window.open(shareTarget, '_blank', 'noopener,noreferrer,width=800,height=620');
-}
-
-function isMobileDevice() {
-  if (typeof navigator === 'undefined') return false;
-  if (typeof navigator.userAgentData?.mobile === 'boolean') {
-    return navigator.userAgentData.mobile;
-  }
-  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-}
-
-function openZaloWeb() {
-  window.open('https://chat.zalo.me/', '_blank', 'noopener,noreferrer');
-}
-
 function drawShareCardToCanvas(canvas, cardData, userName) {
   const ratio = 2;
   const width = 1080;
@@ -363,31 +346,6 @@ export default function ShareCard({ sessionId, userName }) {
       return;
     }
 
-    if (platform === 'zalo') {
-      if (isLocalUrl) {
-        if (copiedSuccess) {
-          setShareStatus('Zalo cần link public để mở thẻ chia sẻ. Nội dung đã được sao chép, hãy dán thủ công khi test bằng localhost.');
-        }
-        return;
-      }
-
-      if (isMobileDevice()) {
-        openZaloShareWindow(shareUrl);
-        if (copiedSuccess) {
-          setShareStatus('Đã sao chép nội dung và mở Zalo. Hãy chọn bạn bè, nhóm hoặc nhật ký Zalo.');
-        } else {
-          setShareStatus('Đã mở Zalo. Nếu tự động sao chép bị chặn, bạn hãy copy link từ thanh địa chỉ.');
-        }
-        return;
-      }
-
-      openZaloWeb();
-      if (copiedSuccess) {
-        setShareStatus('Đã sao chép nội dung và mở Zalo Web. Hãy chọn cuộc trò chuyện rồi dán nội dung để gửi.');
-      } else {
-        setShareStatus('Đã mở Zalo Web. Hãy sao chép link ứng dụng từ thanh địa chỉ rồi dán vào cuộc trò chuyện.');
-      }
-    }
   };
 
   const handleFacebookShare = async () => {
@@ -425,7 +383,6 @@ export default function ShareCard({ sessionId, userName }) {
         <button type="button" className="primary" onClick={handleNativeShare}>📤 Chia sẻ nhanh (Web Share)</button>
       ) : null}
       <button type="button" onClick={handleCopy}>🔗 {copied ? 'Đã sao chép!' : 'Sao chép liên kết ứng dụng'}</button>
-      <button type="button" onClick={() => handleShare('zalo')}>💬 Chia sẻ lên Zalo</button>
       <button type="button" onClick={handleFacebookShare}>📘 Chia sẻ lên Facebook</button>
       <button type="button" className="download-button" onClick={handleDownload}>📷 Lưu ảnh về máy</button>
       <button type="button" className="outline" onClick={() => window.location.hash = `dashboard/${sessionId}`}>← Quay lại kết quả</button>
