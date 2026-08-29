@@ -27,9 +27,16 @@ const taxonomyDescription = {
 function groupByTaxonomy(flags) {
   const map = {};
   flags.forEach(flag => {
-    const key = flag.technique.toLowerCase();
-    if (!map[key]) map[key] = [];
-    map[key].push(flag);
+    const techniques = String(flag.technique || '')
+      .toLowerCase()
+      .split('+')
+      .map(value => value.trim())
+      .filter(value => taxonomyOrder.includes(value));
+
+    techniques.forEach(key => {
+      if (!map[key]) map[key] = [];
+      map[key].push(flag);
+    });
   });
   return map;
 }
@@ -122,7 +129,7 @@ export default function ResultScorecard({ sessionId }) {
             <div>
               <p>Kết quả buổi luyện tập</p>
               <h2>{recognizedCount}<small>/{totalCount}</small></h2>
-              <strong>dấu hiệu đã nhận ra</strong>
+              <strong>dấu hiệu cụ thể đã nhận ra</strong>
               <span>{recognizedCount >= Math.ceil(totalCount / 2) ? 'Khá tốt! Luyện thêm để nhận ra nhiều hơn' : 'Hãy luyện thêm để nhận ra nhiều hơn'}</span>
             </div>
           </div>
@@ -144,21 +151,22 @@ export default function ResultScorecard({ sessionId }) {
         </section>
 
         <section className="analysis-signs-column">
-          <p className="section-label">Các dấu hiệu trong tình huống này</p>
+          <p className="section-label">5 nhóm thao túng trong tình huống này</p>
           <div className="analysis-sign-list">
             {taxonomyOrder.map((tech) => {
               const recognized = recognizedMap[tech] || [];
               const missed = missedMap[tech] || [];
               const isRecognized = recognized.length > 0;
+              const isPresent = isRecognized || missed.length > 0;
               const flag = recognized[0] || missed[0];
               return (
-                <article className={`analysis-sign-card ${isRecognized ? 'recognized' : 'missed'}`} key={tech}>
+                <article className={`analysis-sign-card ${isRecognized ? 'recognized' : isPresent ? 'missed' : 'neutral'}`} key={tech}>
                   <span className="sign-icon" aria-hidden="true">{taxonomyIcon[tech]}</span>
                   <div>
                     <h3>{flag?.label || taxonomyLabel[tech]}</h3>
                     <p>{flag?.recommendation || taxonomyDescription[tech]}</p>
                   </div>
-                  <b>{isRecognized ? '✓ Đã nhận ra' : '✕ Bỏ qua'}</b>
+                  <b>{isRecognized ? '✓ Đã nhận ra' : isPresent ? '✕ Bỏ qua' : '— Không xuất hiện'}</b>
                 </article>
               );
             })}

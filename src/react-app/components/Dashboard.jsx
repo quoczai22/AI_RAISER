@@ -149,8 +149,17 @@ export default function Dashboard({ userName, history, onResetName }) {
             <p className="section-label">Lịch sử luyện tập</p>
             {recentHistory.length ? (
               <div className="history-list">
-                {recentHistory.map((item, idx) => (
-                  <article className="history-card" key={item.id || item.sessionId || idx}>
+                {recentHistory.map((item, idx) => {
+                  const sessionId = item.id || item.sessionId || '';
+                  return (
+                  <button
+                    className="history-card"
+                    type="button"
+                    key={sessionId || idx}
+                    disabled={!sessionId}
+                    onClick={() => sessionId && handleAction(`dashboard/${sessionId}`)}
+                    aria-label={`Xem lại kết quả ${item.scenarioTitle || item.scenarioId || 'buổi luyện tập'}`}
+                  >
                     <div>
                       <h3>{item.scenarioTitle || item.scenarioId || 'Buổi luyện tập'}</h3>
                       <strong>{scoreLabel(item.immunityScore)}</strong>
@@ -159,8 +168,8 @@ export default function Dashboard({ userName, history, onResetName }) {
                       <span className="scenario-badge popular">{item.difficulty || 'Vừa'}</span>
                       <small>{formatHistoryTime(item)}</small>
                     </div>
-                  </article>
-                ))}
+                  </button>
+                )})}
               </div>
             ) : (
               <div className="empty-history-card">
