@@ -1,82 +1,142 @@
 {
   "fake_bank": {
-    "clarify": "Dạ hệ thống đang báo tài khoản có dấu hiệu bất thường trong mô phỏng nên bên em cần bác phản hồi sớm ạ.",
-    "delay": "Dạ thời hạn xử lý đang được nói là sắp hết, nên người liên hệ trong tình huống này đang cố hối bác quyết định nhanh ạ.",
+    "clarify": "Dạ bên em báo tài khoản có giao dịch lạ hoặc bị tạm khóa trong mô phỏng này, nên cần bác xác nhận thông tin khẩn ạ.",
+    "delay": "Dạ thời hạn xử lý chỉ trong hôm nay, người giả danh ngân hàng đang gây áp lực thời gian để bác lo lắng ạ.",
+    "verify_channel": "Dạ nếu bác muốn ra chi nhánh hoặc gọi tổng đài chính thức, đó là phản xạ bảo mật rất đúng đắn khi gặp tình huống này.",
+    "refuse_info": "Dạ bác giữ kín mật khẩu và mã xác minh là chuẩn xác. Ngân hàng thật không bao giờ yêu cầu bác đọc mã xác minh.",
+    "refuse_money": "Dạ việc từ chối chuyển khoản phí xác minh là rất đúng. Ngân hàng không bao giờ bắt khách nạp tiền để mở khóa thẻ.",
+    "doubt": "Dạ phản xạ nghi ngờ đối tượng giả danh ngân hàng là rất tốt. Bác nên cảnh giác trước các yêu cầu bất thường.",
+    "stop": "Dạ em dừng mô phỏng ngân hàng tại đây. Bây giờ chúng ta sẽ chuyển sang xem lại các dấu hiệu nhận diện.",
     "default": [
-      "Dạ bên em đang cần bác xác nhận gấp một việc liên quan đến tài khoản trong mô phỏng này ạ.",
-      "Dạ tài khoản của bác đang được báo là có giao dịch cần kiểm tra sớm, nên bên em xin bác tiếp tục trao đổi ạ."
+      "Dạ bên em đang báo tài khoản của bác có biến động bất thường cần làm việc ngay trong mô phỏng này ạ.",
+      "Dạ đối tượng giả mạo ngân hàng tiếp tục hối thúc bác làm theo hướng dẫn để xử lý sự cố giả định ạ.",
+      "Dạ trong tình huống này, người liên hệ đang tạo áp lực để bác quyết định nhanh thay vì kiểm tra qua kênh chính thức ạ."
     ]
   },
   "fake_relative": {
-    "clarify": "Bác ơi, trong tình huống này người nhắn đang nói là gặp việc gấp nên muốn bác phản hồi ngay ạ.",
-    "delay": "Bác ơi, người liên hệ đang cố làm bác thấy không thể chờ thêm trong mô phỏng này ạ.",
+    "clarify": "Bác ơi, trong mô phỏng này người nhắn tự xưng người thân gặp tai nạn hoặc việc gấp nên cần bác giúp ngay.",
+    "delay": "Bác ơi, người liên hệ đang cố làm bác hốt hoảng để không kịp gọi điện kiểm tra lại với người nhà ạ.",
+    "verify_channel": "Bác gọi trực tiếp vào số điện thoại quen thuộc của người thân để hỏi lại là cách xử lý chuẩn nhất.",
+    "refuse_info": "Bác tuyệt đối không đọc thông tin cá nhân hay mã xác nhận cho số lạ nhắn tin là rất đúng đắn.",
+    "refuse_money": "Bác từ chối chuyển tiền ngay cho tài khoản lạ là phản xạ tự vệ rất tuyệt vời.",
+    "doubt": "Bác nghi ngờ số điện thoại lạ xưng người thân mượn tiền khẩn cấp là hoàn toàn chính xác.",
+    "stop": "Bác ơi, em dừng mô phỏng người thân tại đây. Chúng ta cùng xem lại danh sách các dấu hiệu cảnh báo nhé.",
     "default": [
-      "Bác ơi, em đang có việc gấp nên cần bác để ý tin nhắn này ngay ạ.",
-      "Bác ơi, người liên hệ trong tình huống này đang nhờ bác xử lý nhanh và muốn bác giữ kín ạ."
+      "Bác ơi, em đang gặp chuyện gấp lắm, bác hỗ trợ em ngay trong tình huống mô phỏng này với ạ.",
+      "Người nhắn tin tiếp tục dùng tình cảm và sự khẩn cấp giả định để hối thúc bác xử lý nhanh.",
+      "Bác nên bình tĩnh gọi lại người thân qua cách liên lạc quen thuộc trước khi làm bất cứ điều gì ạ."
     ]
   },
   "fake_police": {
-    "clarify": "Trong mô phỏng này, người liên hệ tự xưng cơ quan chức năng và nói sự việc cần được xử lý gấp.",
-    "delay": "Người liên hệ trong tình huống này đang tạo áp lực rằng bác không được chậm trễ.",
+    "clarify": "Trong mô phỏng này, đối tượng tự xưng cán bộ điều tra báo bác liên quan đến một vụ án và yêu cầu hợp tác.",
+    "delay": "Đối tượng giả danh cơ quan chức năng đang hối thúc bác vì muốn bác hoảng sợ mà không kịp suy nghĩ.",
+    "verify_channel": "Bác yêu cầu đến trực tiếp trụ sở công an làm việc là bước xử lý chuẩn xác nhất, không ai làm việc án qua điện thoại.",
+    "refuse_info": "Bác từ chối đọc thông tin cá nhân hay tài khoản cho đối tượng tự xưng công an là rất đúng.",
+    "refuse_money": "Bác không chuyển tiền vào tài khoản tạm giữ giả định là quyết định bảo vệ tài sản tuyệt đối chính xác.",
+    "doubt": "Bác nhận ra công an thật không bao giờ dọa dẫm hay bắt chuyển tiền qua điện thoại là rất tinh ý.",
+    "stop": "Mình dừng mô phỏng tình huống công an tại đây. Bây giờ chúng ta xem lại bài học nhận diện nhé.",
     "default": [
-      "Tôi cần bác hợp tác ngay trong tình huống mô phỏng này vì hồ sơ đang được nói là có vấn đề.",
-      "Người liên hệ tiếp tục dùng danh nghĩa cơ quan chức năng để yêu cầu bác phản hồi khẩn."
+      "Tôi là cán bộ điều tra trong mô phỏng này, yêu cầu bác hợp tác xác minh thông tin ngay lập tức.",
+      "Đối tượng tiếp tục dùng danh nghĩa cơ quan công an để đe dọa và gây áp lực tâm lý trong mô phỏng.",
+      "Trong tình huống này, người liên hệ đang dựa vào danh nghĩa cơ quan chức năng để khiến bác mất bình tĩnh."
     ]
   },
   "fake_job": {
-    "clarify": "Bên tuyển dụng trong mô phỏng đang nói cơ hội này dễ tham gia và có thu nhập hấp dẫn.",
-    "delay": "Người tuyển dụng trong tình huống này đang hối bác quyết định nhanh để không bỏ lỡ cơ hội.",
+    "clarify": "Bên tuyển dụng giả định đang mời bác tham gia công việc online nhẹ nhàng nhưng hoa hồng cao bất thường.",
+    "delay": "Người tư vấn việc làm đang hối bác đăng ký ngay vì nói suất làm việc có hạn trong ngày.",
+    "verify_channel": "Bác kiểm tra lại thông tin công ty qua kênh tuyển dụng chính thức là việc rất cần thiết.",
+    "refuse_info": "Bác từ chối cung cấp giấy tờ cá nhân hay tài khoản cho bên tuyển dụng online là rất chuẩn.",
+    "refuse_money": "Bác không đóng tiền cọc hay tiền giữ suất việc làm là phản xạ né bẫy tuyển dụng tuyệt vời.",
+    "doubt": "Bác nghi ngờ việc nhẹ lương cao là hoàn toàn đúng, không có công việc nào nạp tiền để nhận hoa hồng thật cả.",
+    "stop": "Mình dừng mô phỏng tuyển dụng tại đây. Chúng ta cùng xem lại các điểm cần lưu ý nhé.",
     "default": [
-      "Bên em đang nói chỉ còn ít cơ hội phù hợp nên muốn bác phản hồi sớm ạ.",
-      "Người tuyển dụng trong mô phỏng tiếp tục nhấn mạnh việc nhẹ và thu nhập hấp dẫn."
+      "Bên em đang có công việc online nhận lương theo ngày trong mô phỏng này, bác làm ngay kẻo hết suất ạ.",
+      "Đối tượng tuyển dụng giả tiếp tục hứa hẹn thu nhập cao để dụ bác tham gia nhiệm vụ nạp tiền.",
+      "Bác nên kiểm tra công ty và điều kiện tuyển dụng độc lập trước khi tiếp tục trao đổi ạ."
     ]
   },
   "deepfake": {
-    "clarify": "Trong mô phỏng này, người liên hệ nói đang gặp việc gấp và muốn bác tin ngay vào cuộc gọi ngắn.",
-    "delay": "Người liên hệ đang cố làm bác lo lắng và muốn bác quyết định thật nhanh ạ.",
+    "clarify": "Trong mô phỏng này, cuộc gọi có hình ảnh chập chờn của người thân yêu cầu bác hỗ trợ tài chính gấp.",
+    "delay": "Người liên hệ nói tín hiệu kém nên chỉ gọi vài giây rồi giục bác xử lý ngay cho kịp.",
+    "verify_channel": "Bác cúp máy và gọi lại bằng cuộc gọi thoại thường hoặc hỏi câu hỏi riêng tư là cách kiểm tra deepfake chuẩn nhất.",
+    "refuse_info": "Bác giữ an toàn thông tin và không đọc bất kỳ mã xác nhận nào trong tình huống này là rất đúng.",
+    "refuse_money": "Bác không chuyển tiền khi thấy hình ảnh và giọng nói có dấu hiệu bất thường là rất cảnh giác.",
+    "doubt": "Bác phát hiện video hình ảnh bị giật, khuôn mặt đơ cứng của công nghệ deepfake là rất tinh mắt.",
+    "stop": "Em dừng mô phỏng cuộc gọi deepfake tại đây. Bây giờ chúng ta cùng xem lại cách phòng tránh nhé.",
     "default": [
-      "Bác ơi, trong tình huống này người thân giả đang nói mạng yếu nhưng cần bác phản hồi gấp.",
-      "Người liên hệ trong mô phỏng tiếp tục dùng cảm giác khẩn cấp để thúc bác xử lý nhanh."
+      "Bác ơi, sóng yếu quá em chỉ nói nhanh được trong mô phỏng này, bác hỗ trợ em gấp nhé.",
+      "Đối tượng tiếp tục dùng hình ảnh video giả lập để tạo niềm tin và hối thúc bác chuyển khoản khẩn.",
+      "Nếu hình ảnh hoặc giọng nói bất thường, bác hãy dừng lại và gọi xác minh bằng kênh quen thuộc ạ."
     ]
   },
   "travel_sales": {
-    "clarify": "Bên tư vấn trong mô phỏng nói ưu đãi này rất tốt nhưng thông tin đặt chỗ vẫn chưa rõ ràng.",
-    "delay": "Người tư vấn đang tạo cảm giác chỉ còn rất ít thời gian để giữ ưu đãi.",
+    "clarify": "Bên tư vấn giả định báo bác trúng thưởng quà tặng du lịch nhưng yêu cầu đóng phí xác nhận trước.",
+    "delay": "Người bán hàng đang nói ưu đãi tri ân sẽ hết hạn trong vài phút nữa để bác không kịp suy tính.",
+    "verify_channel": "Bác tìm hiểu kỹ thông tin công ty lữ hành qua trang web và hotline chính thức trước khi giao dịch là rất tốt.",
+    "refuse_info": "Bác từ chối cung cấp thông tin thẻ hay căn cước cho bên tặng quà du lịch online là rất an toàn.",
+    "refuse_money": "Bác từ chối đóng tiền phí đặt cọc giữ quà tri ân là xử lý rất tỉnh táo.",
+    "doubt": "Bác nghi ngờ quà tặng miễn phí mà lại bắt đóng tiền là phản xạ né lừa đảo du lịch rất chuẩn.",
+    "stop": "Mình dừng mô phỏng du lịch tại đây. Bây giờ chúng ta sẽ tổng kết các dấu hiệu cảnh báo.",
     "default": [
-      "Bên em đang nói đây là suất ưu đãi cuối nên muốn bác quyết định sớm ạ.",
-      "Người tư vấn trong mô phỏng tiếp tục nhấn mạnh cơ hội giảm giá sắp hết."
+      "Chúc mừng bác đã nhận suất du lịch miễn phí trong mô phỏng này, bác xác nhận sớm để nhận ưu đãi ạ.",
+      "Đối tượng tiếp tục hứa hẹn phần thưởng du lịch giá trị cao để hối bác nạp phí phụ thu.",
+      "Bác nên kiểm tra đơn vị tổ chức qua nguồn chính thức trước khi tin vào lời mời nhận quà ạ."
     ]
   },
   "gym_sales": {
-    "clarify": "Trong mô phỏng này, người tư vấn nói gói tập rất ưu đãi nhưng điều khoản chưa được giải thích rõ.",
-    "delay": "Người tư vấn đang hối bác đồng ý nhanh để nhận ưu đãi trong ngày.",
+    "clarify": "Người tư vấn trong mô phỏng nói gói tập giảm giá cực sâu nhưng mập mờ về điều khoản tự động gia hạn.",
+    "delay": "Bên dịch vụ đang hối bác chốt hợp đồng ngay hôm nay vì bảo suất ưu đãi không giữ lâu được.",
+    "verify_channel": "Bác đến tận phòng tập kiểm tra cơ sở vật chất và đọc kỹ hợp đồng trước khi thanh toán là rất chuẩn.",
+    "refuse_info": "Bác không đưa thông tin thẻ ngân hàng để đăng ký trải nghiệm miễn phí là rất cảnh giác.",
+    "refuse_money": "Bác từ chối quẹt thẻ hoặc chuyển tiền trước khi hiểu rõ hợp đồng là quyết định rất sáng suốt.",
+    "doubt": "Bác nghi ngờ các chiêu trò giảm giá sâu nhưng ép thanh toán ngay là hoàn toàn có cơ sở.",
+    "stop": "Em dừng mô phỏng gói tập gym tại đây. Chúng ta chuyển sang phần điểm số và nhận diện nhé.",
     "default": [
-      "Bên em đang nói chương trình tập thử có hạn nên muốn bác xác nhận ngay ạ.",
-      "Người tư vấn trong mô phỏng tiếp tục nói bác chỉ cần làm nhanh vài bước để nhận ưu đãi."
+      "Gói tập Gym ưu đãi đặc biệt trong mô phỏng này chỉ còn đúng 1 suất, bác đăng ký ngay ạ.",
+      "Người tư vấn tiếp tục hối thúc bác thanh toán ngay lập tức để không bỏ lỡ chương trình khuyến mãi.",
+      "Bác hãy đọc kỹ điều khoản và hỏi rõ chi phí trước khi đồng ý tham gia chương trình ạ."
     ]
   },
   "wrong_transfer": {
-    "clarify": "Trong tình huống này, người liên hệ nói có một khoản tiền nhầm lẫn và muốn bác xử lý ngay.",
-    "delay": "Người liên hệ đang gây áp lực để bác giải quyết việc này thật nhanh.",
+    "clarify": "Trong mô phỏng này, có người báo vừa chuyển nhầm tiền vào tài khoản bác và bắt bác trả lại ngay qua tài khoản khác.",
+    "delay": "Người liên hệ đang khóc lóc hoặc hối thúc bác chuyển trả liền vì nói đây là tiền viện phí khẩn.",
+    "verify_channel": "Bác liên hệ ngân hàng hoặc ra chi nhánh nhờ xử lý tra soát tiền chuyển nhầm là quy trình an toàn nhất.",
+    "refuse_info": "Bác không cung cấp thông tin tài khoản hay mã xác minh cho người lạ báo chuyển nhầm là rất đúng.",
+    "refuse_money": "Bác không tự ý chuyển trả lại tiền vào số tài khoản lạ do người gọi cung cấp là rất tỉnh táo.",
+    "doubt": "Bác nghi ngờ chiêu trò giả vờ chuyển nhầm tiền để gài bẫy tín dụng đen là phản xạ tuyệt vời.",
+    "stop": "Mình dừng mô phỏng chuyển nhầm tiền tại đây. Bây giờ chúng ta xem lại bài học kinh nghiệm nhé.",
     "default": [
-      "Người liên hệ trong mô phỏng tiếp tục nói việc chuyển nhầm cần được xử lý gấp.",
-      "Trong tình huống này, người lạ đang cố khiến bác lo lắng về một khoản tiền không rõ nguồn gốc."
+      "Bác ơi, em lỡ chuyển nhầm tiền vào tài khoản bác trong mô phỏng này, bác chuyển trả lại em gấp với ạ.",
+      "Đối tượng tiếp tục tạo áp lực tâm lý để dụ bác tự chuyển tiền sang tài khoản của kẻ lừa đảo.",
+      "Bác nên liên hệ ngân hàng để kiểm tra giao dịch thay vì tự xử lý theo yêu cầu của người lạ ạ."
     ]
   },
   "ecommerce_refund": {
-    "clarify": "Bên hỗ trợ trong mô phỏng nói đơn hàng có vấn đề và hứa sẽ giúp bác xử lý nhanh.",
-    "delay": "Người liên hệ đang nói việc hoàn tiền cần làm ngay để bác không bỏ lỡ quyền lợi.",
+    "clarify": "Bên hỗ trợ sàn thương mại điện tử trong mô phỏng báo đơn hàng bị lỗi và cần giúp bác làm thủ tục hoàn tiền.",
+    "delay": "Người liên hệ nói hệ thống hoàn tiền sắp đóng nên giục bác nhấn vào liên kết hoặc thao tác ngay.",
+    "verify_channel": "Bác vào thẳng ứng dụng mua sắm chính thức để tra cứu trạng thái đơn hàng là chuẩn nhất.",
+    "refuse_info": "Bác từ chối nhập tài khoản hay mã OTP lên đường dẫn lạ là giữ an toàn tuyệt đối.",
+    "refuse_money": "Bác không chuyển khoản tiền phí thủ tục hoàn tiền là quyết định rất đúng đắn.",
+    "doubt": "Bác nghi ngờ nhân viên sàn gọi điện báo hoàn tiền qua trang web ngoài là phản xạ né lừa đảo rất tốt.",
+    "stop": "Em dừng mô phỏng hoàn tiền đơn hàng tại đây. Chúng ta cùng xem lại danh sách cảnh báo nhé.",
     "default": [
-      "Bên hỗ trợ giả trong mô phỏng tiếp tục nói đơn hàng của bác đang có lỗi cần xử lý sớm.",
-      "Người liên hệ đang dùng lời hứa hoàn tiền để thúc bác phản hồi ngay."
+      "Dịch vụ khách hàng báo đơn hàng của bác bị lỗi trong mô phỏng này, bên em hỗ trợ hoàn tiền ngay ạ.",
+      "Đối tượng tiếp tục hướng dẫn bác làm các bước phức tạp nhằm lấy cắp thông tin tài khoản.",
+      "Bác hãy mở ứng dụng mua sắm chính thức để kiểm tra đơn hàng thay vì làm theo đường dẫn lạ ạ."
     ]
   },
   "vneid": {
-    "clarify": "Trong mô phỏng này, người liên hệ tự xưng cán bộ và nói thông tin định danh của bác cần được xử lý gấp.",
-    "delay": "Người liên hệ đang hối bác làm ngay vì nói việc chậm trễ sẽ gây phiền phức.",
+    "clarify": "Trong mô phỏng này, đối tượng tự xưng cán bộ công an xã/phường báo ứng dụng VNeID bị lỗi định danh mức 2.",
+    "delay": "Người liên hệ báo nếu bác không cập nhật VNeID ngay hôm nay thì tài khoản định danh sẽ bị khóa.",
+    "verify_channel": "Bác ra trực tiếp công an xã/phường nơi cư trú để làm thủ tục định danh là cách duy nhất an toàn.",
+    "refuse_info": "Bác tuyệt đối không đọc thông tin cá nhân hay mã xác nhận cho người gọi tự xưng cán bộ là rất chuẩn.",
+    "refuse_money": "Bác từ chối nộp phí cập nhật VNeID là rất đúng, dịch vụ VNeID của nhà nước hoàn toàn miễn phí.",
+    "doubt": "Bác nhận ra cơ quan công an không bao giờ gọi điện hướng dẫn tải phần mềm lạ để sửa VNeID là rất giỏi.",
+    "stop": "Mình dừng mô phỏng VNeID tại đây. Chúng ta chuyển sang xem kết quả và dấu hiệu cảnh báo nhé.",
     "default": [
-      "Người tự xưng cán bộ trong mô phỏng tiếp tục nói hồ sơ định danh của bác có vấn đề.",
-      "Trong tình huống này, người liên hệ dùng danh nghĩa chính thức để khiến bác phải phản hồi nhanh."
+      "Tôi là cán bộ hỗ trợ VNeID trong mô phỏng này, hồ sơ định danh của bác đang bị lỗi cần chỉnh sửa gấp.",
+      "Đối tượng giả danh công an tiếp tục giục bác làm theo hướng dẫn từ xa để cập nhật ứng dụng định danh.",
+      "Bác nên đến cơ quan chính thức để kiểm tra thông tin, không xử lý theo lời thúc giục qua điện thoại ạ."
     ]
   }
 }

@@ -8,7 +8,7 @@ export async function generateGeminiJson({ systemInstruction, prompt, schema }) 
   }
   const defaultModel = "gemini-3.6-flash";
   const apiKey = process.env.GEMINI_API_KEY || "";
-  const timeoutMs = getPositiveIntEnv("GEMINI_TIMEOUT_MS", 45000);
+  const timeoutMs = getPositiveIntEnv("GEMINI_TIMEOUT_MS", 9000);
 
   if (!apiKey) {
     const error = new Error("GEMINI_API_KEY is not configured.");

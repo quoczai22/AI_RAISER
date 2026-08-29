@@ -83,7 +83,7 @@ Tạo file `.env` từ `.env.example` hoặc set biến môi trường:
 GEMINI_API_KEY=your_google_ai_studio_key
 GEMINI_MODEL=gemini-3.6-flash
 MAX_CHAT_TURNS=8
-GEMINI_TIMEOUT_MS=45000
+GEMINI_TIMEOUT_MS=9000
 MAX_MESSAGE_LENGTH=1000
 MAX_JSON_BODY_BYTES=65536
 MAX_SESSIONS=200

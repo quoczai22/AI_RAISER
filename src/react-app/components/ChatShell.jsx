@@ -120,12 +120,13 @@ export default function ChatShell() {
     if (!text) return;
 
     if (text.length > maxMessageLength) {
-      setSafetyNotices(prev => [...prev, `Tin nhắn tối đa ${maxMessageLength} ký tự.`]);
+      setSafetyNotices([`Tin nhắn tối đa ${maxMessageLength} ký tự.`]);
       return;
     }
 
     clearSlowTimer();
     setSlowNotice('');
+    setSafetyNotices([]);
 
     const displayMsg = maskSensitiveForDisplay(text);
     // Optimistic UI update
@@ -142,7 +143,7 @@ export default function ChatShell() {
 
     slowTimerRef.current = setTimeout(() => {
       setSlowNotice('Có thể đang có nhiều người luyện tập cùng lúc. Bạn vui lòng chờ trong giây lát.');
-    }, 6000);
+    }, 4000);
 
     fetch(`/api/sessions/${sessionId}/messages`, {
       method: 'POST',
@@ -192,12 +193,15 @@ export default function ChatShell() {
                     return next;
                   });
                 } else if (currentEvent === 'notice' && data.reason) {
-                  setSafetyNotices(prev => [...prev, fallbackNotice(data.reason)]);
+                  setSafetyNotices([fallbackNotice(data.reason)]);
                 } else if (currentEvent === 'done') {
                   clearSlowTimer();
                   setSlowNotice('');
                   if (data.safety?.maskedSensitiveInput) {
-                    setSafetyNotices(prev => [...prev, "Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư."]);
+                    setSafetyNotices(prev => {
+                      const note = "Mình đã ẩn thông tin nhạy cảm để bảo vệ riêng tư.";
+                      return prev.includes(note) ? prev : [...prev, note];
+                    });
                   }
                   setMessages(prev => {
                     const next = [...prev];
@@ -219,7 +223,7 @@ export default function ChatShell() {
                 } else if (currentEvent === 'error') {
                   clearSlowTimer();
                   setSlowNotice('');
-                  setSafetyNotices(prev => [...prev, data.error || 'Lỗi xử lý']);
+                  setSafetyNotices([data.error || 'Lỗi xử lý']);
                   setIsSending(false);
                   chatRequestControllerRef.current = null;
                 }
@@ -234,7 +238,7 @@ export default function ChatShell() {
         clearSlowTimer();
         setSlowNotice('');
         if (err.name !== 'AbortError') {
-          setSafetyNotices(prev => [...prev, err.message]);
+          setSafetyNotices([err.message]);
         }
         setMessages(prev => prev.filter(m => !m.streaming));
         setIsSending(false);

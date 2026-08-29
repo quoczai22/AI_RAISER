@@ -12,7 +12,7 @@ import {
   requireStoredSession,
   verifySessionCapability,
 } from "../src/services/sessionService.js";
-import { buildPrompt, emitValidatedReplyChunks, sendChatMessage, sendChatMessageStream } from "../src/services/chatOrchestrator.js";
+import { buildPrompt, emitValidatedReplyChunks, getSafeFallbackReply, sendChatMessage, sendChatMessageStream } from "../src/services/chatOrchestrator.js";
 import { getDashboard } from "../src/services/dashboardService.js";
 import { getPositiveIntEnv, loadEnvFile } from "../src/services/env.js";
 import { generateGeminiJson } from "../src/services/geminiClient.server.js";
@@ -827,6 +827,15 @@ assert.equal(
   false,
   "Dashboard must not navigate with an unchecked history id"
 );
+assert.ok(
+  dashboardCode.includes("onClick={() => sessionId && handleAction(`dashboard/${sessionId}`)}"),
+  "Each history card must open its own protected result summary"
+);
+assert.equal(
+  dashboardCode.includes("transcript"),
+  false,
+  "Dashboard history must not render stored chat transcripts"
+);
 
 const resultScorecardCode = readFileSync(new URL("../src/react-app/components/ResultScorecard.jsx", import.meta.url), "utf8");
 const shareCardCode = readFileSync(new URL("../src/react-app/components/ShareCard.jsx", import.meta.url), "utf8");
@@ -836,12 +845,30 @@ assert.ok(shareCardCode.includes(protectedSessionMessage), "Share card must expl
 assert.ok(shareCardCode.includes("url.hash = '';"), "Shared links must not expose a private session route");
 assert.ok(shareCardCode.includes("fullscreenApplet"), "AI Studio shared links must open the app fullscreen");
 assert.ok(resultScorecardCode.includes("aisi-share/${sessionId}"), "Result share action must avoid AI Studio's reserved share route");
+assert.ok(
+  resultScorecardCode.includes(".split('+')"),
+  "Composite techniques must be projected into the five display taxonomy groups"
+);
+assert.ok(
+  resultScorecardCode.includes("dấu hiệu cụ thể đã nhận ra"),
+  "Raw red-flag score must be clearly distinguished from taxonomy groups"
+);
+assert.ok(
+  resultScorecardCode.includes("— Không xuất hiện"),
+  "Taxonomy groups absent from a scenario must not be mislabeled as missed"
+);
 assert.ok(!resultScorecardCode.includes("`share/${sessionId}`"), "Result share action must not use the reserved share route");
 assert.equal(shareCardCode.includes("ZaloSocialSDK"), false, "Share card must not depend on the unstable Zalo SDK");
 assert.equal(shareCardCode.includes("sp.zalo.me/plugins/sdk.js"), false, "Share card must not load the Zalo SDK script");
 assert.equal(shareCardCode.includes("handleShare('zalo')"), false, "Share card must not offer a misleading Zalo action");
 assert.equal(shareCardCode.includes("zalo.me/share"), false, "Share card must not open the unsupported Zalo share endpoint");
 assert.equal(shareCardCode.includes("chat.zalo.me"), false, "Share card must not open Zalo Web without completing a share");
+
+const appCssCode = readFileSync(new URL("../src/react-app/app.css", import.meta.url), "utf8");
+assert.ok(
+  appCssCode.includes(".figma-top-controls {\n    position: static;"),
+  "Mobile display controls must remain in document flow and never cover result/share content"
+);
 
 console.log("Stage 6: TASK-044 Gemini Quota & Fallback Tests");
 
@@ -920,6 +947,178 @@ assert.ok(
   updatedChatShellCode.includes("Đang dùng phản hồi mẫu an toàn."),
   "Tier 3: ChatShell fallback notices must explicitly state 'Đang dùng phản hồi mẫu an toàn.'"
 );
+
+console.log("Stage 8: TASK-048 Gemini Timeout & HTTP 429 Fallback Tests");
+
+// 1. GEMINI_TIMEOUT_MS default value is 9000
+delete process.env.GEMINI_TIMEOUT_MS;
+assert.equal(getPositiveIntEnv("GEMINI_TIMEOUT_MS", 9000), 9000, "GEMINI_TIMEOUT_MS default must be 9000 ms");
+
+// 2. ChatShell level 2 timer is set to 4000ms (~4s)
+assert.ok(
+  updatedChatShellCode.includes("}, 4000);"),
+  "ChatShell level 2 waiting notice timer must be set to 4000ms (~4 seconds)"
+);
+
+// 3. HTTP 429 immediately converts to safe_fallback with GEMINI_HTTP_429 reason
+try {
+  process.env.GEMINI_API_KEY = "unit-test-key-429";
+  setGeminiMock(async () => new Response(JSON.stringify({ error: { message: "Resource exhausted" } }), { status: 429 }));
+  const t48_429Session = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "User429" });
+  await confirmConsent(t48_429Session.id, { consent: true });
+  const t48_429Res = await sendChatMessage(t48_429Session.id, { message: "Xin chào." });
+  assert.equal(t48_429Res.safety.provider, "safe_fallback", "HTTP 429 must return safe_fallback provider");
+  assert.equal(t48_429Res.safety.fallbackReason, "GEMINI_HTTP_429", "HTTP 429 fallbackReason must be GEMINI_HTTP_429");
+  assert.ok(t48_429Res.reply.length > 0, "Fallback reply must be non-empty string from safeFallbackResponseBank.json");
+
+  // 4. Timeout (AbortError / GEMINI_TIMEOUT) converts to safe_fallback with GEMINI_TIMEOUT reason
+  setGeminiMock(async () => {
+    const abortErr = new Error("The operation was aborted");
+    abortErr.name = "AbortError";
+    throw abortErr;
+  });
+  const t48_TimeoutSession = await createSession({ scenarioId: "fake_bank", difficulty: "medium", userName: "UserTimeout" });
+  await confirmConsent(t48_TimeoutSession.id, { consent: true });
+  const t48_TimeoutRes = await sendChatMessage(t48_TimeoutSession.id, { message: "Xin chào." });
+  assert.equal(t48_TimeoutRes.safety.provider, "safe_fallback", "Timeout must return safe_fallback provider");
+  assert.equal(t48_TimeoutRes.safety.fallbackReason, "GEMINI_TIMEOUT", "Timeout fallbackReason must be GEMINI_TIMEOUT");
+} finally {
+  globalThis.fetch = originalFetch;
+  process.env.GEMINI_API_KEY = "";
+}
+
+console.log("Stage 9: TASK-049 Chat Fallback UX Notices & Response Bank Tests");
+
+// 1. ChatShell notice handling assertions
+const t49ChatShellCode = readFileSync(new URL("../src/react-app/components/ChatShell.jsx", import.meta.url), "utf8");
+assert.ok(
+  t49ChatShellCode.includes("setSafetyNotices([]);"),
+  "ChatShell must clear safetyNotices from previous turns when starting a new message submission"
+);
+assert.ok(
+  t49ChatShellCode.includes("setSafetyNotices([fallbackNotice(data.reason)]);"),
+  "ChatShell must set a single scoped fallback notice for the current request turn"
+);
+assert.ok(
+  t49ChatShellCode.includes("clearSlowTimer();"),
+  "ChatShell must call clearSlowTimer for timer cleanup"
+);
+assert.ok(
+  t49ChatShellCode.includes("setSlowNotice('');"),
+  "ChatShell must reset slowNotice on terminal events and chunk arrival"
+);
+
+// 2. Safe Fallback Response Bank assertions for all 10 scenarios
+const rawBankJson = readFileSync(new URL("../src/data/safeFallbackResponseBank.json", import.meta.url), "utf8");
+const parsedBank = JSON.parse(rawBankJson);
+const requiredScenarioIds = [
+  "fake_bank",
+  "fake_relative",
+  "fake_police",
+  "fake_job",
+  "deepfake",
+  "travel_sales",
+  "gym_sales",
+  "wrong_transfer",
+  "ecommerce_refund",
+  "vneid",
+];
+
+assert.equal(requiredScenarioIds.length, 10);
+for (const scId of requiredScenarioIds) {
+  const scEntry = parsedBank[scId];
+  assert.ok(scEntry, `safeFallbackResponseBank.json must contain entry for scenario ${scId}`);
+  assert.ok(typeof scEntry.clarify === "string" && scEntry.clarify.trim().length > 0, `${scId}.clarify must be non-empty string`);
+  assert.ok(typeof scEntry.delay === "string" && scEntry.delay.trim().length > 0, `${scId}.delay must be non-empty string`);
+  assert.ok(typeof scEntry.verify_channel === "string" && scEntry.verify_channel.trim().length > 0, `${scId}.verify_channel must be non-empty string`);
+  assert.ok(typeof scEntry.refuse_info === "string" && scEntry.refuse_info.trim().length > 0, `${scId}.refuse_info must be non-empty string`);
+  assert.ok(typeof scEntry.refuse_money === "string" && scEntry.refuse_money.trim().length > 0, `${scId}.refuse_money must be non-empty string`);
+  assert.ok(typeof scEntry.doubt === "string" && scEntry.doubt.trim().length > 0, `${scId}.doubt must be non-empty string`);
+  assert.ok(typeof scEntry.stop === "string" && scEntry.stop.trim().length > 0, `${scId}.stop must be non-empty string`);
+  assert.ok(Array.isArray(scEntry.default) && scEntry.default.length > 0, `${scId}.default must be non-empty array`);
+  for (const defItem of scEntry.default) {
+    assert.ok(typeof defItem === "string" && defItem.trim().length > 0, `${scId}.default items must be non-empty strings`);
+    assert.equal(validateAiReply(defItem).safe, true, `${scId}.default item must pass AI safety validation`);
+  }
+  assert.equal(validateAiReply(scEntry.clarify).safe, true, `${scId}.clarify must pass AI safety validation`);
+  assert.equal(validateAiReply(scEntry.delay).safe, true, `${scId}.delay must pass AI safety validation`);
+  assert.equal(validateAiReply(scEntry.verify_channel).safe, true, `${scId}.verify_channel must pass AI safety validation`);
+  assert.equal(validateAiReply(scEntry.refuse_info).safe, true, `${scId}.refuse_info must pass AI safety validation`);
+  assert.equal(validateAiReply(scEntry.refuse_money).safe, true, `${scId}.refuse_money must pass AI safety validation`);
+  assert.equal(validateAiReply(scEntry.doubt).safe, true, `${scId}.doubt must pass AI safety validation`);
+  assert.equal(validateAiReply(scEntry.stop).safe, true, `${scId}.stop must pass AI safety validation`);
+}
+
+// 3. getSafeFallbackReply hardening tests
+const missingBankRes = getSafeFallbackReply({
+  scenario: { id: "non_existent_scenario_xyz" },
+  session: { turnCount: 1 },
+  participantMessage: { content: "Xin chào" },
+});
+assert.ok(missingBankRes.length > 0, "Missing scenario bank entry must return non-empty safe reply");
+assert.ok(missingBankRes.includes("Hệ thống đang bận hoặc gặp gián đoạn tạm thời"), "Missing scenario reply must include retry guidance");
+
+const nullScenarioRes = getSafeFallbackReply({
+  scenario: null,
+  session: { turnCount: 1 },
+  participantMessage: { content: "Tôi muốn hỏi" },
+});
+assert.ok(nullScenarioRes.length > 0, "Null scenario must return non-empty safe reply");
+assert.ok(nullScenarioRes.includes("Hệ thống đang bận hoặc gặp gián đoạn tạm thời"), "Null scenario reply must include retry guidance");
+
+const validDelayRes = getSafeFallbackReply({
+  scenario: { id: "fake_bank" },
+  session: { turnCount: 1 },
+  participantMessage: { content: "Tôi đang bận, để sau nhé" },
+});
+assert.ok(validDelayRes.length > 0, "Valid scenario delay reply must be non-empty string");
+assert.equal(validDelayRes, parsedBank.fake_bank.delay, "Valid scenario delay keyword must return bank.delay");
+
+const validClarifyRes = getSafeFallbackReply({
+  scenario: { id: "fake_bank" },
+  session: { turnCount: 1 },
+  participantMessage: { content: "Ai đây và vì sao tôi phải trả lời?" },
+});
+assert.ok(validClarifyRes.length > 0, "Valid scenario clarify reply must be non-empty string");
+assert.equal(validClarifyRes, parsedBank.fake_bank.clarify, "Valid scenario clarify keyword must return bank.clarify");
+
+console.log("Stage 10: TASK-050 Intent-Based Safe Fallback Expansion Tests");
+
+// Assert intent matching for all intents across scenarios
+const intentTestCases = [
+  { intentKey: "stop", input: "Tôi muốn dừng luyện tập ở đây", expectedProp: "stop" },
+  { intentKey: "verify_channel", input: "Tôi sẽ gọi hotline ngân hàng hoặc đến chi nhánh kiểm tra lại", expectedProp: "verify_channel" },
+  { intentKey: "refuse_info", input: "Tôi không đọc mã otp hay cccd cho bạn đâu", expectedProp: "refuse_info" },
+  { intentKey: "refuse_money", input: "Tôi không chuyển tiền hay đóng phí gì hết", expectedProp: "refuse_money" },
+  { intentKey: "doubt", input: "Tôi nghi ngờ bạn đang lừa đảo giả mạo", expectedProp: "doubt" },
+  { intentKey: "delay", input: "Bây giờ tôi đang bận, để sau nhé", expectedProp: "delay" },
+  { intentKey: "clarify", input: "Ai đấy và vì sao gọi cho tôi?", expectedProp: "clarify" },
+];
+
+for (const scId of requiredScenarioIds) {
+  const scenarioObj = { id: scId };
+  for (const tc of intentTestCases) {
+    const res = getSafeFallbackReply({
+      scenario: scenarioObj,
+      session: { turnCount: 1 },
+      participantMessage: { content: tc.input },
+    });
+    assert.ok(res && res.length > 0, `Scenario ${scId} intent ${tc.intentKey} must return non-empty reply`);
+    const expectedText = parsedBank[scId][tc.expectedProp];
+    if (expectedText) {
+      assert.equal(res, expectedText, `Scenario ${scId} intent ${tc.intentKey} must match bank.${tc.expectedProp}`);
+    }
+  }
+
+  // Test unmatched input returns default or generic fallback
+  const unmatchedRes = getSafeFallbackReply({
+    scenario: scenarioObj,
+    session: { turnCount: 1 },
+    participantMessage: { content: "abcdefxyz 12345" },
+  });
+  assert.ok(unmatchedRes && unmatchedRes.length > 0, `Scenario ${scId} unmatched input must return non-empty string`);
+  assert.equal(validateAiReply(unmatchedRes).safe, true, `Scenario ${scId} unmatched reply must pass AI safety validation`);
+}
 
 console.log("Implementation tests passed.");
 process.exit(0);

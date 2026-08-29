@@ -206,7 +206,7 @@ Sửa và kiểm thử source trong repo trước khi đưa lại vào AI Studio
 - Codex chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`: PASS. `Permission Denied` trong output test là mock để kiểm tra exception được throw, không phải lỗi runtime.
 - Giới hạn còn lại: rules chưa được deploy lại và persistence server-side sau default deny chưa được xác minh trên AI Studio. TASK-035 vẫn là blocker cloud.
 
-## TASK-037 - Deploy Security Rules và Verify Cloud Persistence - PENDING CODEX SNAPSHOT
+## TASK-037 - Deploy Security Rules và Verify Cloud Persistence - PARTIALLY ACCEPTED
 
 ### Thứ tự bắt buộc
 
@@ -249,7 +249,7 @@ Sửa và kiểm thử source trong repo trước khi đưa lại vào AI Studio
 
 > Chỉ QA browser evidence cho TASK-037, không sửa code/config/rules/IAM, không commit/push. Trên Preview AI Studio đã kết nối Firestore, tạo hoặc mở completed session `b60cf6cf-3d64-41f5-bb5a-7c0b687345f2`; ghi score/total/triggered key count trước refresh. Thực hiện browser refresh thật (Ctrl+R hoặc Reload Preview), mở lịch sử/dashboard và xác nhận session/score còn tồn tại. Cập nhật `QA_REPORT_TASK_037.md` với thao tác refresh, giá trị trước/sau và PASS/FAIL. Nếu session không hiện do UI chỉ giữ metadata an toàn, ghi BLOCKED/CHƯA XÁC MINH ĐƯỢC, không sửa source hay nới bảo mật.
 
-## TASK-038 - Căn Chỉnh Firestore Project và Server IAM - PENDING OWNER CONFIRMATION
+## TASK-038 - Căn Chỉnh Firestore Project và Server IAM - ACCEPTED
 
 ### Mục tiêu
 
@@ -317,7 +317,7 @@ Tạo evidence local cuối cùng cho source GitHub trước khi import vào Goo
 - Source code không có diff; worktree hiện chỉ có thay đổi tài liệu/trạng thái và QA/Word/evidence untracked. Trước import, chủ dự án cần chọn snapshot GitHub sạch chứa Markdown cần giữ; không tự thêm toàn bộ QA/Word/evidence untracked.
 - TASK-039: **ACCEPTED LOCAL**. Gemini live ổn định, public URL AI Studio, Firestore persistence cloud, Facebook/Zalo trên HTTPS public: **CHƯA XÁC MINH ĐƯỢC**.
 
-## TASK-040 - Firestore Server Config Alignment - IN PROGRESS
+## TASK-040 - Firestore Server Config Alignment - ACCEPTED
 
 ### Mục tiêu
 
@@ -347,7 +347,7 @@ Loại bỏ việc backend vô tình dùng runtime project/database mặc địn
 - Codex chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`: PASS.
 - Cloud vẫn `CHƯA XÁC MINH ĐƯỢC`: cần owner xác định một database ID hiện hành, cấu hình 2 biến trong **server environment AI Studio** rồi chạy canonical persistence test. Không đoán ID từ các report cũ.
 
-## TASK-041 - Nguồn Tham Khảo Chính Thức - IN PROGRESS
+## TASK-041 - Nguồn Tham Khảo Chính Thức - ACCEPTED LOCAL
 
 ### Mục tiêu
 
@@ -483,4 +483,371 @@ Chủ dự án phải cung cấp hoặc cấu hình cục bộ, không gửi sec
 - Nhắc luyện định kỳ trong app; chưa gửi Zalo tự động.
 - Dashboard thống kê ẩn danh cho tổ chức.
 
+## TASK-042 - Cô lập phiên ẩn danh cho Public UAT - ACCEPTED IN AI STUDIO EXPORT
+
+### Mục tiêu
+
+Giữ trải nghiệm không mật khẩu nhưng không để session ID một mình trở thành quyền đọc/ghi phiên. Mỗi browser phải có một capability ngẫu nhiên riêng; server xác minh capability này cho mọi route đọc/ghi session.
+
+### Phạm vi
+
+- Chỉ: `server.js`, `src/services/sessionService.js`, `src/services/store.js`, `src/react-app/App.jsx`, các component gọi `/api/sessions/*`, `tests/run-tests.js`, `tests/http-smoke.ps1`, `LOCAL_STATUS.md`, `TASKS.md`, `RiskReport.md`.
+- Có thể thêm field capability hash vào Firestore allowlist nếu cần, nhưng tuyệt đối không lưu username, transcript, OTP, CCCD, mật khẩu, tài khoản, link thật hoặc raw capability.
+
+### Không được làm
+
+- Không thêm Firebase Web SDK, Firebase Auth, rule public, tài khoản/mật khẩu, UI đăng nhập, dependency mới, thay đổi Gemini/validator/scoring/workflow, commit hay push trước review.
+
+### Acceptance criteria
+
+1. Session ID đơn lẻ trả `403` cho GET/messages/consent/chat/complete/dashboard.
+2. Browser đã tạo session vẫn hoàn tất đầy đủ flow và refresh cùng browser vẫn đọc lại được session; browser khác hoặc URL copy không có capability không đọc/ghi được.
+3. Raw capability không vào Firestore/log/report; chỉ server-side hash hoặc verifier tương đương.
+4. `npm.cmd test`, HTTP smoke, production build và `git diff --check` PASS; report ghi rõ test thật và mọi giới hạn.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-042. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md`, `RiskReport.md` trước. Mục tiêu: giữ UX không mật khẩu nhưng buộc mọi API `/api/sessions/*` xác minh một anonymous per-browser session capability, để UUID session đơn lẻ không mở hoặc sửa phiên. Chỉ được sửa `server.js`, `src/services/sessionService.js`, `src/services/store.js`, `src/react-app/App.jsx`, component gọi API, test/smoke và tài liệu task/status/risk. Không thêm Firebase Web SDK/Auth, public Firestore rule, dependency, login UI; không đổi Gemini, safety validator, scoring hay workflow. Không lưu raw capability, username, transcript hoặc PII vào Firestore/log/report; chỉ dùng hash/verifier server-side. Thêm test: không credential -> 403 cho GET/messages/consent/chat/complete/dashboard; đúng browser capability -> workflow vẫn hoàn tất và refresh cùng browser đọc lại được; capability sai -> 403. Chạy `npm.cmd test`, `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, `npm.cmd run frontend:build`, `git diff --check`. Tạo/cập nhật QA report với command output thật, browser evidence nếu có, mọi mục CHƯA XÁC MINH ĐƯỢC. Không commit/push; bàn giao diff ngắn để Codex review.
+
+### Codex review from AI Studio export (2026-08-23)
+
+- Đã tự đọc ZIP export, không dựa riêng report: `randomBytes(32)`, SHA-256, `timingSafeEqual`, Firestore hash allowlist và header ở React/legacy client có mặt.
+- `npm.cmd test`: PASS; HTTP smoke: PASS; production build: PASS khi chạy ngoài sandbox OneDrive. Không phát hiện secret thực trong export.
+- **Không accept:** POST `/api/sessions` đang trả raw capability hai lần trong cùng response: `session.capability` và top-level `capability`. Chỉ top-level `capability` được phép có raw value; object `session` phải luôn là public summary.
+- Smoke hiện chỉ chứng minh missing/wrong capability cho GET session và missing capability dashboard. Cần regression HTTP cho cả GET messages, POST consent, POST messages/chat, POST complete, GET dashboard với missing và wrong capability; tất cả phải `403` trước khi kiểm tra state.
+- `QA_REPORT_TASK_042.md` chưa có trong ZIP; browser B thực tế mở URL `#share/<sessionId>` không có localStorage capability cũng chưa có evidence.
+
+### Prompt rework cho Google AI Studio
+
+> Rework duy nhất TASK-042 theo findings đã xác minh. Không đổi UI, workflow, Gemini, validator, scoring, Firestore rules, dependency hay cấu trúc project. 1) Trong `server.js`, sau `createSession`, destructure raw capability và chỉ trả `{ session: publicSummary, capability }`; cấm `publicSummary.capability`, `sessionCapabilityHash` hoặc raw capability xuất hiện trong bất kỳ GET response/log/report nào. Frontend chỉ đọc top-level `data.capability`, không fallback sang `data.session.capability`. 2) Mở rộng `tests/http-smoke.ps1`: với cùng session, thiếu capability VÀ capability sai phải trả 403 cho GET session, GET messages, POST consent, POST messages, POST complete, GET dashboard. Chỉ sau đó mới dùng capability đúng để chạy flow. 3) Tạo `QA_REPORT_TASK_042.md` với file changed, output thật của test/smoke/build/diff check, và browser test: copy URL `#share/<sessionId>` sang browser profile/Incognito khác không có localStorage capability phải quay về trang chính hoặc không tải dữ liệu. Không ghi raw capability/session hash vào report. Chạy `npm.cmd test`, `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, `npm.cmd run frontend:build`, `git diff --check`. Không commit/push.
+
+### Codex rework review 2 (2026-08-23)
+
+- ZIP rework 2: server destructures correctly; HTTP smoke thật có 12 checks 403 và `npm.cmd test`, smoke, production build đều PASS. Rules/package không đổi; không thấy secret thật.
+- **REJECTED:** `src/react-app/App.jsx` vẫn có `const cap = data.capability || sess?.capability;`. Đây là fallback bị cấm.
+- Test source-level cho fallback là false positive: chỉ quét `data.session.capability`/`data.session?.capability`, không quét `sess?.capability`; report vì thế claim “đã xóa hoàn toàn” không đúng với source.
+- QA report mô tả Incognito nhưng ZIP không kèm ảnh/clip/log browser độc lập. Giữ `CHƯA XÁC MINH ĐƯỢC`, không gọi là Browser Evidence PASS.
+
+### Prompt rework 2 cho Google AI Studio
+
+> Sửa duy nhất lỗi TASK-042 đã xác minh, không đổi UI/workflow/Gemini/safety/scoring/Firestore rules/dependency. Trong `src/react-app/App.jsx`, thay đúng dòng `const cap = data.capability || sess?.capability;` bằng `const cap = data.capability;`. Không được đọc `sess?.capability`, `session.capability`, `data.session.capability` hay `data.session?.capability` ở React hoặc legacy client. Sửa `tests/run-tests.js` để test không false positive: assert chính xác source có `const cap = data.capability;` và regex phải fail nếu xuất hiện bất kỳ `(data|sess|session)\\??.capability` nào ngoài object `sessionCapability` hợp lệ. Cập nhật `QA_REPORT_TASK_042.md`: bỏ claim Browser/Incognito PASS nếu không đính kèm screenshot/clip/log thực; ghi `CHƯA XÁC MINH ĐƯỢC` thay vào đó. Giữ 12 HTTP 403 test. Chạy `npm.cmd test`, HTTP smoke, production build và `git diff --check`; không commit/push.
+
+### Codex acceptance review 3 (2026-08-23)
+
+- Đã tự đọc ZIP rework 3: server chỉ trả raw capability top-level lúc tạo; React và legacy client chỉ đọc `data`/`payload.capability`; raw/hash không xuất hiện trong GET response.
+- Đã tự chạy trên ZIP: `npm.cmd test` PASS, HTTP smoke PASS (12 trường hợp 403: 6 endpoint x thiếu/sai capability), production build PASS. `firestore.rules` và `package.json` không đổi; secret scan không phát hiện credential thật.
+- `QA_REPORT_TASK_042.md` đã đánh dấu Incognito/browser là `CHƯA XÁC MINH ĐƯỢC` khi không có evidence thực.
+- TASK-042: **ACCEPTED IN AI STUDIO EXPORT**. GitHub/local `master` chưa có patch do AI Studio push ngược lỗi; không gọi là synced GitHub.
+
+## TASK-043 - Sửa Dashboard `undefined` Và Lịch Sử Capability - OPEN
+
+### Mục tiêu
+
+Sửa lỗi runtime đã xác minh: API/dashboard trả `sessionId` nhưng React Dashboard mở `history[0].id`, tạo URL `#dashboard/undefined`. Đồng thời không để lịch sử cũ thiếu capability tạo redirect chớp nhoáng.
+
+### Phạm vi
+
+- Chỉ `src/react-app/App.jsx`, `src/react-app/components/Dashboard.jsx`, `src/react-app/components/ResultScorecard.jsx`, `src/react-app/components/ShareCard.jsx`, `src/react-app/sessionCapability.js`, test/smoke và report QA.
+- Không sửa server capability, Gemini, validator, scoring, Firestore rules, UI visual design, dependency hay workflow chính.
+
+### Acceptance criteria
+
+1. Mọi history item dùng một ID chuẩn: `id = item.id || item.sessionId`; Dashboard không bao giờ tạo `#dashboard/undefined`.
+2. Dashboard chỉ dùng lịch sử có capability local tương ứng; session lịch sử cũ không còn quyền mở không được tính là “kết quả gần đây”.
+3. Truy cập `#dashboard/<id>` hoặc `#share/<id>` không có capability hiển thị thông báo thuần Việt rõ ràng và nút về trang chính, không redirect chớp nhoáng.
+4. Session mới tạo sau TASK-042 vẫn mở kết quả/chia sẻ bình thường cùng browser, kể cả refresh.
+5. Test/build/smoke PASS; không xóa session Firestore, không ghi capability/hash vào UI/log/report.
+
+### Prompt cho Google AI Studio
+
+> Làm duy nhất TASK-043. Đọc `AGENTS.md`, `TASKS.md`, `LOCAL_STATUS.md`. Bug đã xác minh trong source: `dashboardService` trả `sessionId`, `ChatShell` lưu dashboard object vào `aisi_history`, nhưng `Dashboard.jsx` mở `history[0].id`; vì vậy URL thành `#dashboard/undefined`. Sửa tối thiểu: khi lưu/đọc history, chuẩn hóa `id: item.id || item.sessionId`; Dashboard chỉ tạo route khi có ID hợp lệ và dùng ID chuẩn đó. Filter history được hiển thị để chỉ giữ item có `aisi_cap_<id>` trong localStorage; không xóa Firestore, không tự tạo capability mới. Với `ResultScorecard` và `ShareCard`, khi API trả 403/missing capability thì hiển thị màn hình tiếng Việt: “Kết quả này chỉ mở được trên thiết bị đã thực hiện buổi luyện tập.” và một nút “Về trang chính”; không tự đổi hash/redirect. Giữ 404/409 xử lý phù hợp, không hiển thị raw error/capability. Thêm regression: tạo session mới → consent/chat/complete → dashboard history phải có `id === sessionId`; click Xem kết quả gần đây không tạo `undefined`; session thiếu capability không load kết quả. Tạo `QA_REPORT_TASK_043.md`; chạy `npm.cmd test`, HTTP smoke, production build, `git diff --check`. Không đổi server security, Gemini, Firestore rules, scoring, UI design/dependency; không commit/push.
+
 Không biến người thân thành actor chính, không giám sát âm thầm và không đưa backlog vào MVP trước khi nộp.
+
+## TASK-044 - Giảm chi phí Gemini khi nhiều người dùng - ACCEPTED LOCAL
+
+### Mục tiêu
+
+Giảm số request và token Gemini trên mỗi buổi luyện để nhiều người có thể dùng MVP hơn, nhưng vẫn giữ đủ trải nghiệm học. Không yêu cầu người dùng tự nhập API key. Khi Gemini gặp 429/lỗi tạm thời, app tiếp tục bằng `safeFallbackResponseBank.json` và phải nói minh bạch đây là phản hồi an toàn dự phòng.
+
+### Quyết định phạm vi
+
+- Không chuyển API key xuống trình duyệt.
+- Không lưu câu trả lời chat hoặc transcript vào Firestore.
+- Không đưa ngân hàng fallback vào Firestore chỉ để giảm quota; file JSON tĩnh hiện tại là đủ và không tiêu tốn request Gemini.
+- Firestore chỉ lưu session/result theo allowlist hiện có.
+- Không thêm Cloud Run cho task này. Cloud Run chỉ là lựa chọn triển khai sau nếu cần backend public độc lập.
+
+### Phạm vi được phép sửa
+
+- `src/services/chatOrchestrator.js`
+- `src/data/safeFallbackResponseBank.json` chỉ khi cần bổ sung nội dung an toàn
+- `.env.example`
+- `src/react-app/components/ChatShell.jsx` và thông báo fallback nếu cần
+- `tests/run-tests.js`, test quota/fallback và tài liệu QA/status
+
+### Yêu cầu kỹ thuật cần đánh giá
+
+1. Giảm mặc định `MAX_CHAT_TURNS` từ 8 xuống mức MVP hợp lý, ưu tiên 4 hoặc 5 lượt; không giảm xuống 1-2 nếu chưa chứng minh đủ cơ hội luyện.
+2. Giữ giới hạn mỗi tin nhắn và không gửi transcript dài không cần thiết. Nếu rút gọn context, vẫn phải giữ scenario, difficulty, red flags đã gặp và trạng thái phiên.
+3. Không gọi Gemini thêm để tạo feedback sau khi phiên đã hoàn thành; dùng scoring deterministic và feedback đã có.
+4. Khi nhận HTTP 429, timeout hoặc lỗi Gemini, chuyển ngay sang fallback an toàn, giữ `provider: "safe_fallback"` và `fallbackReason` thật.
+5. Không ghi `provider: "gemini"` cho phản hồi fallback.
+6. UI phải báo ngắn gọn “Đang dùng phản hồi mẫu an toàn” mà không làm người dùng tưởng Gemini live vẫn đang phản hồi.
+7. Không thay đổi năm taxonomy, safety validator, scoring formula, workflow guard hoặc session capability.
+
+### Acceptance criteria
+
+1. Một phiên bình thường kết thúc trong tối đa 4-5 lượt theo cấu hình mặc định và vẫn hiển thị kết quả, bài học, dấu hiệu đã nhận diện/bỏ lỡ.
+2. Test chứng minh không có request Gemini sau khi session đã completed hoặc bị dừng.
+3. Test fallback cho 429/timeout/no key: phản hồi an toàn vẫn hiển thị, `provider` là `safe_fallback`, không có lỗi 500 cho người dùng.
+4. Test xác nhận context gửi lên Gemini không chứa transcript dài hơn giới hạn đã chọn và không chứa secret/PII.
+5. Không có dữ liệu chat/fallback response được thêm vào Firestore.
+6. `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build`, `git diff --check` PASS.
+7. Report phải ghi rõ trade-off: ít lượt hơn giúp giảm quota nhưng có thể giảm độ sâu luyện; không tuyên bố quota đã giải quyết hoàn toàn nếu chưa có số liệu trước/sau.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-044. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước. Mục tiêu là giảm request/token Gemini trên mỗi buổi khi có nhiều người dùng mà vẫn đủ trải nghiệm MVP. Không yêu cầu người dùng nhập API key; không thêm Firebase Web SDK, Cloud Run, Firebase Auth hoặc Firestore fallback bank. Không lưu transcript/câu trả lời chat vào Firestore. Đánh giá và ưu tiên cấu hình mặc định `MAX_CHAT_TURNS=4` hoặc `5` thay vì 8, giữ context cần thiết gồm scenario, difficulty, red flags và trạng thái phiên; không gửi transcript dài không cần thiết. Giữ `safeFallbackResponseBank.json` ở mã nguồn. Với 429/timeout/no key, phản hồi phải có `provider: "safe_fallback"`, `fallbackReason` đúng và UI thông báo rõ đây là phản hồi mẫu an toàn; tuyệt đối không ghi Gemini live cho fallback. Không gọi Gemini sau khi session completed/stopped. Chỉ được sửa file trong phạm vi TASK-044; không đổi taxonomy, validator, scoring, workflow, capability hoặc security rules. Thêm test cho max turns, 429/timeout/no key, không gọi sau completed/stop, giới hạn context và không lưu chat vào Firestore. Chạy `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build`, `git diff --check`. Báo cáo diff ngắn, số lượt/request trước-sau nếu đo được, trade-off và mục còn CHƯA XÁC MINH ĐƯỢC. Không commit, không push.
+
+## TASK-045 - Regression UAT Sau Tối Ưu Quota - ACCEPTED LOCAL
+
+### Mục tiêu
+
+Kiểm tra thực tế sau TASK-044 để chắc chắn giới hạn 5 lượt và context rút gọn không làm hỏng workflow MVP. Đây là task QA/evidence, không phải task thêm tính năng.
+
+### Phạm vi và giới hạn
+
+- Localhost hiện tại; Preview chỉ khi snapshot đã đồng bộ TASK-044.
+- Desktop viewport và responsive mobile viewport.
+- Luồng nhập tên -> dashboard -> tình huống -> consent -> chat -> dừng/hoàn thành -> kết quả -> lịch sử -> chia sẻ.
+- Fallback khi Gemini 429/timeout/no key, Firestore persistence và session capability.
+- Không sửa source/config/test/UI; không đổi `MAX_CHAT_TURNS`, taxonomy, scoring, safety, capability hoặc Firestore rules.
+- Không chạy load test nhiều người dùng thật và không tạo API key mới.
+
+### Acceptance criteria
+
+1. Phiên mới chạy được từ đầu đến kết quả trong tối đa 5 lượt; kết quả có điểm, dấu hiệu và bài học.
+2. Bấm Dừng khi đang tải không tạo tin nhắn đến muộn; request sau completed bị chặn.
+3. Khi Gemini lỗi/quota, UI nói rõ phản hồi mẫu an toàn và response có `provider=safe_fallback`.
+4. Dashboard, lịch sử, `#aisi-share/<sessionId>`, Web Share, sao chép liên kết, Facebook và lưu ảnh không bị regression; không còn nút Zalo.
+5. Responsive mobile không có chữ tràn/chồng; không kết luận UAT điện thoại thật từ viewport giả lập.
+6. Firestore/read-back và capability isolation chỉ ghi PASS khi có HTTP/log evidence thật.
+7. Báo cáo tách PASS, FAIL và CHƯA XÁC MINH ĐƯỢC; không ghi “quota đã giải quyết” nếu không có đo lường production.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-045, chỉ QA/evidence, không sửa code. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước. Kiểm thử bản sau TASK-044 tại localhost: chạy `npm.cmd test`, `npm.cmd run frontend:build`, `git diff --check`, sau đó mở app và chạy một session mới với tối đa 5 lượt. Kiểm tra dashboard, chọn tình huống, consent, chat, Dừng khi đang tải, hoàn thành, điểm/kết quả, lịch sử không có `undefined`, route `#aisi-share/<sessionId>`, thẻ chia sẻ, Web Share nếu trình duyệt hỗ trợ, sao chép liên kết, Facebook và lưu ảnh. Xác nhận không còn nút/URL/SDK Zalo. Kiểm tra responsive viewport 390x844 nhưng ghi rõ đó không phải UAT điện thoại vật lý. Kiểm tra fallback bằng môi trường không có key hoặc mô phỏng 429/timeout an toàn; phải ghi `provider=safe_fallback`, không gọi là Gemini live. Nếu có Firestore runtime, ghi HTTP/log evidence của ghi và đọc lại; không ghi secret, capability, transcript hoặc PII. Không chạy load test và không đốt quota bằng nhiều probe. Tạo `QA_REPORT_TASK_045.md`, lưu screenshot/evidence nếu có. Với mỗi mục ghi PASS chỉ khi quan sát trực tiếp, nếu không thì FAIL hoặc CHƯA XÁC MINH ĐƯỢC. Không sửa code, không commit, không push.
+
+## TASK-046 - Thông Báo Chờ Ba Tầng Khi Gemini Phản Hồi Chậm - ACCEPTED LOCAL
+
+### Mục tiêu
+
+Bổ sung tầng thông báo chờ trung gian để người dùng không thấy giao diện im lặng khi Gemini phản hồi chậm. Giữ nguyên fallback và không làm tăng số request Gemini.
+
+### Phạm vi
+
+- `src/react-app/components/ChatShell.jsx`
+- `tests/run-tests.js`
+- QA report/status liên quan nếu cần
+
+### Yêu cầu
+
+1. Tầng 1 xuất hiện ngay khi gửi tin nhắn: trạng thái đang xử lý hiện rõ.
+2. Tầng 2 dùng timer frontend khoảng 5-8 giây nếu chưa nhận chunk/kết quả: thông báo “Có thể đang có nhiều người luyện tập cùng lúc. Bạn vui lòng chờ trong giây lát.”
+3. Tầng 3 giữ nguyên thông báo fallback hiện tại khi server thực sự trả 429/timeout/no key/lỗi.
+4. Timer phải được hủy khi nhận chunk đầu tiên, nhận done/error, bấm Dừng, request abort hoặc component unmount.
+5. Không hiển thị tầng 2 sau khi đã nhận phản hồi; không tạo nhiều timer cho một request; request mới phải reset trạng thái cũ.
+6. Không đổi API, prompt, Gemini model, Firestore, scoring, safety, workflow hoặc giao diện ngoài thông báo chờ.
+
+### Acceptance criteria
+
+- Không có khoảng im lặng sau khi người dùng gửi tin nhắn.
+- Tầng 2 không bị nhầm là fallback và không gắn `provider` giả.
+- Tầng 3 vẫn hiển thị đúng `safe_fallback` và `fallbackReason`.
+- Stop/abort không làm timer cũ hiện lên sau khi phiên kết thúc.
+- Test/build/diff check PASS.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-046. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước. Sửa chỉ `src/react-app/components/ChatShell.jsx`, `tests/run-tests.js` và QA/status nếu cần. Bổ sung đúng 3 tầng trạng thái khi gửi chat: tầng 1 hiển thị ngay; tầng 2 dùng một frontend timer khoảng 5-8 giây nếu chưa có chunk/kết quả, báo “Có thể đang có nhiều người luyện tập cùng lúc. Bạn vui lòng chờ trong giây lát.”; tầng 3 giữ nguyên fallback notice khi server trả 429/timeout/no key/lỗi. Hủy timer khi có chunk đầu tiên, done, error, abort, Stop hoặc unmount; reset timer đúng cho mỗi request, không tạo timer trùng hoặc hiển thị tầng 2 sau khi đã có phản hồi. Không đổi API, prompt, Gemini, Firestore, scoring, safety, workflow, session capability hoặc UI khác; không tăng số request. Thêm test/source assertion cho đủ 3 tầng và cleanup timer. Chạy `npm.cmd test`, `powershell.exe -ExecutionPolicy Bypass -File tests/http-smoke.ps1`, `npm.cmd run frontend:build`, `git diff --check`. Báo cáo file/diff/test/evidence thật, không claim browser PASS nếu chưa quan sát. Không commit, không push.
+
+## TASK-047 - Kiểm Tra Node.js Runtime Trong Google AI Studio - OPEN
+
+### Mục tiêu
+
+Xác minh bản import hiện tại trong Google AI Studio có chạy đúng full-stack Node.js server hay chỉ hiển thị static frontend. Đây là task QA/runtime evidence duy nhất; không sửa mã nguồn và không kiểm tra quota bằng cách spam request.
+
+### Phạm vi bắt buộc
+
+- Đọc `AGENTS.md`, `LOCAL_STATUS.md` và task này trước khi kiểm tra.
+- Kiểm tra startup log, port/runtime, endpoint API và Preview bằng request/browser evidence thật.
+- Phân biệt rõ lỗi source app, lỗi Node runtime/host, lỗi Gemini quota, lỗi Firestore/IAM và lỗi Google AI Studio.
+- Không dùng localhost làm bằng chứng cho Google AI Studio.
+
+### Acceptance criteria
+
+1. Startup log chứng minh server Node đang chạy và lắng nghe `0.0.0.0:3000`, không chỉ có Vite/static preview.
+2. `GET /api/runtime-status` trả HTTP 200 và xác nhận model `gemini-3.6-flash`; không ghi secret.
+3. `GET /api/scenarios` trả HTTP 200 với danh sách kịch bản.
+4. `POST /api/sessions` tạo session thành công hoặc ghi đúng lỗi runtime; không ghi raw capability.
+5. Preview tạo được session, consent và chat/kết quả tối thiểu nếu quota cho phép.
+6. Nếu Gemini lỗi, ghi đúng `provider=safe_fallback` và `fallbackReason`; không gọi fallback là Gemini live.
+7. Firestore chỉ được kết luận PASS khi có log/read-back thật từ đúng project/database; nếu không, ghi `CHƯA XÁC MINH ĐƯỢC`.
+8. Phân loại PASS/FAIL/CHƯA XÁC MINH ĐƯỢC theo evidence trực tiếp. Không lấy báo cáo tự khai làm bằng chứng.
+
+### Cấm
+
+- Không sửa source, `package.json`, `.env`, rules, UI, Gemini prompt/model, workflow, scoring, safety hoặc capability.
+- Không import lại project, không đổi Cloud Run, không tạo API key mới, không nới lỏng Firestore rules.
+- Không chạy load test hoặc gửi nhiều tin nhắn để thử quota.
+- Không ghi API key, raw capability, capability hash, OTP, CCCD, mật khẩu, tài khoản, transcript hoặc PII vào report.
+- Không commit/push.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-047, chỉ QA/runtime evidence trên bản Google AI Studio đang mở. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước. Không sửa code/config/package/UI, không import lại project, không đổi model, không đổi Cloud Run, không tạo key mới, không nới lỏng Firestore rules, không chạy load test và không commit/push.
+>
+> Kiểm tra theo đúng thứ tự: (1) startup log có Node server chạy trên `0.0.0.0:3000`, chứng minh đây không chỉ là static frontend; (2) gọi thực tế `GET /api/runtime-status`, `GET /api/scenarios`, `POST /api/sessions` và ghi HTTP status + response shape an toàn; (3) trong Preview tạo session, consent, gửi tối đa một tin nhắn chat và mở kết quả nếu môi trường cho phép; (4) kiểm tra fallback. Nếu Gemini quota/lỗi, ghi chính xác `provider=safe_fallback` và `fallbackReason`, tuyệt đối không ghi Gemini live; không gửi thêm request để thử quota; (5) chỉ ghi Firestore PASS khi có log/read-back thật từ đúng project/database, nếu không ghi `CHƯA XÁC MINH ĐƯỢC`.
+>
+> Tạo `QA_REPORT_TASK_047.md` gồm: commit/import reference nếu nhìn thấy; startup evidence; từng endpoint với HTTP status; browser route; lỗi console chỉ liên quan app; trạng thái Gemini, Firestore và phân loại nguyên nhân. PASS chỉ khi quan sát trực tiếp; lỗi host/AI Studio phải tách khỏi lỗi source. Tuyệt đối không ghi API key, raw capability, capability hash, OTP, CCCD, mật khẩu, tài khoản, transcript hoặc PII. Bàn giao diff ngắn, lệnh đã chạy, evidence thật và mục còn lại; không sửa, không commit, không push.
+
+## TASK-048 - Rút Ngắn Thời Gian Chờ Gemini Cho Demo - ACCEPTED LOCAL
+
+### Mục tiêu
+
+Giảm cảm giác app bị treo khi Gemini phản hồi chậm, nhưng vẫn giữ Gemini server-side, `safe_fallback`, safety, workflow và kiến trúc hiện tại.
+
+### Phạm vi được phép sửa
+
+- Cấu hình timeout Gemini và thông báo chờ frontend.
+- Test liên quan timeout, timer cleanup và HTTP 429.
+- QA report/status liên quan nếu cần.
+
+### Yêu cầu bắt buộc
+
+1. Thông báo chờ tầng 2 xuất hiện sau khoảng `4 giây`.
+2. Gemini timeout ở `9000ms` (`GEMINI_TIMEOUT_MS=9000`).
+3. HTTP 429 chuyển sang `provider: "safe_fallback"` ngay, không chờ đủ timeout.
+4. Câu trả lời fallback vẫn lấy từ `safeFallbackResponseBank.json`.
+5. Timer được hủy khi có chunk, done, error, abort, Stop và unmount.
+
+### Cấm
+
+- Không đổi model khỏi `gemini-3.6-flash`.
+- Không thêm model phụ, không đổi prompt, safety validator, scoring, Firestore, workflow hoặc session capability.
+- Không yêu cầu người dùng nhập API key.
+- Không chạy nhiều request thật để thử quota.
+- Không commit/push trước khi review.
+
+### Acceptance criteria
+
+1. UI báo chờ sau khoảng 4 giây nếu chưa có phản hồi.
+2. Timeout 9 giây dẫn đến fallback an toàn, không lỗi 500 và không hiển thị Gemini live.
+3. 429 được chuyển fallback ngay.
+4. Không có timer cũ hiển thị sau khi request kết thúc hoặc người dùng bấm Dừng.
+5. `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build` và `git diff --check` PASS.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-048. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước. Mục tiêu: rút ngắn thời gian chờ Gemini cho demo. Chỉ sửa cấu hình timeout, thông báo chờ frontend, test và QA/status nếu cần. Đặt thông báo chờ tầng 2 khoảng 4 giây và `GEMINI_TIMEOUT_MS=9000`. Khi Gemini trả HTTP 429, chuyển ngay sang `provider: "safe_fallback"` với `fallbackReason` thật; không chờ đủ 9 giây. Câu trả lời fallback phải lấy từ `src/data/safeFallbackResponseBank.json`.
+>
+> Giữ nguyên `gemini-3.6-flash`, server-side API key, prompt, safety validator, scoring, Firestore, workflow, session capability và toàn bộ UI khác. Không thêm model phụ, không yêu cầu người dùng nhập key, không chạy load test hoặc nhiều request thật, không commit/push. Xác nhận timer được hủy khi có chunk, done, error, abort, Stop và unmount. Chạy `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build`, `git diff --check`. Báo cáo diff ngắn, giá trị timeout/timer thực tế, test output và các mục CHƯA XÁC MINH ĐƯỢC. Không tuyên bố Gemini live ổn định chỉ từ một lượt thử.
+
+## TASK-049 - Sửa Notice Fallback Và Fallback Bank Khi Gemini Lỗi - OPEN
+
+### Mục tiêu
+
+Làm cho trạng thái lỗi/chờ trong chat rõ ràng theo từng lượt gửi: không giữ notice đỏ của lượt trước khi người dùng gửi tin nhắn mới, không tạo chuỗi xanh/đỏ/xanh gây hiểu nhầm là app bị lỗi, và luôn có câu trả lời an toàn nếu ngân hàng fallback thiếu dữ liệu.
+
+### Phạm vi được phép sửa
+
+- `src/react-app/components/ChatShell.jsx`
+- `src/services/chatOrchestrator.js`
+- `src/data/safeFallbackResponseBank.json` chỉ khi phát hiện entry rỗng/thiếu
+- `tests/run-tests.js`
+- QA/status report liên quan nếu cần
+
+### Yêu cầu bắt buộc
+
+1. Notice chờ tầng 2 chỉ là trạng thái tạm thời; khi có chunk, done, error, abort hoặc Stop phải biến mất.
+2. Notice fallback tầng 3 phải gắn với lượt request hiện tại, không nối vô hạn vào danh sách notice cũ.
+3. Khi bắt đầu lượt gửi mới, xóa notice tạm của lượt trước hoặc thay thế bằng trạng thái mới; không để người dùng thấy notice đỏ cũ xen giữa các tin nhắn xanh.
+4. Nếu Gemini fallback vì 429/timeout/no key/lỗi, vẫn hiển thị đúng một notice minh bạch và một câu trả lời an toàn.
+5. Rà soát đủ 10 scenario trong `safeFallbackResponseBank.json`: `clarify`, `delay` và `default` phải có nội dung không rỗng, an toàn, không OTP/CCCD/tài khoản/link/số điện thoại thật.
+6. Nếu scenario không có entry hoặc entry bị thiếu trường, dùng câu fallback tổng quát an toàn có hướng dẫn người dùng thử lại sau; không để chat đứng, reply rỗng hoặc chỉ hiện notice chờ.
+7. Không đổi model, không thêm model phụ, không tăng request Gemini và không thay đổi Firestore/safety/scoring/workflow.
+
+### Acceptance criteria
+
+1. Sau lỗi 429, UI hiển thị notice fallback đỏ cùng reply an toàn; ở lượt gửi tiếp theo notice cũ không còn nằm giữa các trạng thái mới.
+2. Không xuất hiện chuỗi notice gây hiểu nhầm kiểu xanh → đỏ → xanh cho cùng một lượt chat.
+3. Khi bank thiếu scenario/trường, API vẫn trả reply không rỗng, `provider: "safe_fallback"`, `fallbackReason` thật; UI hiển thị hướng dẫn thử lại sau.
+4. Test chứng minh đủ 10 scenario có fallback hợp lệ và không có dữ liệu nhạy cảm.
+5. Timer 4000ms vẫn cleanup đúng; không có notice chờ xuất hiện sau done/error/Stop/unmount.
+6. `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build`, `git diff --check` PASS.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-049. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước. Sửa lỗi UX fallback trong chat: `safetyNotices` không được nối vô hạn qua các lượt gửi; notice fallback đỏ của lượt trước phải được xóa/thay thế khi bắt đầu lượt mới để không tạo chuỗi xanh/đỏ/xanh gây hiểu nhầm. Notice chờ 4000ms là trạng thái tạm thời và phải biến mất khi có chunk, done, error, abort, Stop hoặc unmount. Notice fallback phải gắn với request hiện tại, hiển thị minh bạch đúng một lần.
+>
+> Rà soát `src/data/safeFallbackResponseBank.json` đủ 10 scenario; mỗi entry phải có `clarify`, `delay`, `default` không rỗng và an toàn. Nếu scenario hoặc trường fallback bị thiếu, `getSafeFallbackReply` phải trả một câu tổng quát an toàn có hướng dẫn người dùng thử lại sau, không trả reply rỗng và không để chat đứng; vẫn giữ `provider: "safe_fallback"` và `fallbackReason` thật. Không thêm model phụ, không đổi `gemini-3.6-flash`, không đổi prompt, Firestore, safety validator, scoring, workflow hoặc session capability; không tăng số request và không yêu cầu nhập API key.
+>
+> Chỉ sửa các file trong phạm vi TASK-049. Thêm test cho: notice cũ không tồn tại ở lượt mới; không có chuỗi notice gây hiểu nhầm; đủ 10 scenario có fallback hợp lệ; bank thiếu entry vẫn có reply an toàn; 429/timeout/no key giữ đúng provider/fallbackReason; timer cleanup. Chạy `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build`, `git diff --check`. Báo cáo diff ngắn, test output và screenshot nếu có. Không commit, không push, không tự sửa ngoài phạm vi.
+
+## TASK-050 - Làm Sâu Fallback Theo Từng Tình Huống - OPEN
+
+### Mục tiêu
+
+Làm phản hồi dự phòng hữu ích hơn khi Gemini lỗi hoặc hết quota bằng cách mở rộng nội dung trong **10 tình huống hiện có**, không thêm tình huống mới và không gọi thêm AI.
+
+### Thiết kế được duyệt
+
+- Giữ nguyên 10 `scenarioId` và taxonomy hiện tại.
+- Mỗi scenario có khoảng 8-10 phản hồi fallback an toàn, phân theo ý định đơn giản: hỏi làm rõ, trì hoãn, muốn xác minh kênh chính thức, từ chối cung cấp thông tin, từ chối chuyển tiền, nghi ngờ, muốn dừng và mặc định.
+- Có thể dùng cấu trúc JSON rõ ràng như `clarify`, `delay`, `verify`, `refuse`, `suspicious`, `stop`, `default`; giữ tương thích với dữ liệu cũ nếu cần.
+- Chọn phản hồi bằng rule/if-else nhẹ dựa trên nội dung người dùng; đây chỉ là fallback deterministic, không thay thế hội thoại Gemini và không được ghi là AI live.
+- Nếu không khớp ý định hoặc entry bị thiếu, trả câu tổng quát an toàn: hệ thống đang bận, người dùng vui lòng thử lại sau; không để reply rỗng hoặc chat đứng.
+
+### Cấm
+
+- Không thêm scenario mới, actor mới hoặc decision tree cho Gemini.
+- Không lưu fallback response/transcript vào Firestore.
+- Không chứa OTP, CCCD, mật khẩu, tài khoản, số điện thoại, link thật, QR hoặc hướng dẫn lừa đảo có thể tái sử dụng.
+- Không đổi model `gemini-3.6-flash`, safety, scoring, workflow, capability hoặc quota policy.
+- Không commit/push.
+
+### Acceptance criteria
+
+1. Cả 10 scenario đều có bộ phản hồi fallback phong phú, không rỗng và vượt kiểm tra an toàn.
+2. Các câu hỏi/ý định phổ biến được chọn đúng phản hồi phù hợp theo rule đơn giản.
+3. Input không khớp vẫn trả câu fallback tổng quát có hướng dẫn thử lại sau.
+4. Mọi fallback giữ `provider: "safe_fallback"` và `fallbackReason` thật.
+5. Không phát sinh request Gemini, không lưu thêm dữ liệu Firestore.
+6. `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build`, `git diff --check` PASS.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-050. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước. Mục tiêu: mở rộng ngân hàng fallback trong 10 scenario hiện có để mỗi tình huống có khoảng 8-10 câu an toàn theo ý định người dùng: hỏi làm rõ, trì hoãn, xác minh kênh chính thức, từ chối thông tin, từ chối chuyển tiền, nghi ngờ, dừng và mặc định. Chỉ sửa `src/data/safeFallbackResponseBank.json`, logic chọn fallback trong `src/services/chatOrchestrator.js`, test và QA/status khi cần.
+>
+> Dùng rule/if-else nhẹ cho fallback deterministic; không biến thành decision tree của Gemini, không gọi thêm AI, không thêm scenario/actor/taxonomy. Nếu không khớp intent hoặc thiếu entry, trả câu tổng quát an toàn hướng dẫn người dùng thử lại sau, không reply rỗng hoặc đứng chat. Giữ `provider: "safe_fallback"`, `fallbackReason` thật và không lưu transcript/fallback response vào Firestore.
+>
+> Cấm OTP, CCCD, mật khẩu, tài khoản, số điện thoại, link thật, QR hoặc hướng dẫn lừa đảo có thể tái sử dụng. Giữ model `gemini-3.6-flash`, safety, scoring, workflow, capability và quota policy. Thêm test đủ 10 scenario, từng intent chính, input không khớp, dữ liệu thiếu, provider/fallbackReason và safety. Chạy `npm.cmd test`, HTTP smoke, `npm.cmd run frontend:build`, `git diff --check`. Báo cáo diff ngắn và test output. Không commit, không push.
+
+## TASK-051 - QA Workflow Chuẩn Bị Demo Video - OPEN
+
+### Mục tiêu
+
+Chạy một workflow sạch trên local để chuẩn bị quay video demo, kiểm tra các màn hình và thao tác chính mà không sửa mã nguồn hoặc tiêu tốn quota không cần thiết.
+
+### Prompt cho Antigravity
+
+> Làm duy nhất TASK-051, chỉ QA/evidence để chuẩn bị quay video demo trên localhost. Không sửa code/config/UI, không commit và không push. Đọc `AGENTS.md`, `LOCAL_STATUS.md`, `TASKS.md` trước.
+>
+> Chạy trước: `npm.cmd test`, `npm.cmd run frontend:build`, `git diff --check`. Sau đó mở localhost và thực hiện đúng một workflow sạch: nhập tên → dashboard → chọn `fake_bank` hoặc scenario phù hợp → chọn độ khó → đồng ý → gửi tối đa 2 tin nhắn → dừng/hoàn thành → xem phân tích/điểm → dashboard/lịch sử → chia sẻ kết quả → xem thẻ chia sẻ → lưu ảnh hoặc sao chép liên kết. Không gửi nhiều request Gemini thật và không cố tạo 429.
+>
+> Kiểm tra trực tiếp: layout desktop/mobile responsive; chữ và nút không tràn; nút Dừng; điểm số; 5 nhóm taxonomy; thông báo fallback nếu môi trường đang fallback; `provider` không được ghi là Gemini nếu là mẫu an toàn; route chia sẻ không mở Chat/Remix Google AI Studio; ảnh tải xuống được nếu trình duyệt hỗ trợ.
+>
+> Nếu Gemini live phản hồi, ghi `provider: "gemini"` cho đúng lượt quan sát. Nếu fallback, ghi `provider: "safe_fallback"` và `fallbackReason` thật. Không kết luận quota nhiều người dùng từ một lượt chạy. Không ghi API key, capability, transcript, OTP, CCCD, mật khẩu, tài khoản hoặc PII.
+>
+> Tạo `QA_REPORT_TASK_051.md` gồm checklist từng bước, route, trạng thái PASS/FAIL/CHƯA XÁC MINH ĐƯỢC, lỗi console liên quan trực tiếp và đề xuất thứ tự màn hình để quay video 2-2 phút 30 giây. Đây là QA evidence, không phải task sửa lỗi. Nếu phát hiện lỗi, dừng và ghi rõ bước tái hiện, không tự sửa.

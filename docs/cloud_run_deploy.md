@@ -52,7 +52,7 @@ gcloud run deploy $SERVICE \
   --project $PROJECT_ID \
   --region $REGION \
   --allow-unauthenticated \
-  --set-env-vars GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=45000 \
+  --set-env-vars GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=9000 \
   --set-secrets GEMINI_API_KEY=gemini-api-key:latest
 ```
 
@@ -76,7 +76,7 @@ gcloud run deploy $SERVICE `
   --project $PROJECT_ID `
   --region $REGION `
   --allow-unauthenticated `
-  --set-env-vars "GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=45000" `
+  --set-env-vars "GEMINI_MODEL=$GEMINI_MODEL,MAX_CHAT_TURNS=8,GEMINI_TIMEOUT_MS=9000" `
   --set-secrets "GEMINI_API_KEY=gemini-api-key:latest"
 
 Remove-Item -Path "$env:TEMP\gemini-key.txt" -Force

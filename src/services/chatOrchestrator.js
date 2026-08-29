@@ -352,18 +352,45 @@ function fallbackReply({ session, scenario, participantMessage, reason }) {
   };
 }
 
-function getSafeFallbackReply({ scenario, session, participantMessage }) {
-  const bank = safeFallbackResponseBank[scenario.id];
+const GENERIC_SAFE_FALLBACK_REPLY =
+  "Hệ thống đang bận hoặc gặp gián đoạn tạm thời. Bạn vui lòng thử lại sau ít phút. Trong mô phỏng này, người liên hệ đang tạo cảm giác gấp gáp để thúc giục bác phản hồi nhanh.";
+
+export function getSafeFallbackReply({ scenario, session, participantMessage }) {
+  const bank = scenario?.id ? safeFallbackResponseBank[scenario.id] : null;
   if (!bank) {
-    return "Trong mô phỏng này, người liên hệ đang cố tạo cảm giác gấp gáp để bác phải phản hồi nhanh.";
+    return GENERIC_SAFE_FALLBACK_REPLY;
   }
 
-  const text = String(participantMessage.content || "").toLowerCase();
-  if (/(bận|chờ|lát|sau|mai|để sau)/i.test(text)) return bank.delay;
-  if (/(ai|là gì|vì sao|tại sao|chuyện gì|thông tin|công ty|hợp đồng|đơn hàng|giấy tờ)/i.test(text)) {
-    return bank.clarify;
+  const text = String(participantMessage?.content || "").toLowerCase();
+  let candidate = "";
+
+  if (/(dừng|nghỉ|không tập|thoát|kết thúc|thôi|ngừng)/i.test(text)) {
+    candidate = typeof bank.stop === "string" ? bank.stop.trim() : "";
+  } else if (/(hotline|tổng đài|chi nhánh|trụ sở|kênh chính thức|xác minh|gọi lại|kiểm tra lại|đến trực tiếp|gặp trực tiếp)/i.test(text)) {
+    candidate = typeof bank.verify_channel === "string" ? bank.verify_channel.trim() : "";
+  } else if (/(không cung cấp|không đưa|không đọc|không cho|bảo mật|mật khẩu|otp|cccd|mã xác minh|tài khoản|thông tin cá nhân)/i.test(text)) {
+    candidate = typeof bank.refuse_info === "string" ? bank.refuse_info.trim() : "";
+  } else if (/(không chuyển|không gửi|không đóng|không nạp|không trả|không thanh toán|từ chối chuyển)/i.test(text)) {
+    candidate = typeof bank.refuse_money === "string" ? bank.refuse_money.trim() : "";
+  } else if (/(lừa đảo|giả mạo|nghi ngờ|không tin|vô lý|xàm|bậy|coi chừng|ảo)/i.test(text)) {
+    candidate = typeof bank.doubt === "string" ? bank.doubt.trim() : "";
+  } else if (/(bận|chờ|lát|rảnh|để sau|khi khác|mai|tối|ngày mai)/i.test(text)) {
+    candidate = typeof bank.delay === "string" ? bank.delay.trim() : "";
+  } else if (/(ai|là gì|vì sao|tại sao|chuyện gì|thông tin|công ty|hợp đồng|đơn hàng|giấy tờ|thế nào|sao lại)/i.test(text)) {
+    candidate = typeof bank.clarify === "string" ? bank.clarify.trim() : "";
   }
-  return bank.default[Math.max(session.turnCount - 1, 0) % bank.default.length];
+
+  if (!candidate) {
+    if (Array.isArray(bank.default) && bank.default.length > 0) {
+      const idx = Math.max((session?.turnCount || 1) - 1, 0) % bank.default.length;
+      const defItem = bank.default[idx];
+      candidate = typeof defItem === "string" ? defItem.trim() : "";
+    } else if (typeof bank.default === "string") {
+      candidate = bank.default.trim();
+    }
+  }
+
+  return candidate || GENERIC_SAFE_FALLBACK_REPLY;
 }
 
 function chooseFallbackRedFlag({ scenario, session, participantMessage }) {

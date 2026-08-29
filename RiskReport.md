@@ -1,6 +1,6 @@
 # Risk Report - AI Scam Inoculation
 
-Updated: 2026-08-03
+Updated: 2026-08-23
 
 ## Summary
 
@@ -17,6 +17,7 @@ Current MVP is runnable locally and has safe fallback, but final AI Riser demo d
 | AI Studio porting gap | Medium | Repo is Node/static; AI Studio may generate React/full-stack structure | Submission environment may need manual port | Keep module boundaries documented in `docs/google_ai_studio_porting.md`; preserve `chatOrchestrator`, `geminiClient.server`, `safetyValidator`, `scoringEngine` | Open |
 | Local machine cannot deploy with `gcloud` yet | Medium | `gcloud` command is not recognized in current PowerShell PATH | Cloud Run deploy cannot be completed from this workspace until SDK/auth/project are available | Install Google Cloud CLI or deploy through Google AI Studio/Cloud console; then follow `docs/cloud_run_deploy.md` | Open |
 | Over-realistic scam output | High | Product intentionally simulates scam-like social engineering | Unsafe links, phone numbers, CCCD, payment or OTP requests could be shown | System prompt, structured JSON, output validator, one repair retry, fallback, CCCD/OTP/link/phone/account blocking tests | Mitigated |
+| Public session capability is not bound to a browser | High | Server routes accept a session UUID in the URL and do not verify an owner/device secret; a result/share URL includes that UUID in its hash | Anyone who receives a session-specific URL can reopen that session and may interact with it while it remains active. Direct Firestore access remains denied, but the Node API is the relevant boundary. | Do not share session-specific result URLs, especially during an active chat. Before broad public UAT, add an anonymous per-browser session capability and require it on every session read/write route; preserve no-password UX and the Firestore PII allowlist. | Open |
 
 ## Demo Go/No-Go Checklist
 
